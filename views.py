@@ -48,7 +48,8 @@ def _connect_user(request, facebook):
         user_fields = user._meta.fields
         profile_field_names = [f.name for f in profile_fields]
         user_field_names = [f.name for f in user_fields]
-        facebook_fields = ['date_of_birth', 'about_me', 'facebook_id', 'website_url', 'image', 'first_name', 'last_name']
+        facebook_fields = ['facebook_name', 'facebook_profile_url', 'date_of_birth', 'about_me', 'facebook_id', 'website_url', 'image', 'first_name', 'last_name']
+
         for f in facebook_fields:
             facebook_value = facebook_data.get(f, False)
             if facebook_value:
@@ -59,6 +60,7 @@ def _connect_user(request, facebook):
 
 
         profile.save()
+        user.save()
 
     return next_redirect(request)
 
