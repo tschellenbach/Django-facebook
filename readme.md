@@ -7,8 +7,6 @@ Login and registration functionality using the new facebook open graph api.
 
 Requires:
 
-    Facebook python sdk
-    Facebook JS sdk
     django registration
     django auth
     cjson
@@ -27,12 +25,7 @@ Implementation:
     [Facebook JS API](http://developers.facebook.com/docs/reference/javascript/)
     
     Step 4 - Template
-    <form class="facebook_connect" action="{% url facebook_connect %}?facebook_login=1" method="post">
-        <a href="javascript:void(0);" onclick="F.connect(this.parentNode);">Register with facebook</a>
-        <input type="hidden" name="next" value="/">
-    </form>
-    
-    //see django_facebook/media/js/facebook.js for the F.connect implementation
+    See examples/connect.html
     
     
 [Facebook docs](http://developers.facebook.com/docs/)
