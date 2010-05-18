@@ -1,6 +1,7 @@
 from django_facebook.facebook import GraphAPI, GraphAPIError
 from django.core.mail import send_mail, mail_admins
 from django_facebook import settings as facebook_settings
+import datetime
 
 
 class FacebookAPI(GraphAPI):
@@ -49,33 +50,39 @@ class FacebookAPI(GraphAPI):
         Gets all registration data
         and ensures its correct input for a django registration
         '''
-        facebook_data = {}
-        original_facebook_data = {}
         if self.is_authenticated():
-            profile = self.facebook_profile_data()
+            facebook_profile_data = self.facebook_profile_data()
             try:
-                facebook_data = profile.copy()
-                original_facebook_data = profile.copy()
-                facebook_data['website_url'] = profile.get('website')
-                facebook_data['facebook_profile_url'] = profile.get('link')
-                facebook_data['facebook_name'] = profile.get('name')
-
-
-                facebook_data['username'] = FacebookAPI._retrieve_facebook_username(facebook_data)
-                if facebook_settings.FACEBOOK_FAKE_PASSWORD:
-                    facebook_data['password2'] = facebook_data['password1'] = FacebookAPI._generate_fake_password()
-
-                facebook_map = dict(birthday='date_of_birth', about='about_me', id='facebook_id')
-                for k, v in facebook_map.items():
-                    facebook_data[v] = facebook_data.get(k)
-
-                facebook_data['date_of_birth'] = FacebookAPI._parse_data_of_birth(facebook_data['date_of_birth'])
-
-                facebook_data['username'] = FacebookAPI._create_unique_username(facebook_data['username'])
+                user_data = FacebookAPI._convert_facebook_data(facebook_profile_data)
             except Exception, e:
-                FacebookAPI._report_broken_facebook_data(facebook_data, original_facebook_data, e)
+                FacebookAPI._report_broken_facebook_data(user_data, facebook_profile_data, e)
 
-        return facebook_data
+        return user_data
+
+    @classmethod
+    def _convert_facebook_data(self, facebook_profile_data):
+        '''
+        Takes facebook user data and converts it to a format for usage with Django
+        '''
+        user_data = facebook_profile_data.copy()
+        profile = facebook_profile_data.copy()
+        user_data['website_url'] = profile.get('website')
+        user_data['facebook_profile_url'] = profile.get('link')
+        user_data['facebook_name'] = profile.get('name')
+
+        user_data['username'] = FacebookAPI._retrieve_facebook_username(user_data)
+        if facebook_settings.FACEBOOK_FAKE_PASSWORD:
+            user_data['password2'] = user_data['password1'] = FacebookAPI._generate_fake_password()
+
+        facebook_map = dict(birthday='date_of_birth', about='about_me', id='facebook_id')
+        for k, v in facebook_map.items():
+            user_data[v] = user_data.get(k)
+
+        user_data['date_of_birth'] = FacebookAPI._parse_data_of_birth(user_data['date_of_birth'])
+
+        user_data['username'] = FacebookAPI._create_unique_username(user_data['username'])
+
+        return user_data
 
 
     @classmethod
@@ -92,10 +99,16 @@ class FacebookAPI(GraphAPI):
 
     @classmethod
     def _parse_data_of_birth(cls, data_of_birth_string):
-        import datetime
-        format = '%m/%d/%Y'
-        parsed_date = datetime.datetime.strptime(data_of_birth_string, format)
-        return parsed_date
+        if data_of_birth_string:
+            format = '%m/%d/%Y'
+            try:
+                parsed_date = datetime.datetime.strptime(data_of_birth_string, format)
+                return parsed_date
+            except ValueError:
+                #Facebook sometimes provides a partial date format ie 04/07 (ignore those)
+                if data_of_birth_string.count('/') != 1:
+                    raise
+
 
 
     @classmethod

@@ -24,7 +24,8 @@ def connect(request):
             else:
                 kwargs = {}
                 email = profile.get('email', False)
-                if email:
+                email_verified = profile.get('verified', False)
+                if email and email_verified:
                     kwargs = {'facebook_email': email}
                 authenticated_user = authenticate(facebook_id=profile['id'], **kwargs)
                 if authenticated_user:
