@@ -2,6 +2,7 @@ from django_facebook.facebook import GraphAPI, GraphAPIError
 from django.core.mail import send_mail, mail_admins
 from django_facebook import settings as facebook_settings
 import datetime
+from django.forms.util import ValidationError
 
 
 class FacebookAPI(GraphAPI):
@@ -39,8 +40,8 @@ class FacebookAPI(GraphAPI):
         '''
         if self._profile is None:
             profile = self.get_object('me')
-            profile['image'] = 'http://graph.facebook.com/me/picture?type=large&access_token=%s' % self.access_token
-            profile['image_thumb'] = 'http://graph.facebook.com/me/picture?access_token=%s' % self.access_token
+            profile['image'] = 'https://graph.facebook.com/me/picture?type=large&access_token=%s' % self.access_token
+            profile['image_thumb'] = 'https://graph.facebook.com/me/picture?access_token=%s' % self.access_token
             self._profile = profile
         return self._profile
 
@@ -60,13 +61,13 @@ class FacebookAPI(GraphAPI):
         return user_data
 
     @classmethod
-    def _convert_facebook_data(self, facebook_profile_data):
+    def _convert_facebook_data(cls, facebook_profile_data):
         '''
         Takes facebook user data and converts it to a format for usage with Django
         '''
         user_data = facebook_profile_data.copy()
         profile = facebook_profile_data.copy()
-        user_data['website_url'] = profile.get('website')
+        user_data['website_url'] = cls._extract_url(profile.get('website'))
         user_data['facebook_profile_url'] = profile.get('link')
         user_data['facebook_name'] = profile.get('name')
 
@@ -84,6 +85,37 @@ class FacebookAPI(GraphAPI):
 
         return user_data
 
+    @classmethod
+    def _extract_url(cls, text_url_field):
+        '''
+        >>> url_text = 'http://www.google.com blabla'
+        >>> FacebookAPI._extract_url(url_text)
+        u'http://www.google.com/'
+        
+        >>> url_text = 'http://www.google.com/'
+        >>> FacebookAPI._extract_url(url_text)
+        u'http://www.google.com/'
+        
+        >>> url_text = 'google.com/'
+        >>> FacebookAPI._extract_url(url_text)
+        u'http://google.com/'
+        
+        >>> url_text = 'http://www.fahiolista.com/www.myspace.com/www.google.com'
+        >>> FacebookAPI._extract_url(url_text)
+        u'http://www.fahiolista.com/www.myspace.com/www.google.com'
+        '''
+        import re
+        text_url_field = str(text_url_field)
+        seperation = re.compile('[ |,|;]+')
+        parts = seperation.split(text_url_field)
+        for part in parts:
+            from django.forms import URLField
+            url_check = URLField(verify_exists=False)
+            try:
+                clean_url = url_check.clean(part)
+                return clean_url
+            except ValidationError, e:
+                continue
 
     @classmethod
     def _generate_fake_password(cls):

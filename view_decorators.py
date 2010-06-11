@@ -3,7 +3,7 @@ from django import shortcuts as django_shortcuts
 from django import http
 from django.template import RequestContext
 from django.contrib.auth import decorators
-from framework.utils import partial
+from functools import partial
 from django_facebook import settings as facebook_settings
 
 

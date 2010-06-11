@@ -49,7 +49,7 @@ def _connect_user(request, facebook):
         user_fields = user._meta.fields
         profile_field_names = [f.name for f in profile_fields]
         user_field_names = [f.name for f in user_fields]
-        facebook_fields = ['facebook_name', 'facebook_profile_url', 'date_of_birth', 'about_me', 'facebook_id', 'website_url', 'image', 'first_name', 'last_name']
+        facebook_fields = ['facebook_name', 'facebook_profile_url', 'date_of_birth', 'about_me', 'facebook_id', 'website_url', 'first_name', 'last_name']
 
         for f in facebook_fields:
             facebook_value = facebook_data.get(f, False)
@@ -58,7 +58,6 @@ def _connect_user(request, facebook):
                     setattr(profile, f, facebook_value)
                 elif f in user_field_names and not getattr(user, f, False):
                     setattr(user, f, facebook_value)
-
 
         profile.save()
         user.save()
