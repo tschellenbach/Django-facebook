@@ -18,7 +18,7 @@ Login and registration functionality using the new facebook open graph api.
 
 ### Step 1 - Settings
 
-Define the settings in django_facebook/settings.py in your settings.py file
+Define the settings in `django_facebook/settings.py` in your `settings.py` file.
         
 ### Step 2 - Url config
 
@@ -26,7 +26,7 @@ add
 
     (r'^facebook/', include('django_facebook.urls')),
 
-to your global url.py file 
+to your global `url.py` file.
         
 ### Step 3 - Ensure the FB JS api is available on all pages you want to login
 
@@ -47,6 +47,6 @@ Add to your user profile model
     
 ### Step 5 - Template
 
-See examples/connect.html
+See `examples/connect.html`.
         
 For more details, see the [Facebook docs](http://developers.facebook.com/docs/).
