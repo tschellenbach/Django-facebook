@@ -24,7 +24,7 @@ Define the settings in `django_facebook/settings.py` in your `settings.py` file.
 
 add 
 
-    (r'^facebook/', include('django_facebook.urls')),
+    url(r'^facebook/', include('django_facebook.urls')),
 
 to your global `url.py` file.
         
