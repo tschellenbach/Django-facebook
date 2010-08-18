@@ -1,32 +1,26 @@
-Django Facebook by Thierry Schellenbach (http://www.mellowmorning.com)
-======================================================================
+# Django Facebook by Thierry Schellenbach (http://www.mellowmorning.com)
 
 Login and registration functionality using the new facebook open graph api.
 
 * Actually creates user models and profiles
 * Robust facebook user data -> django account conversion
 
-Required django apps
---------------------
+## Required django apps
 
 * django.contrib.auth (Django core app, included)
 * django-registration
     
-Additional dependencies
------------------------ 
+## Additional dependencies 
 
 * python-cjson
     
-Implementation
---------------
+## Implementation
 
-Step 1 - Settings
------------------
+### Step 1 - Settings
 
 Define the settings in django_facebook/settings.py in your settings.py file
         
-Step 2 - Url config
--------------------
+### Step 2 - Url config
 
 add 
 
@@ -34,13 +28,11 @@ add
 
 to your global url.py file 
         
-Step 3 - Ensure the FB JS api is available on all pages you want to login
--------------------------------------------------------------------------
+### Step 3 - Ensure the FB JS api is available on all pages you want to login
 
 [Facebook JS API](http://developers.facebook.com/docs/reference/javascript/)
     
-Step 4 - Update your models
----------------------------
+### Step 4 - Update your models
         
 Add to your user profile model
 
@@ -53,8 +45,7 @@ Add to your user profile model
     image = models.ImageField(blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     
-Step 5 - Template
------------------
+### Step 5 - Template
 
 See examples/connect.html
         
