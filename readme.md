@@ -5,11 +5,14 @@ Login and registration functionality using the new facebook open graph api.
 - Actually creates user models and profiles
 - Robust facebook user data -> django account conversion
 
-Requires:
+Required django apps:
 
-    django registration
-    django auth
-    cjson
+    django.contrib.auth (Django core app, included)
+    django-registration
+    
+Additional dependencies: 
+
+    python-cjson
     
 Implementation:
 
