@@ -1,9 +1,12 @@
 #!/usr/bin/env python
-from distutils.core import setup
-import django_facebook
 
-LONG_DESCRIPTION = """Facebook open graph API auth backend implementation using 
-the Django web framework and python."""
+import os
+from distutils.core import setup
+from django_facebook import __version__, __maintainer__, __email__
+
+
+license_text = open('LICENSE.txt').read()
+long_description = open('README.md').read()
 
 CLASSIFIERS = [
                 'Development Status :: 4 - Beta',
@@ -16,18 +19,24 @@ CLASSIFIERS = [
                 'Topic :: Software Development :: Libraries :: Python Modules' 
               ]
 
-KEYWORDS = 'color math conversions'
+DESCRIPTION = """Facebook open graph API auth backend implementation using 
+the Django web framework and python."""
 
-setup(name='django-facebook',
-      version=django_facebook.VERSION,
-      description='Facebook Open graph API auth backend for Django..',
-      long_description = LONG_DESCRIPTION,
-      author='Thierry Schellenbach',
-      url='http://github.com/tschellenbach/Django-facebook',
-      packages=['django_facebook'],
-      platforms = ['Platform Independent'],
-      license = 'GPLv3',
-      classifiers = CLASSIFIERS,
-      keywords = KEYWORDS,
-      requires = ['django-registration']
-     )
+
+setup(
+    name = 'django-facebook',
+    version = __version__,
+    url = 'http://github.com/tschellenbach/Django-facebook',
+    author = __maintainer__,
+    author_email = __email__,
+    license = license_text,
+    packages = ['django_facebook'],
+    data_files=[('', ['LICENSE.txt',
+                      'README.rst'])],
+    description = DESCRIPTION,
+    long_description=long_description,
+    classifiers = CLASSIFIERS
+)
+
+
+
