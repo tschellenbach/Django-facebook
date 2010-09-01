@@ -1,2 +1,4 @@
 .svn
 *.pyc
+.pydevproject
+.project
