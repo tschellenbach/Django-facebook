@@ -53,6 +53,7 @@ class FacebookAPI(GraphAPI):
         '''
         if self.is_authenticated():
             facebook_profile_data = self.facebook_profile_data()
+            user_data = {}
             try:
                 user_data = FacebookAPI._convert_facebook_data(facebook_profile_data)
             except Exception, e:
@@ -70,6 +71,10 @@ class FacebookAPI(GraphAPI):
         user_data['website_url'] = cls._extract_url(profile.get('website'))
         user_data['facebook_profile_url'] = profile.get('link')
         user_data['facebook_name'] = profile.get('name')
+        if len(user_data.get('email', '')) > 75:
+            #no more fake email accounts for facebook
+            del user_data['email']
+        
 
         user_data['username'] = FacebookAPI._retrieve_facebook_username(user_data)
         if facebook_settings.FACEBOOK_FAKE_PASSWORD:
