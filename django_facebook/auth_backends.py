@@ -1,5 +1,7 @@
 from django.contrib.auth import models, backends
-from user import models as models_user
+from django.contrib.contenttype.models import ContentType
+from django.conf import settings
+#from user import models as models_user
 from django.db.models.query_utils import Q
 
 
@@ -20,10 +22,16 @@ class FacebookBackend(backends.ModelBackend):
                 filter_clause = email_filter
 
         if filter_clause:
-            profiles = models_user.Profile.objects.filter(filter_clause).order_by('user')[:1]
-            if profiles:
-                user = profiles[0].user
-                return user
+            profile_string = settings.get('AUTH_PROFILE_MODULE', None)
+            if profile_string:
+                profile_model = profile_string.split('.')[-1]
+                profile_class = ContentType.objects.get(model=profile_model).model_class()
+                profiles = profile_class.objects.filter(filter_clause).order_by('user')[:1]
+                if profiles:
+                    user = profiles[0].user
+                    return user
+            else:
+                raise KeyError
 
 
 
