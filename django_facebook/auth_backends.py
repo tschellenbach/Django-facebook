@@ -28,7 +28,7 @@ class FacebookBackend(backends.ModelBackend):
                 profile_string = None
             if profile_string:
                 profile_model = profile_string.split('.')[-1]
-                profile_class = ContentType.objects.get(model=profile_model).model_class()
+                profile_class = ContentType.objects.get(model=profile_model.lower()).model_class()
                 profiles = profile_class.objects.filter(filter_clause).order_by('user')[:1]
                 if profiles:
                     user = profiles[0].user
