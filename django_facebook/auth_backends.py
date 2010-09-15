@@ -22,7 +22,10 @@ class FacebookBackend(backends.ModelBackend):
                 filter_clause = email_filter
 
         if filter_clause:
-            profile_string = settings.AUTH_PROFILE_MODULE or None
+            try:
+                profile_string = settings.AUTH_PROFILE_MODULE
+            except AttributeError:
+                profile_string = None
             if profile_string:
                 profile_model = profile_string.split('.')[-1]
                 profile_class = ContentType.objects.get(model=profile_model).model_class()
