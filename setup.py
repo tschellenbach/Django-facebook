@@ -35,7 +35,8 @@ setup(
                       'README.rst'])],
     description = DESCRIPTION,
     long_description=long_description,
-    classifiers = CLASSIFIERS
+    classifiers = CLASSIFIERS,
+    install_requires = ('python-cjson', 'django-registration', 'PIL'),
 )
 
 
