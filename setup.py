@@ -16,10 +16,10 @@ CLASSIFIERS = [
                 'Operating System :: OS Independent',
                 'Programming Language :: Python',
                 'Topic :: Scientific/Engineering :: Mathematics',
-                'Topic :: Software Development :: Libraries :: Python Modules' 
+                'Topic :: Software Development :: Libraries :: Python Modules'
               ]
 
-DESCRIPTION = """Facebook open graph API auth backend implementation using 
+DESCRIPTION = """Facebook open graph API auth backend implementation using
 the Django web framework and python."""
 
 
@@ -32,7 +32,7 @@ setup(
     license = license_text,
     packages = ['django_facebook'],
     data_files=[('', ['LICENSE.txt',
-                      'README.rst'])],
+                      'README.md'])],
     description = DESCRIPTION,
     long_description=long_description,
     classifiers = CLASSIFIERS,
