@@ -3,8 +3,10 @@ from django.contrib import auth
 from django.http import HttpResponseRedirect
 from django_facebook.utils import next_redirect
 from django_facebook.view_decorators import fashiolista_env
+from django.views.decorators.csrf import csrf_exempt
 
 
+@csrf_exempt
 @fashiolista_env
 def connect(request):
     '''
