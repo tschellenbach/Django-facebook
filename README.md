@@ -42,8 +42,8 @@ Add a post_save signal handler for django.contrib.auth.models.User like:
 from django.contrib.auth.models import User
 def create_profile(sender, instance, created, **kwargs):
     if created == True:
-        profilo = YourProfileModel(user=instance.id)
-        profilo.save()
+        profile = YourProfileModel(user=instance)
+        profile.save()
 post_save.connect(create_profile, sender=User)
 
 In settings.py assing your model name to AUTH_PROFILE_MODULE.
