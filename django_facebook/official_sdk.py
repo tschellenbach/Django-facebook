@@ -140,7 +140,6 @@ class GraphAPI(object):
              "caption": "{*actor*} posted a new review",
              "description": "This is a longer description of the attachment",
              "picture": "http://www.example.com/thumbnail.jpg"}
-
         """
         return self.put_object(profile_id, "feed", message=message, **attachment)
 

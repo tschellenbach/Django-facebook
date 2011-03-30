@@ -34,7 +34,7 @@ setup(
     license = license_text,
     packages = ['django_facebook'],
     data_files=[('', ['LICENSE.txt',
-                      'README.md'])],
+                      'README.rest'])],
     description = DESCRIPTION,
     long_description=long_description,
     classifiers = CLASSIFIERS,
