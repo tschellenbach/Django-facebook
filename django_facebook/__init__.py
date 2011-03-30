@@ -4,7 +4,23 @@ __credits__ = ['Thierry Schellenbach, mellowmorning.com']
 
 
 __license__ = 'BSD'
-__version__ = '2.0.1'
+__version__ = '2.0.3'
 __maintainer__ = 'Thierry Schellenbach'
 __email__ = 'thierryschellenbach@gmail.com'
 __status__ = 'Production'
+
+'''
+Some links which help me with publishing this code
+
+rest editor
+http://rst.ninjs.org/
+
+updating pypi
+python setup.py sdist upload
+http://pypi.python.org/pypi
+
+setting up pip for editing
+http://www.pip-installer.org/en/latest/index.html
+pip install -e ./
+
+'''

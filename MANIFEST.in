@@ -1,2 +1,2 @@
-LICENSE.txt
-recursive-include examples *.html *.txt *.py *.js
+include README.rest
+include LICENSE.txt
