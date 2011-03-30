@@ -1,10 +1,9 @@
-############################################
+######################################################################
 Django Facebook by Thierry Schellenbach (http://www.mellowmorning.com)
-############################################
+######################################################################
 
 About Django Facebook
---------
-
+---------------------
 Django Facebook allows you to connect to the Facebook Open Graph API.
 
 Features
@@ -15,8 +14,8 @@ Features
 Works best with
 --------
 
-	registration
-    django auth
+	* registration
+    * django auth
     
 TODO (help appreciated)
 --------
