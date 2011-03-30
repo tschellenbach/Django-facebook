@@ -1,6 +1,6 @@
 *.svn
 *.pyc
-*.tmp
+.tmp*
 .pydevproject
 .project
 build
