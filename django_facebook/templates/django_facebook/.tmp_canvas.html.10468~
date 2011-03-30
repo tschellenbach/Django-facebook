@@ -1,0 +1,36 @@
+{% if not facebook.is_authenticated and not request.GET.code %}
+{{ auth_url }}
+
+<script>
+	var authUrl = '{{ auth_url|safe }}';
+	top.location.href=authUrl;
+</script>
+
+{% endif %}
+
+
+
+{% if facebook.is_authenticated %} 
+
+{% endif %}
+
+<div id="fb-root">
+	
+	<!--<fb:login-button perms="email,offline_access" show-faces="true"></fb:login-button>-->
+	
+	
+	
+</div>
+
+<iframe src="http://www.facebook.com/plugins/facepile.php?app_id=100314226679773&amp;width=500&amp;max_rows=1" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:500px;" allowTransparency="true"></iframe>
+
+
+<div id="name"></div>
+
+<script src="{{ MEDIA_URL }}/js/original/facebook.js"></script>
+<script>
+	F.load();
+</script>
+				 
+				 
+				 

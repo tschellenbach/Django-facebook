@@ -1,8 +1,8 @@
+from django.conf import settings
 from django.contrib.auth import models, backends
 from django.contrib.contenttypes.models import ContentType
-from django.conf import settings
-#from user import models as models_user
 from django.db.models.query_utils import Q
+#from user import models as models_user
 
 
 class FacebookBackend(backends.ModelBackend):
@@ -36,6 +36,3 @@ class FacebookBackend(backends.ModelBackend):
                     return user
             else:
                 raise KeyError
-
-
-

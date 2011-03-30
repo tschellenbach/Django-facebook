@@ -1,109 +1,86 @@
-from django.contrib.auth import authenticate, login
-from django.contrib import auth
+from django.contrib import messages
 from django.http import HttpResponseRedirect
-from django_facebook.utils import next_redirect
-from django_facebook.view_decorators import fashiolista_env
+from django.shortcuts import render_to_response, render_to_response
+from django.template.context import RequestContext, RequestContext
+from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
+from django_facebook import exceptions as facebook_exceptions, \
+    settings as facebook_settings
+from django_facebook.api import get_facebook_graph, get_facebook_graph
+from django_facebook.canvas import generate_oauth_url
+from django_facebook.connect import CONNECT_ACTIONS, connect_user
+from django_facebook.utils import next_redirect
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
-@fashiolista_env
 def connect(request):
     '''
-    Connect a user if it is authenticated
+    Handles the view logic around connect user
+    - (if authenticated) connect the user
+    - login
+    - register
     
-    Else
-        Login or registers the given facebook user
-        Redirects to a registration form if the data is invalid or incomplete
+    
     '''
+    context = RequestContext(request)
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
+    
     if facebook_login:
-        facebook = request.facebook()
+        facebook = get_facebook_graph(request)
         if facebook.is_authenticated():
-            profile = facebook.facebook_profile_data()
-            if request.user.is_authenticated():
-                return _connect_user(request, facebook)
-            else:
-                kwargs = {}
-                email = profile.get('email', False)
-                email_verified = profile.get('verified', False)
-                if email and email_verified:
-                    kwargs = {'facebook_email': email}
-                authenticated_user = authenticate(facebook_id=profile['id'], **kwargs)
-                if authenticated_user:
-                    return _login_user(request, facebook, authenticated_user, update=getattr(authenticated_user, 'fb_update_required', False))
-                else:
-                    return _register_user(request, facebook, authenticated_user)
+            facebook_data = facebook.facebook_profile_data()
+            #either, login register or connect the user
+            try:
+                action, user = connect_user(request)
+            except facebook_exceptions.IncompleteProfileError, e:
+                logger.error(unicode(e))
+                context['facebook_mode'] = True
+                context['form'] = e.form
+                return render_to_response('registration/registration_form.html', context)
+                
+            if action is CONNECT_ACTIONS.CONNECT:
+                messages.info(request, _("You have connected your account to %s's facebook profile") % facebook_data['name'])
+            elif action is CONNECT_ACTIONS.REGISTER:
+                member_overview_url = user.get_profile().url['overview']
+                response = HttpResponseRedirect(member_overview_url)
+                response.set_cookie('fresh_registration', user.id)
+                return response
         else:
-            return next_redirect(request)
+            return next_redirect(request, additional_params=dict(fb_error_or_cancel=1))
+            
+        return next_redirect(request)
+
+    return render_to_response('django_facebook/connect.html', context)
 
 
-def _connect_user(request, facebook):
-    if not request.user.is_authenticated():
-        raise ValueError, 'Connect user can only be used on authenticated users'
-    if facebook.is_authenticated():
-        facebook_data = facebook.facebook_registration_data()
-        request.notifications.success("You have connected your account to %s's facebook profile" % facebook_data['name'])
-        profile = request.user.get_profile()
-        user = request.user
-        #update the fields in the profile
-        profile_fields = profile._meta.fields
-        user_fields = user._meta.fields
-        profile_field_names = [f.name for f in profile_fields]
-        user_field_names = [f.name for f in user_fields]
-        facebook_fields = ['facebook_name', 'facebook_profile_url', 'date_of_birth', 'about_me', 'facebook_id', 'website_url', 'first_name', 'last_name']
-
-        for f in facebook_fields:
-            facebook_value = facebook_data.get(f, False)
-            if facebook_value:
-                if f in profile_field_names and not getattr(profile, f, False):
-                    setattr(profile, f, facebook_value)
-                elif f in user_field_names and not getattr(user, f, False):
-                    setattr(user, f, facebook_value)
-
-        profile.save()
-        user.save()
-
-    return next_redirect(request)
+@csrf_exempt
+def canvas(request):
+    context = RequestContext(request)
+    
+    context['auth_url'] = generate_oauth_url()
+    context['facebook'] = fb = get_facebook_graph(request)
+    
+    if fb.is_authenticated():
+        likes = context['facebook'].get_connections("me", "likes", limit=3)
+        print likes
+    
+    return render_to_response('django_facebook/canvas.html', context)
 
 
-def _login_user(request, facebook, authenticated_user, update=False):
-    login(request, authenticated_user)
+@csrf_exempt
+def my_style(request):
+    context = RequestContext(request)
+    
+    context['auth_url'] = generate_oauth_url()
+    context['facebook'] = fb = get_facebook_graph(request)
+    
+    return render_to_response('django_facebook/my_style.html', context)
 
-    if update:
-        _connect_user(request, facebook)
+    
+    
 
-    return next_redirect(request)
-
-
-def _register_user(request, facebook, authenticated_user, profile_callback=None):
-    request.template = 'registration/registration_form.html'
-    request.context['facebook_mode'] = True
-    facebook_data = {}
-    from registration.forms import RegistrationFormUniqueEmail
-    form_class = RegistrationFormUniqueEmail
-    if facebook.is_authenticated():
-        request.context['facebook_data'] = facebook_data = facebook.facebook_registration_data()
-
-    if request.method == 'POST':
-        data = request.POST.copy()
-        for k, v in facebook_data.items():
-            if not data.get(k):
-                data[k] = v
-
-        form = form_class(data=data, files=request.FILES,
-            initial={'ip': request.META['REMOTE_ADDR']})
-
-        if form.is_valid():
-            new_user = form.save(profile_callback=profile_callback)
-            auth.login(request, new_user)
-            member_overview_url = new_user.get_profile().url['overview']
-            return HttpResponseRedirect(member_overview_url)
-    else:
-        initial = facebook_data.copy()
-        initial.update(request.GET.items())
-        form = form_class(initial=initial)
-
-    request.context['form'] = form
-
+    
 

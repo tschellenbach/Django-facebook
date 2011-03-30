@@ -1,0 +1,115 @@
+
+
+<html><head>
+	<title>Connect with Facebook</title>
+	<style>
+		body {
+			margin:50px 0px; padding:0px; /* Need to set body margin and padding to get consistency between browsers. */
+			text-align:center; /* Hack for IE5/Win */
+			background-color:#000;
+		    color: #333333;
+		    direction: ltr;
+		    font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
+		    font-size: 11px;
+		    text-align: left;
+		}
+		
+		#footer {
+			height: 80px;	
+		}
+		
+		.content {
+			width:500px;
+			margin:0px auto; /* Right and left margin widths set to "auto" */
+			text-align:left; /* Counteract to IE5/Win Hack */
+			padding:15px;
+			border:1px solid #333;
+			background-color:white;
+		}
+		.error {
+			border: 1px solid red;
+			margin-top: 10px;
+			padding: 20px;
+		}
+		h2 {
+		    line-height: 20px;
+		    min-height: 20px;
+		    padding-bottom: 2px;
+		    vertical-align: bottom;
+			color: #1C2A47;
+    		font-size: 16px;
+		}
+		a {
+			color: #3B5998;
+		    cursor: pointer;
+		    text-decoration: none;
+		}
+	</style>
+	
+	
+</head><body>
+<div id="fb-root"></div>
+
+<script src="{{ MEDIA_URL }}js/original/facebook.js" type="text/javascript"></script>
+<script>
+	facebookAppId = '{{ FACEBOOK_APP_ID }}';
+	function facebookJSLoaded(){
+		FB.init({appId: facebookAppId, status: false, cookie: true, xfbml: true});
+	}
+	window.fbAsyncInit = facebookJSLoaded;
+	F = new facebookClass(facebookAppId);
+    F.load();
+</script>
+
+
+{% block content %}
+    <div class="content">
+    	<h2>Django Facebook - Test page</h2>
+		<p>By Thierry Schellenbach
+			<a href="http://www.mellowmorning.com/">mellowmorning.com</a>, <a href="http://twitter.com/tschellenbach">@tschellenbach</a>
+		</p>
+	</div>
+	<div class="content" style="margin-top: 10px;">
+		{% if request.GET.fb_error_or_cancel %}
+			<div class="error">
+				Please click allow in the facebook interface, to access Fashiolista
+			</div>
+		{% endif %}
+		<div style="margin-top: 60px;">
+            <div class="inner_content">
+                <form action="{% url facebook_connect %}?facebook_login=1" method="post">
+		            <a href="javascript:void(0);" style="font-size: 20px;" onclick="F.connect(this.parentNode);">Register, login or connect with facebook</a>
+					<input type="hidden" value="{{ request.path }}" name="next" />
+		        </form>
+				<iframe src="http://www.facebook.com/plugins/facepile.php?app_id={{ FACEBOOK_APP_ID }}&amp;width=500&amp;max_rows=1" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:500px;" allowTransparency="true"></iframe>
+            </div>
+		</div>
+		
+		<div id="footer">
+			<div>
+			{% if request.user.is_authenticated %}
+				Hello {{ request.user }}, <a href="{% url django.contrib.auth.views.logout %}?next={{ request.path|urlencode }}">logout</a>
+			{% else %}
+				You are not logged in, Please login by clicking the link above
+			{% endif %}
+			</div>
+	        <div style="float: right;">
+		        <form action="{% url facebook_connect %}?facebook_login=1" method="post">
+		            <a href="javascript:void(0);" onclick="F.connect(this.parentNode);">Test fresh registration</a>
+					<input type="hidden" value="{{ request.path }}" name="next" />
+					<input type="hidden" value="1" name="force_registration_hard" />
+		        </form>
+		        <form action="{% url facebook_connect %}?facebook_login=1" method="post">
+		            <a href="javascript:void(0);" onclick="F.connect(this.parentNode);">Test registration</a>
+					<input type="hidden" value="{{ request.path }}" name="next" />
+					<input type="hidden" value="1" name="force_registration" />
+		        </form>
+			</div>
+		</div>
+		
+		
+	</div>
+{% endblock %}
+
+
+</body></html>

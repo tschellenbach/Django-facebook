@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+
 
 class FacebookProfileModel(models.Model):
     '''
@@ -8,7 +8,6 @@ class FacebookProfileModel(models.Model):
     NOTE: If you don't use this this abstract class, make sure you copy/paste
     the fields in.
     '''
-    user = models.OneToOneField(User)
     about_me = models.TextField(blank=True, null=True)
     facebook_id = models.IntegerField(blank=True, null=True)
     facebook_name = models.CharField(max_length=255, blank=True, null=True)
@@ -19,7 +18,7 @@ class FacebookProfileModel(models.Model):
     date_of_birth = models.DateField(blank=True, null=True)
 
     def __unicode__(self):
-       return self.user.__unicode__()
+        return self.user.__unicode__()
     
     class Meta:
         abstract = True

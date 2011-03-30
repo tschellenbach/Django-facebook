@@ -1,0 +1,29 @@
+<html>
+	<head>
+		{% if not facebook.is_authenticated and not request.GET.code %}
+			{{ auth_url }}
+			<script>
+				var authUrl = '{{ auth_url|safe }}';
+				top.location.href=authUrl;
+			</script>
+		{% endif %}
+	</head>
+	<body>
+		
+		{% block content %}
+		
+		{% endblock %}
+	
+	
+	<script src="{{ MEDIA_URL }}/js/original/facebook.js"></script>
+	<script>
+		facebookAppId = '{{ FACEBOOK_APP_ID }}';
+		function facebookJSLoaded(){
+			FB.init({appId: facebookAppId, status: false, cookie: true, xfbml: true});
+		}
+		window.fbAsyncInit = facebookJSLoaded;
+		F = new facebookClass(facebookAppId);
+	    F.load();
+	</script>
+	</body>
+</html>

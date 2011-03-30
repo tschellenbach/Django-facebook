@@ -19,8 +19,10 @@ CLASSIFIERS = [
                 'Topic :: Software Development :: Libraries :: Python Modules'
               ]
 
-DESCRIPTION = """Facebook open graph API auth backend implementation using
-the Django web framework and python."""
+DESCRIPTION = """Facebook open graph API client in python. Enables django applications to register users using facebook.
+Fixes issues with the official but unsupported Facebook python-sdk. Enables mobile facebook authentication.
+Canvas page authentication for facebook applications. FQL access via the server side api. 
+"""
 
 
 setup(
@@ -36,8 +38,12 @@ setup(
     description = DESCRIPTION,
     long_description=long_description,
     classifiers = CLASSIFIERS,
-    install_requires = ('python-cjson', 'django-registration', 'PIL'),
+    #install_requires = ('django-registration',),
 )
+
+
+
+
 
 
 
