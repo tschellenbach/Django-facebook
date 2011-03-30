@@ -100,8 +100,8 @@ I recommend that you insert this code at the bottom of your page.
 
 ::
 
-<script src="{{ MEDIA_URL }}js/original/facebook.js" type="text/javascript"></script>
-<script>
+    <script src="{{ MEDIA_URL }}js/original/facebook.js" type="text/javascript"></script>
+    <script>
     facebookAppId = '{{ FACEBOOK_APP_ID }}';
     function facebookJSLoaded(){
     FB.init({appId: facebookAppId, status: false, cookie: true, xfbml: true});
@@ -109,7 +109,7 @@ I recommend that you insert this code at the bottom of your page.
     window.fbAsyncInit = facebookJSLoaded;
     F = new facebookClass(facebookAppId);
     F.load();
-</script>
+    </script>
 
 Subsequently implement a form which calls Facebook via javascript.
 
