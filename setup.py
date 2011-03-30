@@ -3,7 +3,10 @@
 import os
 from distutils.core import setup
 from django_facebook import __version__, __maintainer__, __email__
-
+try:
+    from setuptools import setup, find_packages
+except ImportError:
+    from distutils.core import setup, find_packages
 
 license_text = open('LICENSE.txt').read()
 long_description = open('README.rest').read()
@@ -32,7 +35,7 @@ setup(
     author = __maintainer__,
     author_email = __email__,
     license = license_text,
-    packages = ['django_facebook'],
+    packages=find_packages(),
     data_files=[('', ['LICENSE.txt',
                       'README.rest'])],
     description = DESCRIPTION,
