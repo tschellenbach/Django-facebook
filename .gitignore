@@ -1,5 +1,7 @@
-.svn
+*.svn
 *.pyc
+*.tmp
 .pydevproject
 .project
-.tmp
+build
+dist

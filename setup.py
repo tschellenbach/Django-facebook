@@ -6,7 +6,7 @@ from django_facebook import __version__, __maintainer__, __email__
 
 
 license_text = open('LICENSE.txt').read()
-long_description = open('README.md').read()
+long_description = open('README.rest').read()
 
 CLASSIFIERS = [
                 'Development Status :: 4 - Beta',
