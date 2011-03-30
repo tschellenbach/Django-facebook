@@ -23,7 +23,6 @@ def connect(request):
     - login
     - register
     
-    
     '''
     context = RequestContext(request)
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
