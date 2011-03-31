@@ -4,6 +4,7 @@ from django_facebook import exceptions as facebook_exceptions
 from django_facebook.api import get_facebook_graph
 from random import randint
 import logging
+from django.utils import simplejson as json
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +87,10 @@ def _connect_user(request, facebook):
             elif f in user_field_names and not getattr(user, f, False):
                 setattr(user, f, facebook_value)
 
+    if hasattr(profile, 'raw_data'):
+        serialized_fb_data = json.dumps(facebook.facebook_profile_data())
+        profile.raw_data = serialized_fb_data
+
     profile.save()
     user.save()
 
@@ -125,13 +130,22 @@ def _register_user(request, facebook, profile_callback=None):
     if new_reg_module:
         #support for the newer implementation
         try:
+            from django.conf import settings
             backend = get_backend(settings.REGISTRATION_BACKEND)
         except:
             raise ValueError, 'Cannot get django-registration backend from settings.REGISTRATION_BACKEND'
         new_user = backend.register(request, **form.cleaned_data)
     else:
         new_user = form.save(profile_callback=profile_callback)
+    profile = new_user.get_profile()
+    if hasattr(profile, 'raw_data'):
+        serialized_fb_data = json.dumps(facebook.facebook_profile_data())
+        profile.raw_data = serialized_fb_data
+        profile.save()
+        
     auth.login(request, new_user)
+    
+    
     
 
     return new_user
