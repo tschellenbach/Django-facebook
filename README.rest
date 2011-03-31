@@ -114,6 +114,7 @@ I recommend that you insert this code at the bottom of your page.
     </script>
 
 Subsequently implement a form which calls Facebook via javascript.
+Note that you can control which page to go to after connect using the next input field.
 
 ::
 
