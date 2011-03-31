@@ -68,14 +68,12 @@ Define the following settings in your settings.py file:
 
 ::
 
-add this line to your url config
-(r'^facebook/', include('django_facebook.urls')),
-
-add this line to your context processors
-'django_facebook.context_processors.facebook',
-
-add this to your AUTHENTICATION_BACKENDS
-'django_facebook.auth_backends.FacebookBackend',
+    add this line to your url config
+    (r'^facebook/', include('django_facebook.urls')),
+    add this line to your context processors
+    'django_facebook.context_processors.facebook',
+    add this to your AUTHENTICATION_BACKENDS
+    'django_facebook.auth_backends.FacebookBackend',
 
 **Update your models**
 
@@ -94,7 +92,13 @@ Add the following fields to your profile model:
 
 An abstract model is specified for convenience django_facebook/models.py FacebookProfileModel
     
-**Configure the template**
+**Check the example**
+
+Right now you should have a working registration/connect/login in flow available at /facebook/connect/
+Test if everything is working and ensure you didn't miss a step somewhere.
+If it isn't working please open an issue.
+
+**Customize and integrate into your site**
 
 This is the hardest step of the install. 
 For an example you can look at connect.html in the templates directory.
