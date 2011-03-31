@@ -137,11 +137,13 @@ def _register_user(request, facebook, profile_callback=None):
         new_user = backend.register(request, **form.cleaned_data)
     else:
         new_user = form.save(profile_callback=profile_callback)
+    
     profile = new_user.get_profile()
+    profile.date_of_birth = facebook_data.get('date_of_birth')
     if hasattr(profile, 'raw_data'):
         serialized_fb_data = json.dumps(facebook.facebook_profile_data())
         profile.raw_data = serialized_fb_data
-        profile.save()
+    profile.save()
         
     auth.login(request, new_user)
     
