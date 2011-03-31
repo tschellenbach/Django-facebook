@@ -10,6 +10,10 @@ FACEBOOK_APP_SECRET = getattr(settings, 'FACEBOOK_APP_SECRET', None)
 FACEBOOK_CANVAS_PAGE = getattr(settings, 'FACEBOOK_CANVAS_PAGE', 'http://apps.facebook.com/fashiolista_test/')
 
 
+
+#These you don't need to change
+FACEBOOK_HIDE_CONNECT_TEST = getattr(settings, 'FACEBOOK_HIDE_CONNECT_TEST', True)
+
 #check for required settings
 required_settings = ['FACEBOOK_API_KEY', 'FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET']
 locals_dict = locals()
