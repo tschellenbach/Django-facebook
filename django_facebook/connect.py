@@ -27,7 +27,8 @@ def connect_user(request, access_token=None):
     assert facebook.is_authenticated()
     facebook_data = facebook.facebook_profile_data()
     force_registration = request.REQUEST.get('force_registration') or request.REQUEST.get('force_registration_hard')
-    print force_registration
+    
+    logger.debug('force registration is set to %s', force_registration)
     if request.user.is_authenticated() and not force_registration:
         action = CONNECT_ACTIONS.CONNECT
         user = _connect_user(request, facebook)

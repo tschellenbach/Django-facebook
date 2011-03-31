@@ -64,7 +64,7 @@ def canvas(request):
     
     if fb.is_authenticated():
         likes = context['facebook'].get_connections("me", "likes", limit=3)
-        print likes
+        logger.info('found these likes %s', likes)
     
     return render_to_response('django_facebook/canvas.html', context)
 
