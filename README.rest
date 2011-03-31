@@ -68,6 +68,8 @@ Define the following settings in your settings.py file:
 
 ::
 
+	add django facebook to your installed apps
+	'django_facebook',
     add this line to your url config
     (r'^facebook/', include('django_facebook.urls')),
     add this line to your context processors
