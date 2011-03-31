@@ -8,6 +8,8 @@ Please contribute code :)
 
 This project is actively maintained and I appreciate improvements to the code.
 
+Contact me here or `@tschellenbach <http://www.twitter.com/tschellenbach>`_
+
 New in Version 2.0 Alpha
 ------------------------
 * canvas page support for facebook applications
