@@ -1,5 +1,6 @@
+from django.conf import settings
 from django.contrib import messages
-from django.http import HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render_to_response, render_to_response
 from django.template.context import RequestContext, RequestContext
 from django.utils.translation import ugettext as _
@@ -52,6 +53,9 @@ def connect(request):
             
         return next_redirect(request)
 
+    if not settings.DEBUG:
+        raise Http404, 'This page is hidden in production usage, only submit to it'
+    
     return render_to_response('django_facebook/connect.html', context)
 
 
