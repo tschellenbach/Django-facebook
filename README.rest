@@ -70,10 +70,8 @@ Define the following settings in your settings.py file:
 
 add this line to your url config
 (r'^facebook/', include('django_facebook.urls')),
-
 add this line to your context processors
 'django_facebook.context_processors.facebook',
-
 add this to your AUTHENTICATION_BACKENDS
 'django_facebook.auth_backends.FacebookBackend',
 
