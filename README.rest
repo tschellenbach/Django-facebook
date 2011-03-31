@@ -81,14 +81,14 @@ Add the following fields to your profile model:
 
 ::
 
-        about_me = models.TextField(blank=True, null=True)
-        facebook_id = models.IntegerField(blank=True, null=True)
-        facebook_name = models.CharField(max_length=255, blank=True, null=True)
-        facebook_profile_url = framework_fields.URLTextField(blank=True, null=True)
-        website_url = framework_fields.URLTextField(blank=True, null=True)
-        blog_url = framework_fields.URLTextField(blank=True, null=True)
-        image = models.ImageField(blank=True, null=True)
-        date_of_birth = models.DateField(blank=True, null=True)
+    about_me = models.TextField(blank=True, null=True)
+    facebook_id = models.IntegerField(blank=True, null=True)
+    facebook_name = models.CharField(max_length=255, blank=True, null=True)
+    facebook_profile_url = models.TextField(blank=True, null=True)
+    website_url = models.TextField(blank=True, null=True)
+    blog_url = models.TextField(blank=True, null=True)
+    image = models.ImageField(blank=True, null=True, upload_to='profile_images')
+    date_of_birth = models.DateField(blank=True, null=True)
 
 An abstract model is specified for convenience django_facebook/models.py FacebookProfileModel
     
