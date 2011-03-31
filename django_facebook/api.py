@@ -176,7 +176,11 @@ class FacebookAPI(GraphAPI):
         for k, v in facebook_map.items():
             user_data[v] = user_data.get(k)
 
+        if not user_data['about_me'] and user_data.get('quotes'):
+            user_data['about_me'] = user_data.get('quotes')
+            
         user_data['date_of_birth'] = FacebookAPI._parse_data_of_birth(user_data['date_of_birth'])
+        
 
         user_data['username'] = FacebookAPI._create_unique_username(user_data['username'])
 
