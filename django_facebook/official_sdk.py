@@ -168,12 +168,8 @@ class GraphAPI(object):
             else:
                 args["access_token"] = self.access_token
         post_data = None if post_args is None else urllib.urlencode(post_args)
-        file = urllib2.urlopen("https://graph.facebook.com/" + path + "?" + 
-                              urllib.urlencode(args), post_data)
-        try:
-            response = _parse_json(file.read())
-        finally:
-            file.close()
+        request_url = "https://graph.facebook.com/" + path + "?" + urllib.urlencode(args)
+        response = _request_json(request_url, post_data)
         if response.get("error"):
             raise GraphAPIError(response["error"]["type"],
                                 response["error"]["message"])
@@ -200,11 +196,9 @@ def fql(query, facebookToken=None):
     if facebookToken:
         args[ 'access_token' ] = facebookToken
         
-    file = urllib2.urlopen('https://api.facebook.com/method/fql.query?' + urllib.urlencode(args))
-    try:
-        response = _parse_json(file.read())
-    finally:
-        file.close()
+    url = 'https://api.facebook.com/method/fql.query?' + urllib.urlencode(args)
+    response = _request_json(url)
+    
     if isinstance(response, dict) and response.has_key('error_msg'):
         raise Exception(response[ 'error_msg' ])
 
@@ -238,4 +232,30 @@ def get_user_from_cookie(cookies, app_id, app_secret):
     else:
         return None
 
+def _request_json(url, post_data, timeout=3, attempts=2):
+    '''
+    request the given url and parse it as json
+    
+    urllib2 raises errors on different status codes so use a try except
+    
+    TODO: support multiple attempts
+    TODO: support timeout in python 2.5
+    '''
+    try:
+        response_file = urllib2.urlopen(url, post_data)
+    except urllib2.HTTPError, e:
+        if not hasattr(e, 'read'):
+            raise
+        response_file = e
+    
+    try:
+        response = response_file.read()
+        parsed_response = simplejson.loads(response)
+    finally:
+        response_file.close()
+        
+    return parsed_response
+    
+    
+    
   
