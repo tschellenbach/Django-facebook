@@ -62,8 +62,8 @@ def connect(request):
             
         return next_redirect(request)
 
-    if not settings.DEBUG and facebook_settings.FACEBOOK_HIDE_CONNECT_TEST:
-        raise Http404, 'This page is hidden in production usage, only submit to it'
+    if not settings.DEBUG or facebook_settings.FACEBOOK_HIDE_CONNECT_TEST:
+        raise Http404
     
     return render_to_response('django_facebook/connect.html', context)
 
