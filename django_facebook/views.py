@@ -12,6 +12,7 @@ from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
 from django_facebook.utils import next_redirect
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,15 @@ def connect(request):
             try:
                 action, user = connect_user(request)
             except facebook_exceptions.IncompleteProfileError, e:
-                logger.error(unicode(e))
+                logger.error(unicode(e), exc_info=sys.exc_info(), extra={
+                    'request': request,
+                    'data': {
+                         'username': request.user.username,
+                         'facebook_data': facebook.facebook_profile_data(),
+                         'body': unicode(e),
+                     }
+                })
+                
                 context['facebook_mode'] = True
                 context['form'] = e.form
                 return render_to_response('registration/registration_form.html', context)

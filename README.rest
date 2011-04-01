@@ -91,6 +91,7 @@ Add the following fields to your profile model:
     blog_url = models.TextField(blank=True, null=True)
     image = models.ImageField(blank=True, null=True, upload_to='profile_images')
     date_of_birth = models.DateField(blank=True, null=True)
+    raw_data = models.TextField(blank=True, null=True)
 
 An abstract model is specified for convenience django_facebook/models.py FacebookProfileModel
     

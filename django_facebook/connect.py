@@ -125,6 +125,7 @@ def _register_user(request, facebook, profile_callback=None):
     if not form.is_valid():
         error = facebook_exceptions.IncompleteProfileError('Facebook data %s gave error %s' % (facebook_data, form.errors))
         error.form = form
+        
         raise error
 
     if new_reg_module:
