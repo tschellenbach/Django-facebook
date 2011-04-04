@@ -103,10 +103,12 @@ def _register_user(request, facebook, profile_callback=None):
     
     from registration.forms import RegistrationFormUniqueEmail
     import registration
-    new_reg_module = hasattr(registration, 'backends')
     
-    if new_reg_module:
+    new_reg_module = True
+    try:        
         from registration.backends import get_backend
+    except ImportError, e:
+        new_reg_module = False
         
     form_class = RegistrationFormUniqueEmail
     facebook_data = facebook.facebook_registration_data()

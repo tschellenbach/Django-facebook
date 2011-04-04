@@ -16,6 +16,7 @@ New in Version 2.0 Alpha
 * mobile facebook registration support (tested with titanium FB flow)
 * less requirements (jinja, view decorator, django notify and cjson requirements removed)
 * fql support
+* django static support
 
 About Django Facebook
 ---------------------
@@ -32,9 +33,11 @@ Integrated with Django it becomes easy to setup a login/register via Facebook fl
 * Use Facebook data to register a user with your Django app. Facebook connect using the open graph API.
 * Facebook FQL access
 
-Works best with
----------------
+Works best with (not required)
+------------------------------
 * Django registration
+* Django 1.3
+* Django static files
     
 TODO (again help is appreciated!)
 ---------------------------------
@@ -99,7 +102,8 @@ An abstract model is specified for convenience django_facebook/models.py Faceboo
 
 Right now you should have a working registration/connect/login in flow available at /facebook/connect/
 Test if everything is working and ensure you didn't miss a step somewhere.
-If it isn't working please open an issue.
+If you are not using staticfiles you still have to load the facebook.js javascript code in the connect template.
+If you encounter any difficulties please open an issue.
 
 **Customize and integrate into your site**
 
