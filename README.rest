@@ -102,7 +102,16 @@ An abstract model is specified for convenience django_facebook/models.py Faceboo
 
 Right now you should have a working registration/connect/login in flow available at /facebook/connect/
 Test if everything is working and ensure you didn't miss a step somewhere.
-If you are not using staticfiles you still have to load the facebook.js javascript code in the connect template.
+
+** Common bugs **
+
+Django Facebook expects that you are using static files in order to load the required javascript.
+If you are not using staticfiles you should load facebook.js provided in the static directory manually.
+
+Another common issue are the url matching settings from Facebook. Facebook requires you to fill in a domain for your application.
+In order for things to work with local development you need to use the same domain. So if you production site is www.mellowmorning.com you 
+should run your development server on something like local.mellowmorning.com in order for facebook to allow authentication.
+ 
 If you encounter any difficulties please open an issue.
 
 **Customize and integrate into your site**

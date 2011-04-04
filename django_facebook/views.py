@@ -55,9 +55,7 @@ def connect(request):
             if action is CONNECT_ACTIONS.CONNECT:
                 messages.info(request, _("You have connected your account to %s's facebook profile") % facebook_data['name'])
             elif action is CONNECT_ACTIONS.REGISTER:
-                member_overview_url = user.get_profile().url['overview']
-                response = HttpResponseRedirect(member_overview_url)
-                response.set_cookie('fresh_registration', user.id)
+                response = user.get_profile().post_facebook_registration()
                 return response
         else:
             return next_redirect(request, additional_params=dict(fb_error_or_cancel=1))

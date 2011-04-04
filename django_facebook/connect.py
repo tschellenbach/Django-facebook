@@ -149,7 +149,7 @@ def _register_user(request, facebook, profile_callback=None):
     profile.save()
         
     #IS this the correct way for django 1.3? seems to require the backend attribute for some reason
-    new_user.backend = None
+    new_user.backend = 'django_facebook.auth_backends.FacebookBackend'
     auth.login(request, new_user)
     
     
