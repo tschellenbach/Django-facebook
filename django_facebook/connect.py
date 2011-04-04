@@ -148,6 +148,8 @@ def _register_user(request, facebook, profile_callback=None):
         profile.raw_data = serialized_fb_data
     profile.save()
         
+    #IS this the correct way for django 1.3? seems to require the backend attribute for some reason
+    new_user.backend = None
     auth.login(request, new_user)
     
     
