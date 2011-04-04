@@ -27,6 +27,7 @@ def connect(request):
     
     '''
     context = RequestContext(request)
+    
     assert context.get('FACEBOOK_APP_ID'), 'Please specify a facebook app id and ensure the context processor is enabled'
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
     
@@ -65,9 +66,6 @@ def connect(request):
 
     if not settings.DEBUG and facebook_settings.FACEBOOK_HIDE_CONNECT_TEST:
         raise Http404
-    
-    import django
-    print django.get_version()
     
     return render_to_response('django_facebook/connect.html', context)
 
