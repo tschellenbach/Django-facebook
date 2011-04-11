@@ -1,0 +1,252 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Django Facebook by Thierry Schellenbach (http://www.mellowmorning.com) &mdash; Django Facebook v2.0.15 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '2.0.15',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Django Facebook v2.0.15 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="#">Django Facebook v2.0.15 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="django-facebook-by-thierry-schellenbach-http-www-mellowmorning-com">
+<h1>Django Facebook by Thierry Schellenbach (<a class="reference external" href="http://www.mellowmorning.com">http://www.mellowmorning.com</a>)<a class="headerlink" href="#django-facebook-by-thierry-schellenbach-http-www-mellowmorning-com" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>Please contribute code :)</p>
+<p>This project is actively maintained and I appreciate improvements to the code.</p>
+<p>Contact me here or <a class="reference external" href="http://www.twitter.com/tschellenbach">&#64;tschellenbach</a></p>
+</div>
+<div class="section" id="new-in-v2-0">
+<h2>New in V2.0<a class="headerlink" href="#new-in-v2-0" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>canvas page support for facebook applications</li>
+<li>mobile facebook registration support (tested with titanium FB flow)</li>
+<li>less requirements (jinja, view decorator, django notify and cjson requirements removed)</li>
+<li>fql support</li>
+<li>django static support</li>
+</ul>
+</div>
+<div class="section" id="about">
+<h2>About<a class="headerlink" href="#about" title="Permalink to this headline">¶</a></h2>
+<p>Django Facebook allows you to connect to the Facebook Open Graph API.
+Integrated with Django it becomes easy to setup a login/register via Facebook flow for your users.</p>
+<p><strong>Features</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt>Access the Facebook API, from:</dt>
+<dd><ul class="first last simple">
+<li>Your website (Using javascript OAuth)</li>
+<li>Facebook canvas pages (For building facebook applications)</li>
+<li>Mobile (Or any other flow giving you a valid access token)</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Django User Registration (Convert Facebook user data into a user model</p>
+</li>
+<li><p class="first">Use Facebook data to register a user with your Django app. Facebook connect using the open graph API.</p>
+</li>
+<li><p class="first">Facebook FQL access</p>
+</li>
+</ul>
+</div>
+<div class="section" id="works-best-with-not-required">
+<h2>Works best with (not required)<a class="headerlink" href="#works-best-with-not-required" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Django registration</li>
+<li>Django 1.3</li>
+<li>Django static files</li>
+</ul>
+</div>
+<div class="section" id="todo-again-help-is-appreciated">
+<h2>TODO (again help is appreciated!)<a class="headerlink" href="#todo-again-help-is-appreciated" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>testing (especially a dummy FB api)</li>
+<li>separate user data conversion and FB api improvements</li>
+<li>fully replace the facebook GraphAPI which they no longer support</li>
+</ul>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Download the source code or use pip install django_facebook.</p>
+<p><strong>Create a Facebook App</strong></p>
+<p>In case you don&#8217;t yet have a facebook app. You need an app to use the open graph api and make the login process work.
+You can create a facebook app at this url: <a class="reference external" href="http://www.facebook.com/developers/createapp.php">http://www.facebook.com/developers/createapp.php</a></p>
+<p><strong>Settings</strong></p>
+<p>Define the following settings in your settings.py file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">FACEBOOK_API_KEY</span>
+<span class="n">FACEBOOK_APP_ID</span>
+<span class="n">FACEBOOK_APP_SECRET</span>
+</pre></div>
+</div>
+<p><strong>Url config, context processor, auth backend</strong></p>
+<div class="highlight-python"><pre>    add django facebook to your installed apps
+    'django_facebook',
+add this line to your url config
+(r'^facebook/', include('django_facebook.urls')),
+add this line to your context processors
+'django_facebook.context_processors.facebook',
+add this to your AUTHENTICATION_BACKENDS
+'django_facebook.auth_backends.FacebookBackend',</pre>
+</div>
+<p><strong>Update your models</strong></p>
+<p>Add the following fields to your profile model:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">about_me</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">facebook_id</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">facebook_name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">facebook_profile_url</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">website_url</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">blog_url</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ImageField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">upload_to</span><span class="o">=</span><span class="s">&#39;profile_images&#39;</span><span class="p">)</span>
+<span class="n">date_of_birth</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">raw_data</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>An abstract model is specified for convenience django_facebook/models.py FacebookProfileModel</p>
+<p><strong>Check the example</strong></p>
+<p>Right now you should have a working registration/connect/login in flow available at /facebook/connect/
+Test if everything is working and ensure you didn&#8217;t miss a step somewhere.</p>
+<p><strong>Common bugs</strong></p>
+<p>Django Facebook expects that you are using static files in order to load the required javascript.
+If you are not using staticfiles you should load facebook.js provided in the static directory manually.</p>
+<p>Another common issue are the url matching settings from Facebook. Facebook requires you to fill in a domain for your application.
+In order for things to work with local development you need to use the same domain. So if you production site is www.mellowmorning.com you
+should run your development server on something like local.mellowmorning.com in order for facebook to allow authentication.</p>
+<p>If you encounter any difficulties please open an issue.</p>
+<p><strong>Customize and integrate into your site</strong></p>
+<p>This is the hardest step of the install.
+For an example you can look at connect.html in the templates directory.</p>
+<p>First load the javascript (it loads the facebook library asynchronously).
+I recommend that you insert this code at the bottom of your page.</p>
+<div class="highlight-python"><pre>&lt;script src="{{ MEDIA_URL }}js/original/facebook.js" type="text/javascript"&gt;&lt;/script&gt;
+&lt;script&gt;
+facebookAppId = '{{ FACEBOOK_APP_ID }}';
+function facebookJSLoaded(){
+FB.init({appId: facebookAppId, status: false, cookie: true, xfbml: true});
+}
+window.fbAsyncInit = facebookJSLoaded;
+F = new facebookClass(facebookAppId);
+F.load();
+&lt;/script&gt;</pre>
+</div>
+<p>Subsequently implement a form which calls Facebook via javascript.
+Note that you can control which page to go to after connect using the next input field.</p>
+<div class="highlight-python"><pre>&lt;form action="{% url facebook_connect %}?facebook_login=1" method="post"&gt;
+&lt;a href="javascript:void(0);" style="font-size: 20px;" onclick="F.connect(this.parentNode);"&gt;Register, login or connect with facebook&lt;/a&gt;
+&lt;input type="hidden" value="{{ request.path }}" name="next" /&gt;
+&lt;/form&gt;</pre>
+</div>
+</div>
+<div class="section" id="django-jobs">
+<h2>Django Jobs<a class="headerlink" href="#django-jobs" title="Permalink to this headline">¶</a></h2>
+<p>Do you also see the beauty in clean code? Are you experienced with high scalability web apps?
+Currently we&#8217;re looking for additional talent over at our Amsterdam office.
+Feel free to drop me a line at my personal email for more information: thierryschellenbach[at]gmail.com</p>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<div class="section" id="indices-and-tables">
+<h3>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Django Facebook by Thierry Schellenbach (http://www.mellowmorning.com)</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#new-in-v2-0">New in V2.0</a></li>
+<li><a class="reference internal" href="#about">About</a></li>
+<li><a class="reference internal" href="#works-best-with-not-required">Works best with (not required)</a></li>
+<li><a class="reference internal" href="#todo-again-help-is-appreciated">TODO (again help is appreciated!)</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#django-jobs">Django Jobs</a><ul>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="#">Django Facebook v2.0.15 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Thierry Schellenbach.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
