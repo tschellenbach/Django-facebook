@@ -1,0 +1,16 @@
+Source: python-django-facebook
+Section: python
+Priority: optional
+Maintainer: SimpleGeo Nerds <nerds@simplegeo.com>
+Uploaders: Jon Rohan <jon@simplegeo.com>
+Build-Depends: cdbs, debhelper (>= 7), python, python-support, python-setuptools
+Standards-Version: 3.8.4
+Homepage: https://github.com/simplegeo/django_facebook
+
+Package: python-django-facebook
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, python-django (>= 1.2)
+Description: django_facebook
+ Facebook open graph API client in python. Enables django applications to register users using facebook.
+ Fixes issues with the official but unsupported Facebook python-sdk. Enables mobile facebook authentication.
+ Canvas page authentication for facebook applications. FQL access via the server side api.
