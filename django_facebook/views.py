@@ -58,7 +58,7 @@ def connect(request):
                 response.set_cookie('fresh_registration', user.id)
                 return response
         else:
-            return next_redirect(request, additional_params=dict(fb_error_or_cancel=1))
+            return next_redirect(request, additional_params=dict(fb_error_or_cancel=1), next_key=['error_next', 'next'])
             
         return next_redirect(request)
 

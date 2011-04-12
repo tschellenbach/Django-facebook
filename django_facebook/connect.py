@@ -23,6 +23,7 @@ def connect_user(request, access_token=None):
     - login
     - register
     '''
+    #TODO, instead of using access_token this should probably accept a facebook_graph as well
     user = None
     facebook = get_facebook_graph(request, access_token)
     assert facebook.is_authenticated()

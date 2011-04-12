@@ -72,6 +72,10 @@
             <form action="{% url facebook_connect %}?facebook_login=1" method="post">
 	            <a href="javascript:void(0);" style="font-size: 20px;" onclick="F.connect(this.parentNode);">Register, login or connect with facebook</a>
 				<input type="hidden" value="{{ request.path }}" name="next" />
+				<!--
+				use error next for a seperate error page
+				<input type="hidden" value="/error/" name="error_next" />
+				-->
 	        </form>
 			
 			<iframe src="http://www.facebook.com/plugins/facepile.php?app_id={{ FACEBOOK_APP_ID }}&amp;width=500&amp;max_rows=1" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:500px;" allowTransparency="true"></iframe>
