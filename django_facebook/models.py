@@ -1,5 +1,6 @@
 from django.db import models
-
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 
 class FacebookProfileModel(models.Model):
     '''
@@ -23,4 +24,15 @@ class FacebookProfileModel(models.Model):
     
     class Meta:
         abstract = True
+        
+    def post_facebook_registration(self):
+        '''
+        Behaviour after registering with facebook
+        '''
+        url = reverse('facebook_connect')
+        response = HttpResponseRedirect(url)
+        response.set_cookie('fresh_registration', self.user.id)
+        return response
+
+
         

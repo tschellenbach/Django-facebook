@@ -104,10 +104,12 @@ def _register_user(request, facebook, profile_callback=None):
     
     from registration.forms import RegistrationFormUniqueEmail
     import registration
-    new_reg_module = hasattr(registration, 'backends')
     
-    if new_reg_module:
+    new_reg_module = True
+    try:        
         from registration.backends import get_backend
+    except ImportError, e:
+        new_reg_module = False
         
     form_class = RegistrationFormUniqueEmail
     facebook_data = facebook.facebook_registration_data()
@@ -147,6 +149,8 @@ def _register_user(request, facebook, profile_callback=None):
         profile.raw_data = serialized_fb_data
     profile.save()
         
+    #IS this the correct way for django 1.3? seems to require the backend attribute for some reason
+    new_user.backend = 'django_facebook.auth_backends.FacebookBackend'
     auth.login(request, new_user)
     
     

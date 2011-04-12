@@ -27,6 +27,8 @@ def connect(request):
     
     '''
     context = RequestContext(request)
+    
+    assert context.get('FACEBOOK_APP_ID'), 'Please specify a facebook app id and ensure the context processor is enabled'
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
     
     if facebook_login:
@@ -53,16 +55,14 @@ def connect(request):
             if action is CONNECT_ACTIONS.CONNECT:
                 messages.info(request, _("You have connected your account to %s's facebook profile") % facebook_data['name'])
             elif action is CONNECT_ACTIONS.REGISTER:
-                member_overview_url = user.get_profile().url['overview']
-                response = HttpResponseRedirect(member_overview_url)
-                response.set_cookie('fresh_registration', user.id)
+                response = user.get_profile().post_facebook_registration()
                 return response
         else:
             return next_redirect(request, additional_params=dict(fb_error_or_cancel=1), next_key=['error_next', 'next'])
             
         return next_redirect(request)
 
-    if not settings.DEBUG or facebook_settings.FACEBOOK_HIDE_CONNECT_TEST:
+    if not settings.DEBUG and facebook_settings.FACEBOOK_HIDE_CONNECT_TEST:
         raise Http404
     
     return render_to_response('django_facebook/connect.html', context)

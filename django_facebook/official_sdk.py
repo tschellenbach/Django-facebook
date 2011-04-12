@@ -241,6 +241,7 @@ def _request_json(url, post_data, timeout=3, attempts=2):
     TODO: support multiple attempts
     TODO: support timeout in python 2.5
     '''
+    from django.utils import simplejson
     try:
         response_file = urllib2.urlopen(url, post_data)
     except urllib2.HTTPError, e:
