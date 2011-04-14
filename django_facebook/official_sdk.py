@@ -53,6 +53,9 @@ except ImportError:
         _parse_json = lambda s: simplejson.loads(s)
 
 
+
+
+
 class GraphAPI(object):
     """A client for the Facebook Graph API.
 
@@ -181,6 +184,8 @@ class GraphAPI(object):
         '''
         return fql(query, self.access_token)
         
+        
+
 
 class GraphAPIError(Exception):
     def __init__(self, type, message):
