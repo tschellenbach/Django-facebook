@@ -1,40 +1,47 @@
+from __future__ import with_statement
+
 import unittest
 
 import os, sys
-
-
+from django_facebook import exceptions as facebook_exceptions
 os.environ['ENVIRONMENT'] = 'testing'
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 from django.conf import settings
 from django.test.client import Client, RequestFactory 
-
+from django.contrib.auth.models import AnonymousUser
 from django_facebook.connect import connect_user
+
 import logging
 logger = logging.getLogger(__name__)
 
 class FacebookTest(unittest.TestCase):
     def setUp(self):
-        print 'setting up, monkey patching'
         from django_facebook import api
         from django_facebook.tests.mock_official_sdk import MockFacebookAPI
         api.FacebookAPI = MockFacebookAPI
-        print api.FacebookAPI
+        rf = RequestFactory()
+        self.request = request = rf.get('/')
+        request.user = AnonymousUser()
+        from django.contrib.sessions.models import Session
+        session = Session()
+        request.session = session.get_decoded()
+        print request.session
     
     
 class UserConnectTest(FacebookTest):
+    fixtures = ['mine']
+    
     def test_invalid_token(self):
-        rf = RequestFactory()
-        request = rf.get('/')
-        try:
-            user = connect_user(request, access_token='invalid')
-            raise ValueError, 'this function should raise an exception'
-        except AssertionError, e:
-            pass
+        self.assertRaises(AssertionError, connect_user, self.request, access_token='invalid')
 
-    def test_new_registration(self):
-        rf = RequestFactory()
-        request = rf.get('/')
-        user = connect_user(request, access_token='partial_birthday')
+    def test_no_email_registration(self):
+        self.assertRaises(facebook_exceptions.IncompleteProfileError, connect_user, self.request, access_token='no_email')
+    
+    def test_current_user(self):
+        self.assertRaises(facebook_exceptions.IncompleteProfileError, connect_user, self.request, access_token='tschellenbach')
+    
+    def test_new_user(self):
+        self.assertRaises(facebook_exceptions.IncompleteProfileError, connect_user, self.request, access_token='new_user')
     
     
     
