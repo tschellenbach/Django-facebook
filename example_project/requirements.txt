@@ -1,0 +1,2 @@
+django>=1.3
+https://github.com/tschellenbach/Django-facebook/tarball/master
