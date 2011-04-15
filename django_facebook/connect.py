@@ -43,7 +43,14 @@ def connect_user(request, access_token=None):
         authenticated_user = authenticate(facebook_id=facebook_data['id'], **kwargs)
         if authenticated_user and not force_registration:
             action = CONNECT_ACTIONS.LOGIN
-            user = _login_user(request, facebook, authenticated_user, update=getattr(authenticated_user, 'fb_update_required', False))
+
+            ## Has the user registered without Facebook, using the verified FB email address?
+            # It is after all quite common to use email addresses for usernames
+            if not authenticated_user.get_profile().facebook_id:
+                update = True
+            else:
+                update = getattr(authenticated_user, 'fb_update_required', False)
+            user = _login_user(request, facebook, authenticated_user, update=update)
         else:
             action = CONNECT_ACTIONS.REGISTER
             user = _register_user(request, facebook)
