@@ -15,7 +15,7 @@ class FacebookProfileModel(models.Model):
     facebook_profile_url = models.TextField(blank=True, null=True)
     website_url = models.TextField(blank=True, null=True)
     blog_url = models.TextField(blank=True, null=True)
-    image = models.ImageField(blank=True, null=True, upload_to='profile_images')
+    image = models.ImageField(blank=True, null=True, upload_to='profile_images', max_length=255)
     date_of_birth = models.DateField(blank=True, null=True)
     raw_data = models.TextField(blank=True, null=True)
 
