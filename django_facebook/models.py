@@ -10,7 +10,7 @@ class FacebookProfileModel(models.Model):
     the fields in.
     '''
     about_me = models.TextField(blank=True, null=True)
-    facebook_id = models.IntegerField(blank=True, null=True)
+    facebook_id = models.BigIntegerField(blank=True, null=True)
     facebook_name = models.CharField(max_length=255, blank=True, null=True)
     facebook_profile_url = models.TextField(blank=True, null=True)
     website_url = models.TextField(blank=True, null=True)
