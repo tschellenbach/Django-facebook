@@ -15,6 +15,12 @@ logger = logging.getLogger(__name__)
 class UserConnectTest(FacebookTest):
     '''
     Tests the connect user functionality
+    
+    TODO
+    - Test for short usernames and fall back to names
+    - Retry on facebook connection errors
+    - Taken username errors
+    - Next param op mystyle
     '''
     fixtures = ['users.json']
     

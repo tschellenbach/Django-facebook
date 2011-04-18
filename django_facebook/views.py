@@ -39,7 +39,8 @@ def connect(request):
             try:
                 action, user = connect_user(request)
             except facebook_exceptions.IncompleteProfileError, e:
-                logger.warn(unicode(e), exc_info=sys.exc_info(), extra={
+                logger.warn(u'Incomplete profile data encountered with error %s' % e, 
+                    exc_info=sys.exc_info(), extra={
                     'request': request,
                     'data': {
                          'username': request.user.username,
