@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from django.contrib.auth.models import AnonymousUser
 from django_facebook import exceptions as facebook_exceptions
 from django_facebook.api import get_facebook_graph
 from django_facebook.connect import connect_user, CONNECT_ACTIONS
@@ -6,7 +7,6 @@ from django_facebook.official_sdk import GraphAPIError
 from django_facebook.tests.base import FacebookTest
 import logging
 import unittest
-from django.contrib.auth import models as auth_models
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +18,6 @@ class UserConnectTest(FacebookTest):
     
     TODO
     - Retry on facebook connection errors
-    - Taken username errors
-    - Next param op mystyle
     - unique fb ids
     '''
     fixtures = ['users.json']
@@ -45,6 +43,18 @@ class UserConnectTest(FacebookTest):
         assert len(user.username) > 4
         assert action == CONNECT_ACTIONS.REGISTER
     
+    def test_double_username(self):
+        '''
+        This used to give an error with duplicate usernames with different capitalization
+        '''
+        facebook = get_facebook_graph(access_token='short_username', persistent_token=False)
+        action, user = connect_user(self.request, facebook_graph=facebook)
+        user.username = 'Thierry_schellenbach'
+        user.save()
+        self.request.user = AnonymousUser()
+        facebook = get_facebook_graph(access_token='same_username', persistent_token=False)
+        action, new_user = connect_user(self.request, facebook_graph=facebook)
+        assert user.username != new_user.username and user.id != new_user.id
     
 class FQLTest(FacebookTest):
     def test_base_fql(self):

@@ -266,9 +266,10 @@ class FacebookAPI(GraphAPI):
         '''
         from django.contrib.auth.models import User
         usernames = list(User.objects.filter(username__istartswith=base_username).values_list('username', flat=True))
-        username = base_username
+        usernames_lower = [str(u).lower() for u in usernames]
+        username = str(base_username)
         i = 1
-        while base_username in usernames:
+        while base_username.lower() in usernames_lower:
             base_username = username + str(i)
             i += 1
         return base_username
