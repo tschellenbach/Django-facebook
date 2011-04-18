@@ -289,11 +289,11 @@ class FacebookAPI(GraphAPI):
         if 'profilephp' in username:
             username = None
 
-        if not username:
-            if 'email' in facebook_data:
-                username = cls._username_slugify(facebook_data.get('email').split('@')[0])
-            else:
-                username = cls._username_slugify(facebook_data.get('name'))
+        if not username and 'email' in facebook_data:
+            username = cls._username_slugify(facebook_data.get('email').split('@')[0])
+        
+        if not username or len(username) < 4:
+            username = cls._username_slugify(facebook_data.get('name'))
 
         return username
 

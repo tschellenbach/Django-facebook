@@ -17,7 +17,6 @@ class UserConnectTest(FacebookTest):
     Tests the connect user functionality
     
     TODO
-    - Test for short usernames and fall back to names
     - Retry on facebook connection errors
     - Taken username errors
     - Next param op mystyle
@@ -39,7 +38,11 @@ class UserConnectTest(FacebookTest):
         facebook = get_facebook_graph(access_token='new_user', persistent_token=False)
         action, user = connect_user(self.request, facebook_graph=facebook)
     
-    
+    def test_short_username(self):
+        facebook = get_facebook_graph(access_token='short_username', persistent_token=False)
+        action, user = connect_user(self.request, facebook_graph=facebook)
+        assert len(user.username) > 4
+        assert action == CONNECT_ACTIONS.REGISTER
     
     
 class FQLTest(FacebookTest):
