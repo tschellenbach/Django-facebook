@@ -1,10 +1,10 @@
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
+from django.utils import simplejson as json
 from django_facebook import exceptions as facebook_exceptions
 from django_facebook.api import get_facebook_graph
 from random import randint
 import logging
-from django.utils import simplejson as json
 
 logger = logging.getLogger(__name__)
 
