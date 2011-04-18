@@ -15,7 +15,7 @@ class CONNECT_ACTIONS:
     class REGISTER: pass
 
 
-def connect_user(request, access_token=None):
+def connect_user(request, access_token=None, facebook_graph=None):
     '''
     Given a request either
     
@@ -25,7 +25,7 @@ def connect_user(request, access_token=None):
     '''
     #TODO, instead of using access_token this should probably accept a facebook_graph as well
     user = None
-    facebook = get_facebook_graph(request, access_token)
+    facebook = facebook_graph or get_facebook_graph(request, access_token)
     assert facebook.is_authenticated()
     facebook_data = facebook.facebook_profile_data()
     force_registration = request.REQUEST.get('force_registration') or request.REQUEST.get('force_registration_hard')
