@@ -20,6 +20,7 @@ class UserConnectTest(FacebookTest):
     - Retry on facebook connection errors
     - Taken username errors
     - Next param op mystyle
+    - unique fb ids
     '''
     fixtures = ['users.json']
     

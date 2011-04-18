@@ -25,13 +25,14 @@ class FacebookProfileModel(models.Model):
     class Meta:
         abstract = True
         
-    def post_facebook_registration(self):
+    def post_facebook_registration(self, request):
         '''
         Behaviour after registering with facebook
         '''
-        url = reverse('facebook_connect')
-        response = HttpResponseRedirect(url)
-        response.set_cookie('fresh_registration', self.user.id)
+        from django_facebook.utils import next_redirect
+        default_url = reverse('facebook_connect')
+        response = next_redirect(request, default=default_url, next_key='register_next')
+        response.set_cookie('fresh_registration', user.id)
         return response
 
 
