@@ -44,7 +44,7 @@ TODO (again help is appreciated!)
 * testing (especially a dummy FB api)
 * separate user data conversion and FB api improvements
 * fully replace the facebook GraphAPI which they no longer support
-   
+* add nice exception classes to the facebook official sdk replacement   
 
 Installation
 ------------

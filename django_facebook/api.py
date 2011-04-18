@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_facebook_graph(request, access_token=None, persistent_token=facebook_settings.FACEBOOK_PERSISTENT_TOKEN):
+def get_facebook_graph(request=None, access_token=None, persistent_token=facebook_settings.FACEBOOK_PERSISTENT_TOKEN):
     '''
     given a request from one of these
     - js authentication flow
@@ -23,13 +23,12 @@ def get_facebook_graph(request, access_token=None, persistent_token=facebook_set
     
     returns a graph object
     '''
+    if not request and persistent_token:
+        raise ValidationError, 'Request is required if you want to use persistent tokens'
     from django_facebook import official_sdk
     
-    signed_request = request.REQUEST.get('signed_request')
-    cookie_name = 'fbs_%s' % facebook_settings.FACEBOOK_APP_ID
-    oauth_cookie = request.COOKIES.get(cookie_name)
     additional_data = None
-    
+    facebook_open_graph_cached = False
     if persistent_token:
         facebook_open_graph_cached = request.session.get('facebook_open_graph')
     if facebook_open_graph_cached:
@@ -37,6 +36,9 @@ def get_facebook_graph(request, access_token=None, persistent_token=facebook_set
         facebook_open_graph_cached._is_authenticated = None
         
     if not access_token:
+        signed_request = request.REQUEST.get('signed_request')
+        cookie_name = 'fbs_%s' % facebook_settings.FACEBOOK_APP_ID
+        oauth_cookie = request.COOKIES.get(cookie_name)
         #scenario A, we're on a canvas page and need to parse the signed data
         if signed_request:
             additional_data = FacebookAPI.parse_signed_data(signed_request)
