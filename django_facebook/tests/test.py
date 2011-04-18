@@ -18,7 +18,9 @@ class UserConnectTest(FacebookTest):
     
     TODO
     - Retry on facebook connection errors
-    - unique fb ids
+    - unique fb ids (uppon connect clear older ids?)
+    - errors op email already in use op register flow (auth backend issues?)
+    
     '''
     fixtures = ['users.json']
     
