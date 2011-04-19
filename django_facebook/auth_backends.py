@@ -23,13 +23,33 @@ class FacebookBackend(backends.ModelBackend):
         filter_clause = reduce(operator.or_, filter_clause) 
 
         #get the profile model and search for our user
-        if filter_clause:
+        if facebook_id or facebook_email:
             #TODO: isn't there a dedicated function for this in django somewhere?
             profile_string = settings.AUTH_PROFILE_MODULE
             profile_model = profile_string.split('.')[-1]
             profile_class = ContentType.objects.get(model=profile_model.lower()).model_class()
-            profiles = profile_class.objects.filter(filter_clause).order_by('user')[:1]
-            if profiles:
-                user = profiles[0].user
+
+            profiles = profile_class.objects.all()
+            profiles = profiles.order_by('user')
+            profiles = profiles.select_related('user')
+            
+            # Doing separate queries to get a better queryplan with large
+            # databases
+            if facebook_id:
+                try:
+                    profile = profiles.get(facebook_id=facebook_id)
+                except profile_class.DoesNotExist:
+                    profile = None
+
+            if profile is None and facebook_email:
+                try:
+                    profile = profiles.get(user__email__iexact=facebook_email)
+                except profile_class.DoesNotExist:
+                    profile = None
+
+            if profile:
+                # populate the profile cache while we're getting it anyway
+                user = profile.user
+                user._profile = profile
                 return user
                 
