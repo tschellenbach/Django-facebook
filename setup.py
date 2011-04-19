@@ -98,10 +98,6 @@ def find_package_data(where='.', package='', exclude=standard_exclude,
 excluded_directories = standard_exclude_directories + ['./requirements', './scripts']
 package_data = find_package_data(exclude_directories=excluded_directories)
 
-print package_data
-
-
-
 license_text = open('LICENSE.txt').read()
 long_description = open('README.rest').read()
 
