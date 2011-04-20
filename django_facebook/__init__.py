@@ -4,7 +4,7 @@ __credits__ = ['Thierry Schellenbach, mellowmorning.com, @tschellenbach']
 
 
 __license__ = 'BSD'
-__version__ = '2.0.17'
+__version__ = '2.0.18'
 __maintainer__ = 'Thierry Schellenbach'
 __email__ = 'thierryschellenbach@gmail.com'
 __status__ = 'Production'
@@ -29,7 +29,6 @@ TODO
 /group/2086
 /group/2076
 - fix setup.py to include example project
-- parse gender
 - refactor profile updating and validation (one flow for register and connect)
 - Retry on facebook connection errors
 - unique fb ids (uppon connect clear older ids?)
