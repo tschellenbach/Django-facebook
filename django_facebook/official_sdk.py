@@ -38,7 +38,9 @@ import time
 import urllib
 import urllib2
 import hashlib
+import logging
 
+logger = logging.getLogger(__name__)
 # Find a JSON parser
 try:
     import json
@@ -153,6 +155,74 @@ class GraphAPI(object):
     def put_like(self, object_id):
         """Likes the given post."""
         return self.put_object(object_id, "likes")
+    
+    def put_photo(self, image, message=None, album_id=None, **kwargs):
+        """Uploads an image using multipart/form-data
+        image=File like object for the image
+        message=Caption for your image
+        album_id=None posts to /me/photos which uses or creates and uses 
+        an album for your application.
+        """
+        object_id = album_id or "me"
+        #it would have been nice to reuse self.request; but multipart is messy in urllib
+        post_args = {
+                  'access_token': self.access_token,
+                  'source': image,
+                  'message': message
+        }
+        post_args.update(kwargs)
+        content_type, body = self._encode_multipart_form(post_args)
+        req = urllib2.Request("https://graph.facebook.com/%s/photos" % object_id, data=body)
+        req.add_header('Content-Type', content_type)
+        try:
+            data = urllib2.urlopen(req).read()
+        #For Python 3 use this:
+        #except urllib2.HTTPError as e:
+        except urllib2.HTTPError, e:
+            data = e.read() # Facebook sends OAuth errors as 400, and urllib2 throws an exception, we want a GraphAPIError
+        try:
+            response = _parse_json(data)
+            if response and response.get("error"):
+                raise GraphAPIError(response["error"].get("code", 1),
+                                    response["error"]["message"])
+        except ValueError:
+            response = data
+            
+        return response
+
+    # based on: http://code.activestate.com/recipes/146306/
+    def _encode_multipart_form(self, fields):
+        """Fields are a dict of form name-> value
+        For files, value should be a file object.
+        Other file-like objects might work and a fake name will be chosen.
+        Return (content_type, body) ready for httplib.HTTP instance
+        """
+        BOUNDARY = '----------ThIs_Is_tHe_bouNdaRY_$'
+        CRLF = '\r\n'
+        L = []
+        for (key, value) in fields.items():
+            logger.debug("Encoding %s, (%s)%s" % (key, type(value), value))
+            if not value:
+                continue
+            L.append('--' + BOUNDARY)
+            if hasattr(value, 'read') and callable(value.read): 
+                filename = getattr(value,'name','%s.jpg' % key)
+                L.append('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename))
+                L.append('Content-Type: image/jpeg')
+                value = value.read()
+                logger.debug(type(value))
+            else:
+                L.append('Content-Disposition: form-data; name="%s"' % key)
+            L.append('')
+            if isinstance(value, unicode):
+                logging.debug("Convert to ascii")
+                value = value.encode('ascii')
+            L.append(value)
+        L.append('--' + BOUNDARY + '--')
+        L.append('')
+        body = CRLF.join(L)
+        content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
+        return content_type, body
 
     def delete_object(self, id):
         """Deletes the object with the given ID from the graph."""

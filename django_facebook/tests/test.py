@@ -7,6 +7,7 @@ from django_facebook.official_sdk import GraphAPIError
 from django_facebook.tests.base import FacebookTest
 import logging
 import unittest
+from django.utils import simplejson
 
 
 
@@ -58,7 +59,7 @@ class UserConnectTest(FacebookTest):
     
 class FQLTest(FacebookTest):
     def test_graph_fql(self):
-        from api import get_app_access_token
+        from django_facebook.api import get_app_access_token
         token = get_app_access_token()
         facebook = get_facebook_graph(access_token=token, persistent_token=False)
         query = 'SELECT name FROM user WHERE uid = me()'
@@ -71,6 +72,16 @@ class FQLTest(FacebookTest):
         result = fql(query)
         assert not result
     
+class SDKTest(FacebookTest):
+    def test_photo_put(self):
+        from django_facebook.api import get_app_access_token
+        token = get_app_access_token()
+        graph = get_facebook_graph(access_token=token, persistent_token=False)
+        tags = simplejson.dumps([{'x':50, 'y':50, 'tag_uid':12345}, {'x':10, 'y':60, 'tag_text':'a turtle'}])
+        try:
+            graph.put_photo('img.jpg', 'Look at this cool photo!', None, tags=tags)
+        except GraphAPIError, e:
+            assert 'An active access token must be used to query information' in unicode(e)
     
 
     
