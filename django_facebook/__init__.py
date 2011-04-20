@@ -31,7 +31,9 @@ TODO
 - fix setup.py to include example project
 - parse gender
 - implement new official fb api
-
-
+- refactor profile updating and validation (one flow for register and connect)
+- Retry on facebook connection errors
+- unique fb ids (uppon connect clear older ids?)
+- errors op email already in use op register flow (auth backend issues?)
 
 '''

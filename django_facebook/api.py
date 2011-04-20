@@ -318,3 +318,8 @@ def base64_url_decode_php_style(inp):
     padding_factor = (4 - len(inp) % 4) % 4
     inp += "=" * padding_factor 
     return base64.b64decode(unicode(inp).translate(dict(zip(map(ord, u'-_'), u'+/'))))
+
+
+def get_app_access_token():
+    from django_facebook.official_sdk import get_app_access_token
+    return get_app_access_token(facebook_settings.FACEBOOK_APP_ID, facebook_settings.FACEBOOK_APP_SECRET)

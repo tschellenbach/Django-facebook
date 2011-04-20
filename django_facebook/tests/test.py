@@ -8,6 +8,8 @@ from django_facebook.tests.base import FacebookTest
 import logging
 import unittest
 
+
+
 logger = logging.getLogger(__name__)
 
     
@@ -16,10 +18,6 @@ class UserConnectTest(FacebookTest):
     '''
     Tests the connect user functionality
     
-    TODO
-    - Retry on facebook connection errors
-    - unique fb ids (uppon connect clear older ids?)
-    - errors op email already in use op register flow (auth backend issues?)
     
     '''
     fixtures = ['users.json']
@@ -59,14 +57,22 @@ class UserConnectTest(FacebookTest):
         assert user.username != new_user.username and user.id != new_user.id
     
 class FQLTest(FacebookTest):
-    def test_base_fql(self):
-        facebook = get_facebook_graph(access_token='tschellenbach', persistent_token=False)
+    def test_graph_fql(self):
+        from api import get_app_access_token
+        token = get_app_access_token()
+        facebook = get_facebook_graph(access_token=token, persistent_token=False)
         query = 'SELECT name FROM user WHERE uid = me()'
-        self.assertRaises(GraphAPIError, facebook.fql, query);
+        result = facebook.fql(query)
+        assert result == []
+    
+    def test_fql(self):
+        from django_facebook.official_sdk import fql
+        query = 'SELECT name FROM user WHERE uid = me()'
+        result = fql(query)
+        assert not result
     
     
-    
-    
+
     
 class DataTransformTest(FacebookTest):
     def test_doctest_api(self):
