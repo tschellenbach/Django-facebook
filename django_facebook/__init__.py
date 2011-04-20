@@ -4,7 +4,7 @@ __credits__ = ['Thierry Schellenbach, mellowmorning.com, @tschellenbach']
 
 
 __license__ = 'BSD'
-__version__ = '2.0.16'
+__version__ = '2.0.17'
 __maintainer__ = 'Thierry Schellenbach'
 __email__ = 'thierryschellenbach@gmail.com'
 __status__ = 'Production'
@@ -22,5 +22,16 @@ http://pypi.python.org/pypi
 setting up pip for editing
 http://www.pip-installer.org/en/latest/index.html
 pip install -e ./
+
+TODO
+- password is required (wtf)
+- paco error, login not authenticating somehow
+/group/2086
+/group/2076
+- fix setup.py to include example project
+- parse gender
+- implement new official fb api
+
+
 
 '''
