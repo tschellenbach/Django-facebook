@@ -203,9 +203,8 @@ def fql(query, facebookToken=None):
         
     url = 'https://api.facebook.com/method/fql.query?' + urllib.urlencode(args)
     response = _request_json(url)
-    
     if isinstance(response, dict) and response.has_key('error_msg'):
-        raise Exception(response[ 'error_msg' ])
+        raise GraphAPIError(response['error_code'], response[ 'error_msg' ])
 
     return response
 
@@ -237,7 +236,7 @@ def get_user_from_cookie(cookies, app_id, app_secret):
     else:
         return None
 
-def _request_json(url, post_data, timeout=3, attempts=2):
+def _request_json(url, post_data=None, timeout=3, attempts=2):
     '''
     request the given url and parse it as json
     

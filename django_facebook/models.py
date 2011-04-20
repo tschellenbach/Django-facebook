@@ -10,12 +10,12 @@ class FacebookProfileModel(models.Model):
     the fields in.
     '''
     about_me = models.TextField(blank=True, null=True)
-    facebook_id = models.IntegerField(blank=True, null=True)
+    facebook_id = models.BigIntegerField(blank=True, null=True)
     facebook_name = models.CharField(max_length=255, blank=True, null=True)
     facebook_profile_url = models.TextField(blank=True, null=True)
     website_url = models.TextField(blank=True, null=True)
     blog_url = models.TextField(blank=True, null=True)
-    image = models.ImageField(blank=True, null=True, upload_to='profile_images')
+    image = models.ImageField(blank=True, null=True, upload_to='profile_images', max_length=255)
     date_of_birth = models.DateField(blank=True, null=True)
     raw_data = models.TextField(blank=True, null=True)
 
@@ -25,13 +25,14 @@ class FacebookProfileModel(models.Model):
     class Meta:
         abstract = True
         
-    def post_facebook_registration(self):
+    def post_facebook_registration(self, request):
         '''
         Behaviour after registering with facebook
         '''
-        url = reverse('facebook_connect')
-        response = HttpResponseRedirect(url)
-        response.set_cookie('fresh_registration', self.user.id)
+        from django_facebook.utils import next_redirect
+        default_url = reverse('facebook_connect')
+        response = next_redirect(request, default=default_url, next_key='register_next')
+        response.set_cookie('fresh_registration', self.user_id)
         return response
 
 

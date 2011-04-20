@@ -1,10 +1,10 @@
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
+from django.utils import simplejson as json
 from django_facebook import exceptions as facebook_exceptions
 from django_facebook.api import get_facebook_graph
 from random import randint
 import logging
-from django.utils import simplejson as json
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ class CONNECT_ACTIONS:
     class REGISTER: pass
 
 
-def connect_user(request, access_token=None):
+def connect_user(request, access_token=None, facebook_graph=None):
     '''
     Given a request either
     
@@ -25,7 +25,7 @@ def connect_user(request, access_token=None):
     '''
     #TODO, instead of using access_token this should probably accept a facebook_graph as well
     user = None
-    facebook = get_facebook_graph(request, access_token)
+    facebook = facebook_graph or get_facebook_graph(request, access_token)
     assert facebook.is_authenticated()
     facebook_data = facebook.facebook_profile_data()
     force_registration = request.REQUEST.get('force_registration') or request.REQUEST.get('force_registration_hard')
@@ -43,7 +43,14 @@ def connect_user(request, access_token=None):
         authenticated_user = authenticate(facebook_id=facebook_data['id'], **kwargs)
         if authenticated_user and not force_registration:
             action = CONNECT_ACTIONS.LOGIN
-            user = _login_user(request, facebook, authenticated_user, update=getattr(authenticated_user, 'fb_update_required', False))
+
+            ## Has the user registered without Facebook, using the verified FB email address?
+            # It is after all quite common to use email addresses for usernames
+            if not authenticated_user.get_profile().facebook_id:
+                update = True
+            else:
+                update = getattr(authenticated_user, 'fb_update_required', False)
+            user = _login_user(request, facebook, authenticated_user, update=update)
         else:
             action = CONNECT_ACTIONS.REGISTER
             user = _register_user(request, facebook)

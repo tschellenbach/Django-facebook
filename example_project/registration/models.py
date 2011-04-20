@@ -96,7 +96,7 @@ class RegistrationManager(models.Manager):
         username = user.username
         if isinstance(username, unicode):
             username = username.encode('utf-8')
-        activation_key = sha_constructor(salt+username).hexdigest()
+        activation_key = sha_constructor(salt + username).hexdigest()
         return self.create(user=user,
                            activation_key=activation_key)
         

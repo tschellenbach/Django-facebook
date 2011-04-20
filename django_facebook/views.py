@@ -39,7 +39,8 @@ def connect(request):
             try:
                 action, user = connect_user(request)
             except facebook_exceptions.IncompleteProfileError, e:
-                logger.error(unicode(e), exc_info=sys.exc_info(), extra={
+                logger.warn(u'Incomplete profile data encountered with error %s' % e, 
+                    exc_info=sys.exc_info(), extra={
                     'request': request,
                     'data': {
                          'username': request.user.username,
@@ -55,7 +56,7 @@ def connect(request):
             if action is CONNECT_ACTIONS.CONNECT:
                 messages.info(request, _("You have connected your account to %s's facebook profile") % facebook_data['name'])
             elif action is CONNECT_ACTIONS.REGISTER:
-                response = user.get_profile().post_facebook_registration()
+                response = user.get_profile().post_facebook_registration(request)
                 return response
         else:
             return next_redirect(request, additional_params=dict(fb_error_or_cancel=1), next_key=['error_next', 'next'])

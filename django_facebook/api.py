@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_facebook_graph(request, access_token=None):
+def get_facebook_graph(request=None, access_token=None, persistent_token=facebook_settings.FACEBOOK_PERSISTENT_TOKEN):
     '''
     given a request from one of these
     - js authentication flow
@@ -23,19 +23,22 @@ def get_facebook_graph(request, access_token=None):
     
     returns a graph object
     '''
+    if not request and persistent_token:
+        raise ValidationError, 'Request is required if you want to use persistent tokens'
     from django_facebook import official_sdk
     
-    signed_request = request.REQUEST.get('signed_request')
-    cookie_name = 'fbs_%s' % facebook_settings.FACEBOOK_APP_ID
-    oauth_cookie = request.COOKIES.get(cookie_name)
     additional_data = None
-    
-    facebook_open_graph_cached = request.session.get('facebook_open_graph')
+    facebook_open_graph_cached = False
+    if persistent_token:
+        facebook_open_graph_cached = request.session.get('facebook_open_graph')
     if facebook_open_graph_cached:
         #TODO: should handle this in class' pickle protocol, but this is easier
         facebook_open_graph_cached._is_authenticated = None
         
     if not access_token:
+        signed_request = request.REQUEST.get('signed_request')
+        cookie_name = 'fbs_%s' % facebook_settings.FACEBOOK_APP_ID
+        oauth_cookie = request.COOKIES.get(cookie_name)
         #scenario A, we're on a canvas page and need to parse the signed data
         if signed_request:
             additional_data = FacebookAPI.parse_signed_data(signed_request)
@@ -47,7 +50,7 @@ def get_facebook_graph(request, access_token=None):
     
     facebook_open_graph = FacebookAPI(access_token, additional_data)
     
-    if facebook_open_graph.access_token:
+    if facebook_open_graph.access_token and persistent_token:
         request.session['facebook_open_graph'] = facebook_open_graph
     elif facebook_open_graph_cached:
         facebook_open_graph = facebook_open_graph_cached
@@ -263,9 +266,10 @@ class FacebookAPI(GraphAPI):
         '''
         from django.contrib.auth.models import User
         usernames = list(User.objects.filter(username__istartswith=base_username).values_list('username', flat=True))
-        username = base_username
+        usernames_lower = [str(u).lower() for u in usernames]
+        username = str(base_username)
         i = 1
-        while base_username in usernames:
+        while base_username.lower() in usernames_lower:
             base_username = username + str(i)
             i += 1
         return base_username
@@ -286,11 +290,11 @@ class FacebookAPI(GraphAPI):
         if 'profilephp' in username:
             username = None
 
-        if not username:
-            if 'email' in facebook_data:
-                username = cls._username_slugify(facebook_data.get('email').split('@')[0])
-            else:
-                username = cls._username_slugify(facebook_data.get('name'))
+        if not username and 'email' in facebook_data:
+            username = cls._username_slugify(facebook_data.get('email').split('@')[0])
+        
+        if not username or len(username) < 4:
+            username = cls._username_slugify(facebook_data.get('name'))
 
         return username
 

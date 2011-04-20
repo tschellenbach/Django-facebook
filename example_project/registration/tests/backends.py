@@ -42,7 +42,7 @@ class _MockRequestClient(Client):
             'SERVER_NAME':       'testserver',
             'SERVER_PORT':       '80',
             'SERVER_PROTOCOL':   'HTTP/1.1',
-            'wsgi.version':      (1,0),
+            'wsgi.version':      (1, 0),
             'wsgi.url_scheme':   'http',
             'wsgi.errors':       self.errors,
             'wsgi.multiprocess': True,
