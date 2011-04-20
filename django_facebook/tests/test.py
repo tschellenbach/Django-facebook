@@ -43,6 +43,11 @@ class UserConnectTest(FacebookTest):
         action, user = connect_user(self.request, facebook_graph=facebook)
         assert len(user.username) > 4
         assert action == CONNECT_ACTIONS.REGISTER
+        
+    def test_gender(self):
+        facebook = get_facebook_graph(access_token='new_user', persistent_token=False)
+        data = facebook.facebook_registration_data()
+        assert data['gender'] == 'm'
     
     def test_double_username(self):
         '''

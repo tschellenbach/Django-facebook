@@ -171,6 +171,12 @@ class FacebookAPI(GraphAPI):
             #no more fake email accounts for facebook
             del user_data['email']
         
+        gender = profile.get('gender', None)
+         
+        if gender == 'male':
+            user_data['gender'] = 'm'
+        elif gender == 'female':
+            user_data['gender'] = 'f'
 
         user_data['username'] = FacebookAPI._retrieve_facebook_username(user_data)
         user_data['password2'] = user_data['password1'] = FacebookAPI._generate_fake_password()
