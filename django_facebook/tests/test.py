@@ -24,6 +24,17 @@ class UserConnectTest(FacebookTest):
     '''
     fixtures = ['users.json']
     
+    def test_full_connect(self):
+        #going for a register, connect and login
+        facebook = get_facebook_graph(access_token='short_username', persistent_token=False)
+        action, user = connect_user(self.request, facebook_graph=facebook)
+        assert action == CONNECT_ACTIONS.REGISTER
+        action, user = connect_user(self.request, facebook_graph=facebook)
+        assert action == CONNECT_ACTIONS.CONNECT
+        self.request.user = AnonymousUser()
+        action, user = connect_user(self.request, facebook_graph=facebook)
+        assert action == CONNECT_ACTIONS.LOGIN
+    
     def test_invalid_token(self):
         self.assertRaises(AssertionError, connect_user, self.request, access_token='invalid')
 
