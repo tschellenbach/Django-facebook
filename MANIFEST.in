@@ -1,8 +1,6 @@
 include LICENSE.txt
 include MANIFEST.in
 include README.rest
-recursive-include docs *
-recursive-include facebook_example *
 recursive-include django_facebook/static *
 recursive-include django_facebook/templates *
 recursive-include django_facebook/fixtures *
