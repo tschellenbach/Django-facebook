@@ -133,7 +133,11 @@ setup(
     description = DESCRIPTION,
     long_description=long_description,
     classifiers = CLASSIFIERS,
-    #install_requires = ('django-registration',),
+#    tests_require=[
+#        'django',
+#        'dingus',
+#    ],
+#    test_suite='django_facebook.runtests.runtests',
 )
 
 
