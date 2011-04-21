@@ -101,14 +101,15 @@ license_text = open('LICENSE.txt').read()
 long_description = open('README.rest').read()
 
 CLASSIFIERS = [
-                'Development Status :: 4 - Beta',
+                'Development Status :: 5 - Production/Stable',
                 'Intended Audience :: Developers',
                 'License :: OSI Approved :: GNU General Public License (GPL)',
                 'Natural Language :: English',
                 'Operating System :: OS Independent',
                 'Programming Language :: Python',
                 'Topic :: Scientific/Engineering :: Mathematics',
-                'Topic :: Software Development :: Libraries :: Python Modules'
+                'Topic :: Software Development :: Libraries :: Python Modules',
+                'Framework :: Django'
               ]
 
 DESCRIPTION = """Facebook open graph API client in python. Enables django applications to register users using facebook.
