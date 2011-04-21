@@ -10,12 +10,13 @@ class FacebookProfileModel(models.Model):
     the fields in.
     '''
     about_me = models.TextField(blank=True, null=True)
-    facebook_id = models.BigIntegerField(blank=True, null=True)
+    facebook_id = models.BigIntegerField(blank=True, null=True, unique=True)
     facebook_name = models.CharField(max_length=255, blank=True, null=True)
     facebook_profile_url = models.TextField(blank=True, null=True)
     website_url = models.TextField(blank=True, null=True)
     blog_url = models.TextField(blank=True, null=True)
-    image = models.ImageField(blank=True, null=True, upload_to='profile_images', max_length=255)
+    image = models.ImageField(blank=True, null=True,
+        upload_to='profile_images', max_length=255)
     date_of_birth = models.DateField(blank=True, null=True)
     raw_data = models.TextField(blank=True, null=True)
 
@@ -35,5 +36,3 @@ class FacebookProfileModel(models.Model):
         response.set_cookie('fresh_registration', self.user_id)
         return response
 
-
-        

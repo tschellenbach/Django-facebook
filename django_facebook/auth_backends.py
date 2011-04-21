@@ -15,19 +15,24 @@ class FacebookBackend(backends.ModelBackend):
         We filter using an OR to allow existing members to connect with their facebook ID using email.
         
         '''
-        #filter on email or facebook id
-        filter_clause = []
-        if facebook_id:
-            filter_clause.append(Q(facebook_id=facebook_id))
-        if facebook_email:
-            filter_clause.append(Q(user__email__iexact=facebook_email))
-
-        #get the profile model and search for our user
-        if filter_clause:
-            filter_clause = reduce(operator.or_, filter_clause)
+        if facebook_id or facebook_email:
             profile_class = get_profile_class()
-            profiles = profile_class.objects.filter(filter_clause).order_by('user')[:1]
-            if profiles:
-                user = profiles[0].user
+            profiles = profile_class.objects.all().order_by('user')
+            profiles = profiles.select_related('user')
+            profile = None
+            
+            #filter on email or facebook id, two queries for better
+            #queryplan with large data sets
+            if facebook_id:
+                profiles = profiles.filter(facebook_id=facebook_id)[:1]
+                profile = profiles[0] if profiles else None
+            if profile is None and facebook_email:
+                profiles = profiles.filter(user__email__iexact=facebook_email)[:1]
+                profile = profiles[0] if profiles else None
+
+            if profile:
+                # populate the profile cache while we're getting it anyway
+                user = profile.user
+                user._profile = profile
                 return user
                 
