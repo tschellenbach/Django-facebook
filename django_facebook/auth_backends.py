@@ -17,17 +17,17 @@ class FacebookBackend(backends.ModelBackend):
         '''
         if facebook_id or facebook_email:
             profile_class = get_profile_class()
-            profiles = profile_class.objects.all().order_by('user')
-            profiles = profiles.select_related('user')
+            profile_query = profile_class.objects.all().order_by('user')
+            profile_query = profile_query.select_related('user')
             profile = None
             
             #filter on email or facebook id, two queries for better
             #queryplan with large data sets
             if facebook_id:
-                profiles = profiles.filter(facebook_id=facebook_id)[:1]
+                profiles = profile_query.filter(facebook_id=facebook_id)[:1]
                 profile = profiles[0] if profiles else None
             if profile is None and facebook_email:
-                profiles = profiles.filter(user__email__iexact=facebook_email)[:1]
+                profiles = profile_query.filter(user__email__iexact=facebook_email)[:1]
                 profile = profiles[0] if profiles else None
 
             if profile:
