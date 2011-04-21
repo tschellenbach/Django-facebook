@@ -28,10 +28,8 @@ TODO
 - paco error, login not authenticating somehow
 /group/2086
 /group/2076
-- fix setup.py to include example project
 - refactor profile updating and validation (one flow for register and connect)
 - Retry on facebook connection errors
 - unique fb ids (uppon connect clear older ids?)
 - errors op email already in use op register flow (auth backend issues?)
-
 '''

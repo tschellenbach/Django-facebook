@@ -8,6 +8,7 @@ from django_facebook.tests.base import FacebookTest
 import logging
 import unittest
 from django.utils import simplejson
+from django_facebook.auth_backends import FacebookBackend
 
 
 
@@ -61,6 +62,27 @@ class UserConnectTest(FacebookTest):
         facebook = get_facebook_graph(access_token='same_username', persistent_token=False)
         action, new_user = connect_user(self.request, facebook_graph=facebook)
         assert user.username != new_user.username and user.id != new_user.id
+    
+    
+class AuthBackend(FacebookTest):
+    def test_auth_backend(self):
+        backend = FacebookBackend()
+        facebook = get_facebook_graph(access_token='new_user', persistent_token=False)
+        action, user = connect_user(self.request, facebook_graph=facebook)
+        facebook_email = user.email
+        facebook_id = user.get_profile().facebook_id
+        auth_user = backend.authenticate(facebook_email=facebook_email)
+        assert auth_user == user
+        
+        auth_user = backend.authenticate(facebook_id=facebook_id)
+        assert auth_user == user
+        
+        auth_user = backend.authenticate(facebook_id=facebook_id, facebook_email=facebook_email)
+        assert auth_user == user
+        
+        auth_user = backend.authenticate()
+        assert not auth_user
+        
     
 class FQLTest(FacebookTest):
     def test_graph_fql(self):

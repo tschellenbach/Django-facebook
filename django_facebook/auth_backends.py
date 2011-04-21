@@ -20,10 +20,10 @@ class FacebookBackend(backends.ModelBackend):
             filter_clause.append(Q(facebook_id=facebook_id))
         if facebook_email:
             filter_clause.append(Q(user__email__iexact=facebook_email))
-        filter_clause = reduce(operator.or_, filter_clause) 
 
         #get the profile model and search for our user
         if filter_clause:
+            filter_clause = reduce(operator.or_, filter_clause)
             #TODO: isn't there a dedicated function for this in django somewhere?
             profile_string = settings.AUTH_PROFILE_MODULE
             profile_model = profile_string.split('.')[-1]
