@@ -1,7 +1,7 @@
+
 from django.http import QueryDict
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-
 
 
 
@@ -36,7 +36,6 @@ def get_profile_class():
     return profile_class
     
     
-    
-    
+
     
     

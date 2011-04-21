@@ -153,6 +153,7 @@ class FacebookAPI(GraphAPI):
         try:
             user_data = FacebookAPI._convert_facebook_data(facebook_profile_data)
         except Exception, e:
+            raise
             FacebookAPI._report_broken_facebook_data(user_data, facebook_profile_data, e)
 
         return user_data

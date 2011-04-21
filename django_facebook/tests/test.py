@@ -37,6 +37,10 @@ class UserConnectTest(FacebookTest):
         self.request.user = AnonymousUser()
         action, user = connect_user(self.request, facebook_graph=facebook)
         assert action == CONNECT_ACTIONS.LOGIN
+        
+    def test_utf8(self):
+        facebook = get_facebook_graph(access_token='unicode_string', persistent_token=False)
+        action, user = connect_user(self.request, facebook_graph=facebook)
     
     def test_invalid_token(self):
         self.assertRaises(AssertionError, connect_user, self.request, access_token='invalid')
