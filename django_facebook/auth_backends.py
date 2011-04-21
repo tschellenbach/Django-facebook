@@ -3,7 +3,7 @@ from django.contrib.auth import models, backends
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.query_utils import Q
 import operator
-from utils import get_profile_class
+from django_facebook.utils import get_profile_class
 #from user import models as models_user
 
 
