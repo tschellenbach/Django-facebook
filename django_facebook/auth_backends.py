@@ -3,6 +3,7 @@ from django.contrib.auth import models, backends
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.query_utils import Q
 import operator
+from utils import get_profile_class
 #from user import models as models_user
 
 
@@ -24,10 +25,7 @@ class FacebookBackend(backends.ModelBackend):
         #get the profile model and search for our user
         if filter_clause:
             filter_clause = reduce(operator.or_, filter_clause)
-            #TODO: isn't there a dedicated function for this in django somewhere?
-            profile_string = settings.AUTH_PROFILE_MODULE
-            profile_model = profile_string.split('.')[-1]
-            profile_class = ContentType.objects.get(model=profile_model.lower()).model_class()
+            profile_class = get_profile_class()
             profiles = profile_class.objects.filter(filter_clause).order_by('user')[:1]
             if profiles:
                 user = profiles[0].user

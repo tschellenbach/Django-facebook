@@ -5,6 +5,7 @@ from django_facebook import exceptions as facebook_exceptions
 from django_facebook.api import get_facebook_graph
 from random import randint
 import logging
+from utils import get_profile_class
 
 logger = logging.getLogger(__name__)
 
@@ -77,35 +78,17 @@ def _connect_user(request, facebook):
     if not facebook.is_authenticated():
         raise ValueError, 'Facebook needs to be authenticated for connect flows'
     
-    facebook_data = facebook.facebook_registration_data()
-    profile = request.user.get_profile()
-    user = request.user
-    #update the fields in the profile
-    profile_fields = profile._meta.fields
-    user_fields = user._meta.fields
-    profile_field_names = [f.name for f in profile_fields]
-    user_field_names = [f.name for f in user_fields]
-    facebook_fields = ['facebook_name', 'facebook_profile_url', 'date_of_birth', 'about_me', 'facebook_id', 'website_url', 'first_name', 'last_name']
-
-    for f in facebook_fields:
-        facebook_value = facebook_data.get(f, False)
-        if facebook_value:
-            if f in profile_field_names and not getattr(profile, f, False):
-                setattr(profile, f, facebook_value)
-            elif f in user_field_names and not getattr(user, f, False):
-                setattr(user, f, facebook_value)
-
-    if hasattr(profile, 'raw_data'):
-        serialized_fb_data = json.dumps(facebook.facebook_profile_data())
-        profile.raw_data = serialized_fb_data
-
-    profile.save()
-    user.save()
+    user = _update_user(request.user, facebook)
 
     return user
 
 
 def _register_user(request, facebook, profile_callback=None):
+    '''
+    Creates a new user and authenticates
+    The registration form handles the registration and validation
+    Other data on the user profile is updates afterwards
+    '''
     if not facebook.is_authenticated():
         raise ValueError, 'Facebook needs to be authenticated for connect flows'
     
@@ -135,7 +118,6 @@ def _register_user(request, facebook, profile_callback=None):
     if not form.is_valid():
         error = facebook_exceptions.IncompleteProfileError('Facebook data %s gave error %s' % (facebook_data, form.errors))
         error.form = form
-        
         raise error
 
     if new_reg_module:
@@ -149,20 +131,60 @@ def _register_user(request, facebook, profile_callback=None):
     else:
         new_user = form.save(profile_callback=profile_callback)
     
-    profile = new_user.get_profile()
-    profile.date_of_birth = facebook_data.get('date_of_birth')
-    if hasattr(profile, 'raw_data'):
-        serialized_fb_data = json.dumps(facebook.facebook_profile_data())
-        profile.raw_data = serialized_fb_data
-    profile.save()
+    #update some extra data not yet done by the form
+    new_user = _update_user(new_user, facebook)
         
     #IS this the correct way for django 1.3? seems to require the backend attribute for some reason
     new_user.backend = 'django_facebook.auth_backends.FacebookBackend'
     auth.login(request, new_user)
     
-    
-    
-
     return new_user
+
+
+def _update_user(user, facebook):
+    '''
+    Updates the user and his/her profile with the data from facebook
+    '''
+    #if you want to add fields to ur user model instead of the profile thats fine
+    #partial support (everything except raw_data and facebook_id is included)
+    facebook_data = facebook.facebook_registration_data()
+    facebook_fields = ['facebook_name', 'facebook_profile_url', 'date_of_birth', 'about_me', 'website_url', 'first_name', 'last_name']
+    user_dirty = profile_dirty = False
+    profile = user.get_profile()
+    profile_field_names = [f.name for f in profile._meta.fields]
+    user_field_names = [f.name for f in user._meta.fields]
+    
+    #set the facebook id and make sure we are the only user with this id
+    if facebook_data['facebook_id'] != profile.facebook_id:
+        profile.facebook_id = facebook_data['facebook_id']
+        profile_dirty = True
+        #like i said, me and only me
+        profile_class = get_profile_class()
+        profile_class.objects.filter(facebook_id=profile.facebook_id).exclude(user__id=user.id).update(facebook_id=None)
+
+    #update all fields on both user and profile
+    for f in facebook_fields:
+        facebook_value = facebook_data.get(f, False)
+        if facebook_value:
+            if f in profile_field_names and not getattr(profile, f, False):
+                setattr(profile, f, facebook_value)
+                profile_dirty = True
+            elif f in user_field_names and not getattr(user, f, False):
+                setattr(user, f, facebook_value)
+                user_dirty = True
+
+    #write the raw data in case we missed something
+    if hasattr(profile, 'raw_data'):
+        serialized_fb_data = json.dumps(facebook.facebook_profile_data())
+        profile.raw_data = serialized_fb_data
+        profile_dirty = True
+        
+    #save both models if they changed
+    if user_dirty:
+        user.save()
+    if profile_dirty:
+        profile.save()
+        
+    return user
 
 
