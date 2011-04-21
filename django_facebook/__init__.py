@@ -4,7 +4,7 @@ __credits__ = ['Thierry Schellenbach, mellowmorning.com, @tschellenbach']
 
 
 __license__ = 'BSD'
-__version__ = '2.0.18'
+__version__ = '2.1'
 __maintainer__ = 'Thierry Schellenbach'
 __email__ = 'thierryschellenbach@gmail.com'
 __status__ = 'Production'
@@ -30,6 +30,5 @@ TODO
 /group/2076
 - refactor profile updating and validation (one flow for register and connect)
 - Retry on facebook connection errors
-- unique fb ids (uppon connect clear older ids?)
 - errors op email already in use op register flow (auth backend issues?)
 '''
