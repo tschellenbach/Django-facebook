@@ -14,13 +14,16 @@ from django_facebook.auth_backends import FacebookBackend
 
 logger = logging.getLogger(__name__)
 
-    
+'''
+TODO
+The views are currently untested,
+only the underlying functionality is.
+(need to fake facebook cookie stuff to correctly test the views)
+'''
     
 class UserConnectTest(FacebookTest):
     '''
     Tests the connect user functionality
-    
-    
     '''
     fixtures = ['users.json']
     
