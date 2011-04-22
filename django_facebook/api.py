@@ -8,6 +8,7 @@ import datetime
 import hashlib
 import hmac
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -153,8 +154,9 @@ class FacebookAPI(GraphAPI):
         try:
             user_data = FacebookAPI._convert_facebook_data(facebook_profile_data)
         except Exception, e:
-            raise
             FacebookAPI._report_broken_facebook_data(user_data, facebook_profile_data, e)
+            if settings.DEBUG:
+                raise
 
         return user_data
 
@@ -262,8 +264,23 @@ class FacebookAPI(GraphAPI):
         - exception
         - stacktrace
         '''
-        message = 'The following facebook data failed %s with error %s' % (json.dumps(original_facebook_data), unicode(e))
-        mail_admins('Broken facebook data', message)
+        from pprint import pformat
+        data_dump = json.dumps(original_facebook_data)
+        data_dump_python = pformat(original_facebook_data)
+        message_format = 'The following facebook data failed with error %s\n\n json %s \n\n python %s \n'
+        data_tuple = (unicode(e), data_dump, data_dump_python)
+        #message = message_format % data_tuple
+        #mail_admins('Broken facebook data', message)
+        
+        logger.error(message_format % data_tuple,
+            exc_info=sys.exc_info(), extra={
+            'data': {
+                 'data_dump': data_dump,
+                 'data_dump_python': data_dump_python,
+                 'facebook_data': facebook_data,
+                 'body': message_format % data_tuple,
+             }
+        })
 
 
     @classmethod
