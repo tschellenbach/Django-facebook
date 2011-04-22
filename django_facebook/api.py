@@ -155,8 +155,7 @@ class FacebookAPI(GraphAPI):
             user_data = FacebookAPI._convert_facebook_data(facebook_profile_data)
         except Exception, e:
             FacebookAPI._report_broken_facebook_data(user_data, facebook_profile_data, e)
-            if settings.DEBUG:
-                raise
+            raise
 
         return user_data
 
