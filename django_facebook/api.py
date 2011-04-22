@@ -166,7 +166,10 @@ class FacebookAPI(GraphAPI):
         '''
         user_data = facebook_profile_data.copy()
         profile = facebook_profile_data.copy()
-        user_data['website_url'] = cls._extract_url(profile.get('website'))
+        website = profile.get('website')
+        if website:
+            user_data['website_url'] = cls._extract_url(website)
+            
         user_data['facebook_profile_url'] = profile.get('link')
         user_data['facebook_name'] = profile.get('name')
         if len(user_data.get('email', '')) > 75:
@@ -215,10 +218,14 @@ class FacebookAPI(GraphAPI):
         >>> url_text = 'http://www.fahiolista.com/www.myspace.com/www.google.com'
         >>> FacebookAPI._extract_url(url_text)
         u'http://www.fahiolista.com/www.myspace.com/www.google.com'
+        
+        >>> url_text = u"""http://fernandaferrervazquez.blogspot.com/\r\nhttp://twitter.com/fferrervazquez\r\nhttp://comunidad.redfashion.es/profile/fernandaferrervazquez\r\nhttp://www.facebook.com/group.php?gid3D40257259997&ref3Dts\r\nhttp://fernandaferrervazquez.spaces.live.com/blog/cns!EDCBAC31EE9D9A0C!326.trak\r\nhttp://www.linkedin.com/myprofile?trk3Dhb_pro\r\nhttp://www.youtube.com/account#profile\r\nhttp://www.flickr.com/\r\n Mi galer\xeda\r\nhttp://www.flickr.com/photos/wwwfernandaferrervazquez-showroomrecoletacom/ \r\n\r\nhttp://www.facebook.com/pages/Buenos-Aires-Argentina/Fernanda-F-Showroom-Recoleta/200218353804?ref3Dts\r\nhttp://fernandaferrervazquez.wordpress.com/wp-admin/"""        
+        >>> FacebookAPI._extract_url(url_text)
+        u'http://fernandaferrervazquez.blogspot.com/a'
         '''
         import re
-        text_url_field = str(text_url_field)
-        seperation = re.compile('[ |,|;]+')
+        text_url_field = text_url_field.encode('utf8')
+        seperation = re.compile('[ ,;\n\r]+')
         parts = seperation.split(text_url_field)
         for part in parts:
             from django.forms import URLField
@@ -252,8 +259,6 @@ class FacebookAPI(GraphAPI):
                 #Facebook sometimes provides a partial date format ie 04/07 (ignore those)
                 if data_of_birth_string.count('/') != 1:
                     raise
-
-
 
     @classmethod
     def _report_broken_facebook_data(cls, facebook_data, original_facebook_data, e):

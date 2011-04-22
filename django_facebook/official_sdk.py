@@ -306,7 +306,7 @@ def get_user_from_cookie(cookies, app_id, app_secret):
     else:
         return None
 
-def _request_json(url, post_data=None, timeout=3, attempts=2):
+def _request_json(url, post_data=None, timeout=3, attempts=2, test_file=None):
     '''
     request the given url and parse it as json
     
@@ -316,15 +316,19 @@ def _request_json(url, post_data=None, timeout=3, attempts=2):
     TODO: support timeout in python 2.5
     '''
     from django.utils import simplejson
-    try:
-        response_file = urllib2.urlopen(url, post_data)
-    except urllib2.HTTPError, e:
-        if not hasattr(e, 'read'):
-            raise
-        response_file = e
+    if test_file:
+        response_file = test_file
+    else:
+        try:
+            response_file = urllib2.urlopen(url, post_data)
+        except urllib2.HTTPError, e:
+            if not hasattr(e, 'read'):
+                raise
+            response_file = e
     
     try:
-        response = response_file.read()
+        response = response_file.read().decode('utf8')
+        #we only use unicode in the application, no bugs for our i18n friends
         parsed_response = simplejson.loads(response)
     finally:
         response_file.close()
@@ -346,7 +350,6 @@ def get_app_access_token(application_id, application_secret):
     
     file = urllib2.urlopen("https://graph.facebook.com/oauth/access_token?" +
                               urllib.urlencode(args))
-              
     try:
         result = file.read().split("=")[1]
     finally:

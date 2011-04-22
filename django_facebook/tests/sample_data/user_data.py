@@ -69,7 +69,7 @@ user_data['unicode_string'] = {u'bio': u'ATELIER : TODOS LOS DIAS DE 14 A 22 HS 
                 {u'school': {u'id': u'106011862771707',
                              u'name': u'Mary E. Graham'},
                  u'type': u'High School'}],
- u'email': u'letsnotshareheremail@hotmail.com',
+ u'email': u'notfersharerringemail@hotmail.com',
  u'first_name': u'Fernanda',
  u'gender': u'female',
  u'hometown': {u'id': u'109238842431095',
@@ -103,5 +103,4 @@ user_data['unicode_string'] = {u'bio': u'ATELIER : TODOS LOS DIAS DE 14 A 22 HS 
                            u'name': u'Fernanda F -Showroom Recoleta'}],
             u'start_date': u'2008-12'},
            {u'employer': {u'id': u'198034683561689',
-                          u'name': u'el atelier de la isla'}}]
- }
+                          u'name': u'el atelier de la isla'}}]}
