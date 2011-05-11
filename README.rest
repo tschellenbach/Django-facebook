@@ -41,7 +41,7 @@ Works best with (not required)
     
 TODO (again help is appreciated!)
 ---------------------------------
-* testing (especially a dummy FB api)
+* simplify these instructions
 * separate user data conversion and FB api improvements
 * fully replace the facebook GraphAPI which they no longer support
 * add nice exception classes to the facebook official sdk replacement   
@@ -145,6 +145,7 @@ Note that you can control which page to go to after connect using the next input
 <input type="hidden" value="{{ request.path }}" name="next" />
 </form>
     
+On a final note the Facebook javascript SDK requires you to place a fb_root div somewhere on your page. (See the example).
     
 Django Jobs
 -----------
