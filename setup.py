@@ -4,7 +4,6 @@ from distutils.util import convert_path
 from django_facebook import __version__, __maintainer__, __email__
 from fnmatch import fnmatchcase
 import os
-import os
 import sys
 try:
     from setuptools import setup, find_packages
@@ -25,30 +24,30 @@ def find_package_data(where='.', package='', exclude=standard_exclude,
     """
     Return a dictionary suitable for use in ``package_data``
     in a distutils ``setup.py`` file.
-    
+
     The dictionary looks like::
-    
+
         {'package': [files]}
-    
+
     Where ``files`` is a list of all the files in that package that
     don't match anything in ``exclude``.
-    
+
     If ``only_in_packages`` is true, then top-level directories that
     are not packages won't be included (but directories under packages
     will).
-    
+
     Directories matching any pattern in ``exclude_directories`` will
     be ignored; by default directories with leading ``.``, ``CVS``,
     and ``_darcs`` will be ignored.
-    
+
     If ``show_ignored`` is true, then all the files that aren't
     included in package data are shown on stderr (for debugging
     purposes).
-    
+
     Note patterns use wildcards, or can be exact paths (including
     leading ``./``), and all searching is case-insensitive.
     """
-    
+
     out = {}
     stack = [(convert_path(where), '', package, only_in_packages)]
     while stack:
@@ -114,7 +113,7 @@ CLASSIFIERS = [
 
 DESCRIPTION = """Facebook open graph API client in python. Enables django applications to register users using facebook.
 Fixes issues with the official but unsupported Facebook python-sdk. Enables mobile facebook authentication.
-Canvas page authentication for facebook applications. FQL access via the server side api. 
+Canvas page authentication for facebook applications. FQL access via the server side api.
 """
 
 
