@@ -1,10 +1,7 @@
-
 from django.http import QueryDict
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-
-
-
+from django.db.models.loading import get_model
 
 def next_redirect(request, default='/', additional_params=None, next_key='next'):
     from django.http import HttpResponseRedirect
@@ -29,13 +26,8 @@ def next_redirect(request, default='/', additional_params=None, next_key='next')
     return HttpResponseRedirect(redirect_url)
 
 def get_profile_class():
-    #TODO: isn't there a dedicated function for this in django somewhere?
-    profile_string = settings.AUTH_PROFILE_MODULE
-    profile_model = profile_string.split('.')[-1]
-    profile_class = ContentType.objects.get(model=profile_model.lower()).model_class()
+    profile_model = settings.AUTH_PROFILE_MODULE.lower().split('.') # get_model takes lowercased arguments
+    profile_class = get_model(profile_model[0],profile_model[1]) # get_model(app_name,model_class_name)
+    if profile_class == None:
+        raise Exception('Could not get profile class.')
     return profile_class
-    
-    
-
-    
-    
