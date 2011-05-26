@@ -334,6 +334,64 @@ class FacebookAPI(GraphAPI):
         from django.template.defaultfilters import slugify
         return slugify(username).replace('-', '_')
     
+    def store_likes(self, user, limit=1000, store=facebook_settings.FACEBOOK_STORE_LIKES):
+        from django_facebook.models import FacebookLike
+        likes_response = self.get_connections('me', 'likes', limit=limit)
+        likes = likes_response and likes_response.get('data')
+        logger.info('found %s likes' % len(likes))
+        
+        if likes and store:
+            logger.info('storing likes to db')
+            for like in likes:
+                created_time = datetime.datetime.strptime(like['created_time'], "%Y-%m-%dT%H:%M:%S+0000")
+                defaults = dict(created_time=created_time, name=like['name'])
+                FacebookLike.objects.get_or_create(
+                    user=user, facebook_id=like['id'], defaults=defaults
+                )
+        
+        return likes
+    
+    def store_friends(self, user, limit=1000, store=facebook_settings.FACEBOOK_STORE_FRIENDS):
+        '''
+        Sends a request to the facebook api to retrieve a users friends and stores them locally
+        '''
+        from django_facebook.models import FacebookUser
+        #get the users friends
+        friends_response = self.get_connections('me', 'friends', limit=limit)
+        friends = friends_response and friends_response.get('data')
+        logger.info('found %s friends' % len(friends))
+        
+        #store the users for later retrieval
+        if store and friends:
+            logger.info('storing friends to db')
+            for friend in friends:
+                defaults = dict(name=friend['name'])
+                FacebookUser.objects.get_or_create(
+                    user=user, facebook_id=friend['id'], defaults=defaults
+                )
+        
+        return friends
+    
+    def registered_friends(self, user):
+        '''
+        Returns all profile models which are already registered on your site
+        
+        and a list of friends which are not on your site
+        '''
+        from django_facebook.utils import get_profile_class
+        profile_class = get_profile_class()
+        friends = self.store_friends(user, limit=1000)
+        if friends:
+            friend_ids = [f['id'] for f in friends]
+            friend_objects = profile_class.objects.filter(facebook_id__in=friend_ids).select_related('user')
+            registered_ids = [f.facebook_id for f in friend_objects]
+            new_friends = [f for f in friends if f['id'] not in registered_ids]
+        else:
+            new_friends = []
+            friend_objects = []
+            
+        return friend_objects, new_friends
+    
 def base64_url_decode_php_style(inp):
     '''
     PHP follows a slightly different protocol for base64 url decode.
