@@ -18,6 +18,10 @@ FACEBOOK_TRACK_RAW_DATA = getattr(settings, 'FACEBOOK_TRACK_RAW_DATA', False)
 #Store the facebook authentication in session
 FACEBOOK_PERSISTENT_TOKEN = getattr(settings, 'FACEBOOK_PERSISTENT_TOKEN', False)
 
+#if we should store friends and likes
+FACEBOOK_STORE_LIKES = getattr(settings, 'FACEBOOK_STORE_LIKES', False)
+FACEBOOK_STORE_FRIENDS = getattr(settings, 'FACEBOOK_STORE_FRIENDS', False)
+
 #check for required settings
 required_settings = ['FACEBOOK_API_KEY', 'FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET']
 locals_dict = locals()
