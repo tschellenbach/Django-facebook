@@ -134,7 +134,7 @@ setup(
     classifiers = CLASSIFIERS,
     install_requires=[
         'Django>=1.2',
-    ],
+    ]
 #    tests_require=[
 #        'django',
 #        'dingus',
