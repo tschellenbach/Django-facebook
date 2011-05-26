@@ -132,6 +132,9 @@ setup(
     description = DESCRIPTION,
     long_description=long_description,
     classifiers = CLASSIFIERS,
+    install_requires=[
+        'Django>=1.2',
+    ],
 #    tests_require=[
 #        'django',
 #        'dingus',
