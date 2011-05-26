@@ -37,3 +37,27 @@ class FacebookProfileModel(models.Model):
         
         return response
 
+
+class FacebookUser(models.Model):
+    '''
+    Model for storing a users friends
+    '''
+    user = models.ForeignKey('auth.User')
+    facebook_id = models.BigIntegerField()
+    name = models.TextField()
+
+    class Meta:
+        unique_together = ['user', 'facebook_id']
+
+class FacebookLike(models.Model):
+    '''
+    Model for storing all of a users fb likes
+    '''
+    user = models.ForeignKey('auth.User')
+    facebook_id = models.BigIntegerField()
+    name = models.TextField()
+    category = models.TextField(blank=True, null=True)
+    created_time = models.DateTimeField()
+    
+    class Meta:
+        unique_together = ['user', 'facebook_id']
