@@ -356,19 +356,22 @@ class FacebookAPI(GraphAPI):
         Sends a request to the facebook api to retrieve a users friends and stores them locally
         '''
         from django_facebook.models import FacebookUser
-        #get the users friends
-        friends_response = self.get_connections('me', 'friends', limit=limit)
-        friends = friends_response and friends_response.get('data')
-        logger.info('found %s friends' % len(friends))
         
-        #store the users for later retrieval
-        if store and friends:
-            logger.info('storing friends to db')
-            for friend in friends:
-                defaults = dict(name=friend['name'])
-                FacebookUser.objects.get_or_create(
-                    user=user, facebook_id=friend['id'], defaults=defaults
-                )
+        #get the users friends
+        friends = getattr(self, '_friends', None)
+        if friends is None:
+            friends_response = self.get_connections('me', 'friends', limit=limit)
+            friends = friends_response and friends_response.get('data')
+            logger.info('found %s friends' % len(friends))
+            
+            #store the users for later retrieval
+            if store and friends:
+                logger.info('storing friends to db')
+                for friend in friends:
+                    defaults = dict(name=friend['name'])
+                    FacebookUser.objects.get_or_create(
+                        user=user, facebook_id=friend['id'], defaults=defaults
+                    )
         
         return friends
     

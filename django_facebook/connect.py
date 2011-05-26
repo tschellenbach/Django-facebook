@@ -1,6 +1,7 @@
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
 from django.utils import simplejson as json
+from django_facebook import settings as facebook_settings
 from django_facebook import exceptions as facebook_exceptions
 from django_facebook.api import get_facebook_graph
 from random import randint
@@ -55,6 +56,12 @@ def connect_user(request, access_token=None, facebook_graph=None):
         else:
             action = CONNECT_ACTIONS.REGISTER
             user = _register_user(request, facebook)
+            
+    #store likes and friends if configured
+    if facebook_settings.FACEBOOK_STORE_LIKES:
+        facebook.store_likes(user)
+    if facebook_settings.FACEBOOK_STORE_FRIENDS:
+        facebook.store_friends(user)
             
     return action, user
 
