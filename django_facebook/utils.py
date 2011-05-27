@@ -51,12 +51,8 @@ def mass_get_or_create(model_class, base_queryset, id_field, default_dict, globa
     '''
     current_instances = list(base_queryset)
     current_ids = [unicode(getattr(c, id_field)) for c in current_instances]
-    print model_class
-    print 'current', current_ids
     given_ids = map(unicode, default_dict.keys())
-    print 'give', given_ids
     new_ids = [g for g in given_ids if g not in current_ids] 
-    print 'new', new_ids
     inserted_model_instances = []
     for new_id in new_ids:
         defaults = default_dict[new_id]

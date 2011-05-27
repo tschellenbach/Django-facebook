@@ -360,9 +360,6 @@ class FacebookAPI(GraphAPI):
             )
             logger.debug('found %s likes and inserted %s new likes', len(current_likes), len(inserted_likes))
                
-                
-                
-        
         return likes
     
     def store_friends(self, user, limit=1000, store=facebook_settings.FACEBOOK_STORE_FRIENDS):
@@ -396,7 +393,6 @@ class FacebookAPI(GraphAPI):
                 )
                 logger.debug('found %s friends and inserted %s new ones', len(current_friends), len(inserted_friends))
                     
-        
         return friends
     
     def registered_friends(self, user):
