@@ -38,6 +38,8 @@ class FacebookProfileModel(models.Model):
         return response
 
 
+        
+
 class FacebookUser(models.Model):
     '''
     Model for storing a users friends
@@ -61,3 +63,7 @@ class FacebookLike(models.Model):
     
     class Meta:
         unique_together = ['user', 'facebook_id']
+        
+        
+        
+        
