@@ -36,6 +36,39 @@ def get_profile_class():
     return profile_class
     
     
+def mass_get_or_create(model_class, base_queryset, id_field, default_dict, global_defaults):
+    '''
+    Updates the data by inserting all not found records
+    
+    Doesnt delete records if not in the new data
+
+    example usage
+    >>> model_class = ListItem #the class for which you are doing the insert
+    >>> base_query_set = ListItem.objects.filter(user=request.user, list=1) #query for retrieving currently stored items
+    >>> id_field = 'user_id' #the id field on which to check
+    >>> default_dict = {'12': dict(comment='my_new_item'), '13': dict(comment='super')} #list of default values for inserts
+    >>> global_defaults = dict(user=request.user, list_id=1) #global defaults
+    '''
+    current_instances = list(base_queryset)
+    current_ids = [unicode(getattr(c, id_field)) for c in current_instances]
+    print model_class
+    print 'current', current_ids
+    given_ids = map(unicode, default_dict.keys())
+    print 'give', given_ids
+    new_ids = [g for g in given_ids if g not in current_ids] 
+    print 'new', new_ids
+    inserted_model_instances = []
+    for new_id in new_ids:
+        defaults = default_dict[new_id]
+        defaults[id_field] = new_id
+        defaults.update(global_defaults)
+        model_instance = model_class.objects.create(
+            **defaults
+        )
+        inserted_model_instances.append(model_instance)
+        
+    #returns a list of existing and new items
+    return current_instances, inserted_model_instances
 
     
     

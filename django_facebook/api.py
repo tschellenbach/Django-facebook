@@ -9,6 +9,7 @@ import hashlib
 import hmac
 import logging
 import sys
+from django_facebook.utils import mass_get_or_create
 
 logger = logging.getLogger(__name__)
 
@@ -342,12 +343,25 @@ class FacebookAPI(GraphAPI):
         
         if likes and store:
             logger.info('storing likes to db')
+            base_queryset = FacebookLike.objects.filter(user=user)
+            base_queryset.all().delete()
+            global_defaults = dict(user=user)
+            id_field = 'facebook_id'
+            default_dict = {}
             for like in likes:
                 created_time = datetime.datetime.strptime(like['created_time'], "%Y-%m-%dT%H:%M:%S+0000")
-                defaults = dict(created_time=created_time, name=like['name'])
-                FacebookLike.objects.get_or_create(
-                    user=user, facebook_id=like['id'], defaults=defaults
+                default_dict[like['id']] = dict(
+                    created_time = created_time,
+                    category = like['category'],
+                    name=like['name']
                 )
+            current_likes, inserted_likes = mass_get_or_create(
+                FacebookLike, base_queryset, id_field, default_dict, global_defaults
+            )
+            logger.debug('found %s likes and inserted %s new likes', len(current_likes), len(inserted_likes))
+               
+                
+                
         
         return likes
     
@@ -355,6 +369,8 @@ class FacebookAPI(GraphAPI):
         '''
         Sends a request to the facebook api to retrieve a users friends and stores them locally
         '''
+        return []
+        
         from django_facebook.models import FacebookUser
         
         #get the users friends
@@ -367,11 +383,19 @@ class FacebookAPI(GraphAPI):
             #store the users for later retrieval
             if store and friends:
                 logger.info('storing friends to db')
-                for friend in friends:
-                    defaults = dict(name=friend['name'])
-                    FacebookUser.objects.get_or_create(
-                        user=user, facebook_id=friend['id'], defaults=defaults
-                    )
+                #see which ids this user already stored
+                base_queryset = FacebookUser.objects.filter(user=user)
+                global_defaults = dict(user=user)
+                default_dict = {}
+                for f in friends:
+                    default_dict[f['id']] = dict(name=f['name'])
+                id_field = 'facebook_id'
+
+                current_friends, inserted_friends = mass_get_or_create(
+                    FacebookUser, base_queryset, id_field, default_dict, global_defaults
+                )
+                logger.debug('found %s friends and inserted %s new ones', len(current_friends), len(inserted_friends))
+                    
         
         return friends
     

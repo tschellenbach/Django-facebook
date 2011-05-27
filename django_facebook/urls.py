@@ -9,3 +9,5 @@ urlpatterns = patterns('django_facebook.views',
 #url(r'^canvas/$', 'canvas', name='facebook_canvas'),
 #url(r'^canvas/my_style/$', 'my_style', name='facebook_my_style'),
 
+#TODO: figure out why autodiscover doenst seem to detect the admin
+from django_facebook import admin

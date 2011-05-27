@@ -2,6 +2,7 @@ from django.db import models
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 
+
 class FacebookProfileModel(models.Model):
     '''
     Abstract class to add to your profile model.
@@ -37,9 +38,6 @@ class FacebookProfileModel(models.Model):
         
         return response
 
-
-        
-
 class FacebookUser(models.Model):
     '''
     Model for storing a users friends
@@ -65,5 +63,6 @@ class FacebookLike(models.Model):
         unique_together = ['user', 'facebook_id']
         
         
+
         
         
