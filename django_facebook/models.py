@@ -42,7 +42,7 @@ class FacebookUser(models.Model):
     '''
     Model for storing a users friends
     '''
-    user = models.ForeignKey('auth.User')
+    user = models.ForeignKey('auth.User', related_name='facebook_user_no_conflict')
     facebook_id = models.BigIntegerField()
     name = models.TextField()
 
@@ -53,7 +53,7 @@ class FacebookLike(models.Model):
     '''
     Model for storing all of a users fb likes
     '''
-    user = models.ForeignKey('auth.User')
+    user = models.ForeignKey('auth.User', related_name='facebook_like_no_conflict')
     facebook_id = models.BigIntegerField()
     name = models.TextField()
     category = models.TextField(blank=True, null=True)

@@ -342,9 +342,7 @@ class FacebookAPI(GraphAPI):
         logger.info('found %s likes' % len(likes))
         
         if likes and store:
-            logger.info('storing likes to db')
             base_queryset = FacebookLike.objects.filter(user=user)
-            base_queryset.all().delete()
             global_defaults = dict(user=user)
             id_field = 'facebook_id'
             default_dict = {}
@@ -366,8 +364,6 @@ class FacebookAPI(GraphAPI):
         '''
         Sends a request to the facebook api to retrieve a users friends and stores them locally
         '''
-        return []
-        
         from django_facebook.models import FacebookUser
         
         #get the users friends
@@ -379,7 +375,6 @@ class FacebookAPI(GraphAPI):
             
             #store the users for later retrieval
             if store and friends:
-                logger.info('storing friends to db')
                 #see which ids this user already stored
                 base_queryset = FacebookUser.objects.filter(user=user)
                 global_defaults = dict(user=user)
