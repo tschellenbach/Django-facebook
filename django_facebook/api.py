@@ -406,7 +406,7 @@ class FacebookAPI(GraphAPI):
             new_friends = [f for f in friends if f['id'] not in registered_ids]
         else:
             new_friends = []
-            friend_objects = []
+            friend_objects = profile_class.objects.none()
             
         return friend_objects, new_friends
     
