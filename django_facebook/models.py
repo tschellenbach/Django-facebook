@@ -55,7 +55,7 @@ class FacebookLike(models.Model):
     '''
     user = models.ForeignKey('auth.User', related_name='facebook_like_no_conflict')
     facebook_id = models.BigIntegerField()
-    name = models.TextField()
+    name = models.TextField(blank=True, null=True)
     category = models.TextField(blank=True, null=True)
     created_time = models.DateTimeField()
     
