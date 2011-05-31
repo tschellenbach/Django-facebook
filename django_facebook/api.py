@@ -352,7 +352,7 @@ class FacebookAPI(GraphAPI):
                 default_dict[like['id']] = dict(
                     created_time = created_time,
                     category = like['category'],
-                    name
+                    name = name
                 )
             current_likes, inserted_likes = mass_get_or_create(
                 FacebookLike, base_queryset, id_field, default_dict, global_defaults
