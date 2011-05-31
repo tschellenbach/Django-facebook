@@ -44,7 +44,7 @@ class FacebookUser(models.Model):
     '''
     user = models.ForeignKey('auth.User', related_name='facebook_user_no_conflict')
     facebook_id = models.BigIntegerField()
-    name = models.TextField()
+    name = models.TextField(blank=True, null=True)
 
     class Meta:
         unique_together = ['user', 'facebook_id']

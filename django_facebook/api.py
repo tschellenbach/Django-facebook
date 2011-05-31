@@ -339,7 +339,7 @@ class FacebookAPI(GraphAPI):
         from django_facebook.models import FacebookLike
         likes_response = self.get_connections('me', 'likes', limit=limit)
         likes = likes_response and likes_response.get('data')
-        logger.info('found %s likes' % len(likes))
+        logger.info('found %s likes', len(likes))
         
         if likes and store:
             base_queryset = FacebookLike.objects.filter(user=user)
@@ -371,7 +371,7 @@ class FacebookAPI(GraphAPI):
         if friends is None:
             friends_response = self.get_connections('me', 'friends', limit=limit)
             friends = friends_response and friends_response.get('data')
-            logger.info('found %s friends' % len(friends))
+            logger.info('found %s friends', len(friends))
             
             #store the users for later retrieval
             if store and friends:
@@ -380,7 +380,8 @@ class FacebookAPI(GraphAPI):
                 global_defaults = dict(user=user)
                 default_dict = {}
                 for f in friends:
-                    default_dict[f['id']] = dict(name=f['name'])
+                    name = f.get('name')
+                    default_dict[f['id']] = dict(name=name)
                 id_field = 'facebook_id'
 
                 current_friends, inserted_friends = mass_get_or_create(
