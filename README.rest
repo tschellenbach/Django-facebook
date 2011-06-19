@@ -85,7 +85,7 @@ add this line to your url config::
 
     (r'^facebook/', include('django_facebook.urls')),
 
-add this line to your context processors (``TEMPLATE_CONTEXT_PRCESSORS``
+add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS``
 setting)::
 
     'django_facebook.context_processors.facebook',
