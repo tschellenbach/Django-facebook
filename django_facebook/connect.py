@@ -7,6 +7,8 @@ from django_facebook.api import get_facebook_graph
 from random import randint
 import logging
 from utils import get_profile_class
+from django.db.utils import IntegrityError
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -58,10 +60,19 @@ def connect_user(request, access_token=None, facebook_graph=None):
             user = _register_user(request, facebook)
             
     #store likes and friends if configured
-    if facebook_settings.FACEBOOK_STORE_LIKES:
-        facebook.store_likes(user)
-    if facebook_settings.FACEBOOK_STORE_FRIENDS:
-        facebook.store_friends(user)
+    try:
+        if facebook_settings.FACEBOOK_STORE_LIKES:
+            facebook.store_likes(user)
+        if facebook_settings.FACEBOOK_STORE_FRIENDS:
+            facebook.store_friends(user)
+    except IntegrityError, e:
+        logger.warn(u'Integrity error encountered during registration, probably a double submission %s' % e, 
+            exc_info=sys.exc_info(), extra={
+            'request': request,
+            'data': {
+                 'body': unicode(e),
+             }
+        })
             
     return action, user
 
