@@ -9,6 +9,7 @@ import logging
 from utils import get_profile_class
 from django.db.utils import IntegrityError
 import sys
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,7 @@ def connect_user(request, access_token=None, facebook_graph=None):
             user = _register_user(request, facebook)
             
     #store likes and friends if configured
+    sid = transaction.savepoint()
     try:
         if facebook_settings.FACEBOOK_STORE_LIKES:
             facebook.store_likes(user)
@@ -73,6 +75,7 @@ def connect_user(request, access_token=None, facebook_graph=None):
                  'body': unicode(e),
              }
         })
+        transaction.savepoint_rollback(sid)
             
     return action, user
 
