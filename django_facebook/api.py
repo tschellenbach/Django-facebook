@@ -351,7 +351,7 @@ class FacebookAPI(GraphAPI):
                 created_time = datetime.datetime.strptime(like['created_time'], "%Y-%m-%dT%H:%M:%S+0000")
                 default_dict[like['id']] = dict(
                     created_time = created_time,
-                    category = like['category'],
+                    category = like.get('category'),
                     name = name
                 )
             current_likes, inserted_likes = mass_get_or_create(
