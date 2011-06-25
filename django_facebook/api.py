@@ -347,12 +347,22 @@ class FacebookAPI(GraphAPI):
             id_field = 'facebook_id'
             default_dict = {}
             for like in likes:
+<<<<<<< Updated upstream
                 name = like.get('name')
                 created_time = datetime.datetime.strptime(like['created_time'], "%Y-%m-%dT%H:%M:%S+0000")
                 default_dict[like['id']] = dict(
                     created_time = created_time,
                     category = like.get('category'),
                     name = name
+=======
+                created_time_string = like.get('created_time')
+                created_time = None
+                if created_time_string:
+                    created_time = datetime.datetime.strptime(like['created_time'], "%Y-%m-%dT%H:%M:%S+0000")
+                defaults = dict(created_time=created_time, name=like['name'])
+                FacebookLike.objects.get_or_create(
+                    user=user, facebook_id=like['id'], defaults=defaults
+>>>>>>> Stashed changes
                 )
             current_likes, inserted_likes = mass_get_or_create(
                 FacebookLike, base_queryset, id_field, default_dict, global_defaults

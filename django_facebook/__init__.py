@@ -4,7 +4,7 @@ __credits__ = ['Thierry Schellenbach, mellowmorning.com, @tschellenbach']
 
 
 __license__ = 'BSD'
-__version__ = '2.2.11'
+__version__ = '2.2.12'
 __maintainer__ = 'Thierry Schellenbach'
 __email__ = 'thierryschellenbach@gmail.com'
 __status__ = 'Production'
@@ -24,13 +24,9 @@ http://www.pip-installer.org/en/latest/index.html
 pip install -e ./
 
 TODO
-- password is required (wtf)
 - paco error, login not authenticating somehow
-/group/2086
-/group/2076
-- refactor profile updating and validation (one flow for register and connect)
 - Retry on facebook connection errors
-- errors op email already in use op register flow (auth backend issues?)
+- errors op email already in use op register flow (auth backend issues, threading issue?)
 '''
 
 

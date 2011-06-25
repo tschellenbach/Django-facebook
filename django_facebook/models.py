@@ -57,12 +57,15 @@ class FacebookLike(models.Model):
     facebook_id = models.BigIntegerField()
     name = models.TextField(blank=True, null=True)
     category = models.TextField(blank=True, null=True)
-    created_time = models.DateTimeField()
+    created_time = models.DateTimeField(blank=True, null=True)
     
     class Meta:
         unique_together = ['user', 'facebook_id']
+<<<<<<< Updated upstream
         
         
 
         
         
+=======
+>>>>>>> Stashed changes
