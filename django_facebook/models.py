@@ -61,11 +61,3 @@ class FacebookLike(models.Model):
     
     class Meta:
         unique_together = ['user', 'facebook_id']
-<<<<<<< Updated upstream
-        
-        
-
-        
-        
-=======
->>>>>>> Stashed changes
