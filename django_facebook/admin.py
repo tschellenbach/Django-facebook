@@ -3,14 +3,12 @@ from django_facebook import models
 
 
 class FacebookUserAdmin(admin.ModelAdmin):
-    list_display = ('user', 'name', 'facebook_id',)
+    list_display = ('user_id', 'name', 'facebook_id',)
     search_fields = ('name',)
-    raw_id_fields = ('user',)
     
     
 class FacebookLikeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'name', 'category', 'facebook_id',)
-    raw_id_fields = ('user',)
+    list_display = ('user_id', 'name', 'category', 'facebook_id',)
     search_fields = ('name',)
     filter_fields = ('category', )
 

@@ -42,22 +42,24 @@ class FacebookUser(models.Model):
     '''
     Model for storing a users friends
     '''
-    user = models.ForeignKey('auth.User', related_name='facebook_user_no_conflict')
+    #in order to be able to easily move these to a another db, use a user_id and no foreign key
+    user_id = models.IntegerField()
     facebook_id = models.BigIntegerField()
     name = models.TextField(blank=True, null=True)
 
     class Meta:
-        unique_together = ['user', 'facebook_id']
+        unique_together = ['user_id', 'facebook_id']
 
 class FacebookLike(models.Model):
     '''
     Model for storing all of a users fb likes
     '''
-    user = models.ForeignKey('auth.User', related_name='facebook_like_no_conflict')
+    #in order to be able to easily move these to a another db, use a user_id and no foreign key
+    user_id = models.IntegerField()
     facebook_id = models.BigIntegerField()
     name = models.TextField(blank=True, null=True)
     category = models.TextField(blank=True, null=True)
     created_time = models.DateTimeField(blank=True, null=True)
     
     class Meta:
-        unique_together = ['user', 'facebook_id']
+        unique_together = ['user_id', 'facebook_id']

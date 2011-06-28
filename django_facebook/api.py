@@ -361,8 +361,8 @@ class FacebookAPI(GraphAPI):
     def _store_likes(self, user, likes):
         if likes:
             from django_facebook.models import FacebookLike
-            base_queryset = FacebookLike.objects.filter(user=user)
-            global_defaults = dict(user=user)
+            base_queryset = FacebookLike.objects.filter(user_id=user.id)
+            global_defaults = dict(user_id=user.id)
             id_field = 'facebook_id'
             default_dict = {}
             for like in likes:
@@ -413,8 +413,8 @@ class FacebookAPI(GraphAPI):
         #store the users for later retrieval
         if friends:
             #see which ids this user already stored
-            base_queryset = FacebookUser.objects.filter(user=user)
-            global_defaults = dict(user=user)
+            base_queryset = FacebookUser.objects.filter(user_id=user.id)
+            global_defaults = dict(user_id=user.id)
             default_dict = {}
             for f in friends:
                 name = f.get('name')
