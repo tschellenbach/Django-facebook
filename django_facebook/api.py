@@ -438,7 +438,8 @@ class FacebookAPI(GraphAPI):
         '''
         from django_facebook.utils import get_profile_class
         profile_class = get_profile_class()
-        friends = self.store_friends(user, limit=1000)
+        friends = self.get_friends(limit=1000)
+        
         if friends:
             friend_ids = [f['id'] for f in friends]
             friend_objects = profile_class.objects.filter(facebook_id__in=friend_ids).select_related('user')
