@@ -335,13 +335,32 @@ class FacebookAPI(GraphAPI):
         from django.template.defaultfilters import slugify
         return slugify(username).replace('-', '_')
     
-    def store_likes(self, user, limit=1000, store=facebook_settings.FACEBOOK_STORE_LIKES):
-        from django_facebook.models import FacebookLike
+    
+    
+    def get_likes(self, limit=1000):
+        '''
+        Parses the facebook response and returns the likes
+        '''
         likes_response = self.get_connections('me', 'likes', limit=limit)
         likes = likes_response and likes_response.get('data')
         logger.info('found %s likes', len(likes))
+        return likes
         
-        if likes and store:
+    def store_likes(self, user, likes):
+        '''
+        Given a user and likes store these in the db
+        Note this can be a heavy operation, best to do it in the background using celery
+        '''
+        if facebook_settings.FACEBOOK_CELERY_STORE:
+            from django_facebook.tasks import store_likes
+            store_likes(user, likes)
+        else:
+            self._store_likes(user, likes)
+        
+    @classmethod
+    def _store_likes(self, user, likes):
+        if likes:
+            from django_facebook.models import FacebookLike
             base_queryset = FacebookLike.objects.filter(user=user)
             global_defaults = dict(user=user)
             id_field = 'facebook_id'
@@ -364,36 +383,52 @@ class FacebookAPI(GraphAPI):
                
         return likes
     
-    def store_friends(self, user, limit=1000, store=facebook_settings.FACEBOOK_STORE_FRIENDS):
+    def get_friends(self, limit=1000):
         '''
-        Sends a request to the facebook api to retrieve a users friends and stores them locally
+        Connects to the facebook api and gets the users friends
         '''
-        from django_facebook.models import FacebookUser
-        
-        #get the users friends
         friends = getattr(self, '_friends', None)
         if friends is None:
             friends_response = self.get_connections('me', 'friends', limit=limit)
             friends = friends_response and friends_response.get('data')
-            logger.info('found %s friends', len(friends))
-            
-            #store the users for later retrieval
-            if store and friends:
-                #see which ids this user already stored
-                base_queryset = FacebookUser.objects.filter(user=user)
-                global_defaults = dict(user=user)
-                default_dict = {}
-                for f in friends:
-                    name = f.get('name')
-                    default_dict[f['id']] = dict(name=name)
-                id_field = 'facebook_id'
+        
+        logger.info('found %s friends', len(friends))
+        
+        return friends
+    
+    def store_friends(self, user, friends):
+        '''
+        Stores the given friends locally for this user
+        Quite slow, better do this using celery on a secondary db
+        '''
+        if facebook_settings.FACEBOOK_CELERY_STORE:
+            from django_facebook.tasks import store_friends
+            store_friends(user, friends)
+        else:
+            self._store_friends(user, friends)
+        
+    @classmethod
+    def _store_friends(self, user, friends):
+        from django_facebook.models import FacebookUser
+        #store the users for later retrieval
+        if friends:
+            #see which ids this user already stored
+            base_queryset = FacebookUser.objects.filter(user=user)
+            global_defaults = dict(user=user)
+            default_dict = {}
+            for f in friends:
+                name = f.get('name')
+                default_dict[f['id']] = dict(name=name)
+            id_field = 'facebook_id'
 
-                current_friends, inserted_friends = mass_get_or_create(
-                    FacebookUser, base_queryset, id_field, default_dict, global_defaults
-                )
-                logger.debug('found %s friends and inserted %s new ones', len(current_friends), len(inserted_friends))
+            current_friends, inserted_friends = mass_get_or_create(
+                FacebookUser, base_queryset, id_field, default_dict, global_defaults
+            )
+            logger.debug('found %s friends and inserted %s new ones', len(current_friends), len(inserted_friends))
                     
         return friends
+    
+    
     
     def registered_friends(self, user):
         '''

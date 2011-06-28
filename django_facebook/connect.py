@@ -64,9 +64,11 @@ def connect_user(request, access_token=None, facebook_graph=None):
     sid = transaction.savepoint()
     try:
         if facebook_settings.FACEBOOK_STORE_LIKES:
-            facebook.store_likes(user)
+            likes = facebook.get_likes()
+            facebook.store_likes(user, likes)
         if facebook_settings.FACEBOOK_STORE_FRIENDS:
-            facebook.store_friends(user)
+            friends = facebook.get_friends()
+            facebook.store_friends(user, friends)
         transaction.savepoint_commit(sid)
     except IntegrityError, e:
         logger.warn(u'Integrity error encountered during registration, probably a double submission %s' % e, 

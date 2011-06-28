@@ -21,6 +21,7 @@ FACEBOOK_PERSISTENT_TOKEN = getattr(settings, 'FACEBOOK_PERSISTENT_TOKEN', False
 #if we should store friends and likes
 FACEBOOK_STORE_LIKES = getattr(settings, 'FACEBOOK_STORE_LIKES', False)
 FACEBOOK_STORE_FRIENDS = getattr(settings, 'FACEBOOK_STORE_FRIENDS', False)
+FACEBOOK_CELERY_STORE = getattr(settings, 'FACEBOOK_CELERY_STORE', False)
 
 #check for required settings
 required_settings = ['FACEBOOK_API_KEY', 'FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET']
