@@ -8,7 +8,6 @@ class UserProfile(FacebookProfileModel):
     Inherit the properties from django facebook
     '''
     user = models.OneToOneField(User)
-    pass
 
     
 from django.db.models.signals import post_save
