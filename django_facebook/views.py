@@ -1,13 +1,13 @@
 from django.conf import settings
 from django.contrib import messages
 from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import render_to_response, render_to_response
-from django.template.context import RequestContext, RequestContext
+from django.shortcuts import render_to_response
+from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings
-from django_facebook.api import get_facebook_graph, get_facebook_graph
+from django_facebook.api import get_facebook_graph
 from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
 from django_facebook.utils import next_redirect
