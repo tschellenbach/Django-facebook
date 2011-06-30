@@ -74,7 +74,6 @@ def canvas(request):
     context = RequestContext(request)
     
     context['auth_url'] = generate_oauth_url()
-    context['facebook'] = fb = get_facebook_graph(request)
     
     if fb.is_authenticated():
         likes = context['facebook'].get_connections("me", "likes", limit=3)
@@ -88,7 +87,6 @@ def my_style(request):
     context = RequestContext(request)
     
     context['auth_url'] = generate_oauth_url()
-    context['facebook'] = fb = get_facebook_graph(request)
     
     return render_to_response('django_facebook/my_style.html', context)
 
