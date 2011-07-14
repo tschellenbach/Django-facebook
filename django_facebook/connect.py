@@ -98,7 +98,7 @@ class UserConnector(object):
         '''
         if not self.request.user.is_authenticated():
             raise ValueError, 'Connect user can only be used on authenticated users'
-        if not self.facebook.is_authenticated():
+        if not facebook.is_authenticated():
             raise ValueError, 'Facebook needs to be authenticated for connect flows'
 
         user = self._update_user(facebook)
