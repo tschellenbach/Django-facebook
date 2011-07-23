@@ -105,6 +105,14 @@ class GraphAPI(object):
     def get_connections(self, id, connection_name, **args):
         """Fetchs the connections for given object."""
         return self.request(id + "/" + connection_name, args)
+    
+    def convert_code(self, code, redirect_uri=''):
+        from django_facebook import settings as facebook_settings
+        args = dict(client_id=facebook_settings.FACEBOOK_APP_ID)
+        args['client_secret'] = facebook_settings.FACEBOOK_APP_SECRET
+        args['code'] = code
+        args['redirect_uri'] = redirect_uri
+        return self.request('oauth/access_token', args, json=False)
 
     def put_object(self, parent_object, connection_name, **data):
         """Writes the given object to the graph, connected to the given parent.
@@ -228,7 +236,7 @@ class GraphAPI(object):
         """Deletes the object with the given ID from the graph."""
         self.request(id, post_args={"method": "delete"})
 
-    def request(self, path, args=None, post_args=None):
+    def request(self, path, args=None, post_args=None, json=True):
         """Fetches the given path in the Graph API.
 
         We translate args to a valid query string. If post_args is given,
@@ -242,8 +250,8 @@ class GraphAPI(object):
                 args["access_token"] = self.access_token
         post_data = None if post_args is None else urllib.urlencode(post_args)
         request_url = "https://graph.facebook.com/" + path + "?" + urllib.urlencode(args)
-        response = _request_json(request_url, post_data)
-        if response.get("error"):
+        response = _request_json(request_url, post_data, json=json)
+        if getattr(response, 'error', False):
             raise GraphAPIError(response["error"]["type"],
                                 response["error"]["message"])
         return response
@@ -306,7 +314,7 @@ def get_user_from_cookie(cookies, app_id, app_secret):
     else:
         return None
 
-def _request_json(url, post_data=None, timeout=3, attempts=2, test_file=None):
+def _request_json(url, post_data=None, timeout=3, attempts=2, test_file=None, json=True):
     '''
     request the given url and parse it as json
     
@@ -329,7 +337,10 @@ def _request_json(url, post_data=None, timeout=3, attempts=2, test_file=None):
     try:
         response = response_file.read().decode('utf8')
         #we only use unicode in the application, no bugs for our i18n friends
-        parsed_response = simplejson.loads(response)
+        if json:
+            parsed_response = simplejson.loads(response)
+        else:
+            parsed_response = response
     finally:
         response_file.close()
         

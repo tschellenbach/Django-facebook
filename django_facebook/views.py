@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, QueryDict
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
@@ -13,9 +13,30 @@ from django_facebook.connect import CONNECT_ACTIONS, connect_user
 from django_facebook.utils import next_redirect
 import logging
 import sys
+import types
 
 logger = logging.getLogger(__name__)
 
+def facebook_login_required(redirect_uri, scope=None):
+    '''
+    Redirect uri is the url to redirect to
+    
+    Scope can either be in the format ['email', 'read_stream'] or 'email,read_stream' 
+    '''
+    url = 'https://www.facebook.com/dialog/oauth?'
+    query_dict = QueryDict('', True)
+    query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
+    query_dict['redirect_uri'] = redirect_uri
+    if scope:
+        if isinstance(scope, (basestring)):
+            query_dict['scope'] = scope
+        else:
+            query_dict['scope'] = scope
+    url += query_dict.urlencode()
+    
+    
+    return HttpResponseRedirect(url)
+    
 
 @csrf_exempt
 def connect(request):
@@ -24,15 +45,28 @@ def connect(request):
     - (if authenticated) connect the user
     - login
     - register
-    
     '''
+    uri = 'http://' + request.META['HTTP_HOST'] + request.path
+    if request.GET.get('redirect'):
+        return facebook_login_required(uri, scope='read_stream')
     context = RequestContext(request)
     
     assert context.get('FACEBOOK_APP_ID'), 'Please specify a facebook app id and ensure the context processor is enabled'
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
+
+    access_token = None
+    if request.GET.get('code'):
+        facebook = get_facebook_graph(request)
+        response_string = facebook.convert_code(request.GET.get('code'), redirect_uri=uri)
+        data = QueryDict(response_string)
+        #access token with expires
+        access_token = data['access_token']
+        print access_token
     
     if facebook_login:
-        facebook = get_facebook_graph(request)
+        facebook = get_facebook_graph(request, access_token=access_token)
+        
+        
         if facebook.is_authenticated():
             facebook_data = facebook.facebook_profile_data()
             #either, login register or connect the user

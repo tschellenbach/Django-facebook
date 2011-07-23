@@ -13,11 +13,15 @@ facebookClass.prototype = {
 
 	connect: function (formElement, requiredPerms) {
 		//,'publish_stream','offline_access'
+	    alert('hey');
 		requiredPerms = requiredPerms || ['email','user_about_me','user_birthday','user_website'];
 		FB.login(function(response) {
-			formElement.submit();
+		    console.log('hello worl');
+		    console.log(response);
+		    var accessToken = response.authResponse.accessToken;
+			//formElement.submit();
 		},
-			{perms: requiredPerms.join(',')}
+			{scope: requiredPerms.join(',')}
 		);
 	},
 
