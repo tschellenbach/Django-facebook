@@ -23,6 +23,9 @@ class OpenFacebookException(Exception):
     pass
 
 class OAuthException(OpenFacebookException):
+    pass 
+
+class DuplicateStatusMessage(OpenFacebookException):
     pass
 
 
@@ -32,12 +35,36 @@ def test_facebook():
     #print FacebookAuthorization.create_test_user(token)
     token = '215464901804004|2.AQBHGHuWRllFbN4E.3600.1311465600.0-100002619711402|EtaLBkqHGsTa0cpMlFA4bmL4aAc'
     token = '215464901804004|2.AQAwYr7AYNkKS9Rn.3600.1311469200.0-100002646981608|NtiF-ioL-98NF5juQtN2UXc0wKU'
+    token = '215464901804004|b8d73771906a072829857c2f.0-100002661892257|DALPDLEZl4B0BNm0RYXnAsuri-I'
     facebook = OpenFacebook(token)
+    
+    albums = facebook.get('me/albums')
+    album_names = [album['name'] for album in albums['data']]
+    print album_names
+    
     print facebook.me()
     
-    print facebook.get('cocacola')
+    print facebook.get('fashiolista')
     
-    print facebook.post_on_wall('me', 'the writing is one the wall')
+    #print facebook.post_on_wall('me', 'the writing is one the wall')
+    
+    photo_urls = [
+        'http://e.fashiocdn.com/images/entities/0/7/B/I/9/0.365x365.jpg',
+        'http://e.fashiocdn.com/images/entities/0/5/e/e/r/0.365x365.jpg',
+    ]
+#    for photo in photo_urls:
+#        print facebook.set('me/photos', url=photo, message='the writing is one the wall', name='FashiolistaTest')
+        
+#    albums = facebook.get('me/albums')
+#    album_response = facebook.set('me/albums', params=dict(name='FashiolistaSuperAlbum', message='Your latest fashion finds'))
+#    album_id = album_response['id']
+#    for photo in photo_urls:
+#        print facebook.set('%s/photos' % album_id, url=photo, message='the writing is one the wall', name='FashiolistaTest')
+
+    for photo in photo_urls:
+        
+        print facebook.post_on_wall('me', 'the writing is one the wall', picture=photo)
+    
     #print facebook.get('me/permissions')
     print facebook.get('me/feed')
     #this should give a lazy iterable instead of the default result..
@@ -72,13 +99,16 @@ class FacebookAuthorization(object):
         {u'access_token': u'215464901804004|2.AQBHGHuWRllFbN4E.3600.1311465600.0-100002619711402|EtaLBkqHGsTa0cpMlFA4bmL4aAc', u'password': u'564490991', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002619711402&n=3c5fAe1nNVk0HaJ', u'id': u'100002619711402', u'email': u'hello_luncrwh_world@tfbnw.net'}
         #with write permissions
         {u'access_token': u'215464901804004|2.AQAwYr7AYNkKS9Rn.3600.1311469200.0-100002646981608|NtiF-ioL-98NF5juQtN2UXc0wKU', u'password': u'1291131687', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002646981608&n=yU5ZvTTv4UjJJOt', u'id': u'100002646981608', u'email': u'hello_klsdgrf_world@tfbnw.net'}
+        
+        offline permissions
+        {u'access_token': u'215464901804004|b8d73771906a072829857c2f.0-100002661892257|DALPDLEZl4B0BNm0RYXnAsuri-I', u'password': u'1932271520', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002661892257&n=Zdu5jdD4tjNsfma', u'id': u'100002661892257', u'email': u'hello_nrthuig_world@tfbnw.net'}
         '''
         args = {
             'access_token':access_token,
             'installed': True,
             'name': 'Hello World',
             'method': 'post',
-            'permissions': 'read_stream,publish_stream',
+            'permissions': 'read_stream,publish_stream,user_photos,offline_access',
         }
         
         response = OpenFacebook._request(
@@ -105,11 +135,16 @@ class OpenFacebook(object):
         kwargs['ids'] = ','.join(ids)
         return self.request(**kwargs)
     
-    def set(self, path, **post_data):
+    def set(self, path, params=None, **post_data):
         assert self.access_token, 'Write operations require an access token'
-        self.request(path, post_data=post_data)
+        if not params:
+            params = {}
+        params['method'] = 'post'
+        
+        response = self.request(path, post_data=post_data, **params)
+        return response
     
-    def post_on_wall(self, path, message, attachment=None):
+    def post_on_wall(self, path, message, **attachment):
         """Writes a wall post to the given profile's wall.
 
         We default to writing to the authenticated user's wall if no
@@ -172,7 +207,8 @@ class OpenFacebook(object):
             post_string = urllib.urlencode(post_data) if post_data else None
             try:
                 try:
-                    response_file = opener.open(url, post_string, timeout=timeout)
+                    #response_file = opener.open(url, post_string, timeout=timeout)
+                    response_file = opener.open(url, post_string)
                 except (urllib2.HTTPError,), e:
                     #catch the silly status code errors
                     if 'HTTP Error' in unicode(e):
@@ -189,16 +225,15 @@ class OpenFacebook(object):
                 if response_file:
                     response_file.close()        
         
+        print response
         from simplejson.decoder import JSONDecodeError
         try:
             parsed_response = simplejson.loads(response)
-            if getattr(response, 'error', False):
-                cls.raise_error(response['error']['type'], response['error']['message'])
-                                     
+            if parsed_response and parsed_response.get('error'):
+                cls.raise_error(parsed_response['error']['type'], parsed_response['error']['message'])
         except JSONDecodeError, e:
             parsed_response = QueryDict(response, True)
         
-            
         return parsed_response
     
     @classmethod
@@ -209,9 +244,18 @@ class OpenFacebook(object):
         error_class = globals().get(type)
         if not issubclass(error_class, OpenFacebookException):
             error_class = None
+        
+        #map error classes to facebook error ids
+        id_mapping = {'#506': DuplicateStatusMessage}
+        for key, class_ in id_mapping.items():
+            if key in message:
+                error_class = class_
+                break
             
         if not error_class:
             error_class = OpenFacebookException
+            
+        
         
         raise error_class(message)
         
