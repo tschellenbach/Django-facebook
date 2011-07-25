@@ -1,0 +1,363 @@
+'''
+Alpha/Testing code....
+
+A generic Facebook API
+
+- Which actually is supported and updated
+- Tested so people can contribute smoothly
+- Exceptions
+- Logging for debugging
+
+TODO
+- cross platform json import
+- django querydict replacement (urlencode breaks on utf8)
+
+Example One
+>>> facebook('me').get()
+>>> facebook('1789').comment('facebook is awesome')
+>>> facebook('me').wall_post('check out fashiolista', url='http://www.fashiolista.com')
+>>> facebook('cocacola').like()
+
+or
+
+Example Two
+>>> facebook.get('me')
+>>> facebook.set('1789/comments', message='check out fashiolista')
+>>> facebook.set('me/feed', message='check out fashiolista', url='http://www.fashiolista.com')
+>>> facebook.set('cocacola/likes')
+
+Example two is closer to the real Facebook API and therefor easier to maintain and more flexible.
+Example one is somewhat easier to read, but harder to learn when you are also reading the Facebook docs.
+I think I prefer number two, what do you think?
+
+'''
+import os
+from django.http import QueryDict
+os.environ['DJANGO_SETTINGS_MODULE'] = 'facebook_example.settings'
+from django_facebook import settings as facebook_settings
+import logging
+import urllib
+logger = logging.getLogger(__name__)
+from open_facebook.utils import json
+import urllib2
+from open_facebook import exceptions as facebook_exceptions
+from open_facebook.utils import base64_url_decode_php_style
+
+
+
+
+
+    
+
+
+
+class FacebookAuthorization(object):
+    @classmethod
+    def parse_cookie(cls, cookie):
+        pass
+    
+    @classmethod
+    def parse_signed_data(cls, signed_request, secret=facebook_settings.FACEBOOK_APP_SECRET):
+        '''
+        Thanks to 
+        http://stackoverflow.com/questions/3302946/how-to-base64-url-decode-in-python
+        and
+        http://sunilarora.org/parsing-signedrequest-parameter-in-python-bas
+        '''
+        from facebook.utils import base64_url_decode_php_style
+        l = signed_request.split('.', 2)
+        encoded_sig = l[0]
+        payload = l[1]
+        from open_facebook.utils import json
+        sig = base64_url_decode_php_style(encoded_sig)
+        import hmac
+        import hashlib
+        data = json.loads(base64_url_decode_php_style(payload))
+    
+        if data.get('algorithm').upper() != 'HMAC-SHA256':
+            logger.error('Unknown algorithm')
+            return None
+        else:
+            expected_sig = hmac.new(secret, msg=payload, digestmod=hashlib.sha256).digest()
+    
+        if sig != expected_sig:
+            return None
+        else:
+            logger.debug('valid signed request received..')
+            return data
+    
+    @classmethod
+    def get_app_access_token(cls):
+        '''
+        Get the access_token for the app that can be used for insights and creating test users
+        application_id = retrieved from the developer page
+        application_secret = retrieved from the developer page
+        returns the application access_token
+        '''
+        # Get an app access token
+        args = {'grant_type':'client_credentials',
+                'client_id':facebook_settings.FACEBOOK_APP_ID,
+                'client_secret':facebook_settings.FACEBOOK_APP_SECRET}
+        
+        response = OpenFacebook._request('https://graph.facebook.com/oauth/access_token?' + 
+                                  urllib.urlencode(args))
+        print response
+        return response['access_token']
+    
+    @classmethod
+    def create_test_user(cls, access_token):
+        '''
+        My test user
+        {u'access_token': u'215464901804004|2.AQBHGHuWRllFbN4E.3600.1311465600.0-100002619711402|EtaLBkqHGsTa0cpMlFA4bmL4aAc', u'password': u'564490991', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002619711402&n=3c5fAe1nNVk0HaJ', u'id': u'100002619711402', u'email': u'hello_luncrwh_world@tfbnw.net'}
+        #with write permissions
+        {u'access_token': u'215464901804004|2.AQAwYr7AYNkKS9Rn.3600.1311469200.0-100002646981608|NtiF-ioL-98NF5juQtN2UXc0wKU', u'password': u'1291131687', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002646981608&n=yU5ZvTTv4UjJJOt', u'id': u'100002646981608', u'email': u'hello_klsdgrf_world@tfbnw.net'}
+        
+        offline permissions
+        {u'access_token': u'215464901804004|b8d73771906a072829857c2f.0-100002661892257|DALPDLEZl4B0BNm0RYXnAsuri-I', u'password': u'1932271520', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002661892257&n=Zdu5jdD4tjNsfma', u'id': u'100002661892257', u'email': u'hello_nrthuig_world@tfbnw.net'}
+        '''
+        args = {
+            'access_token':access_token,
+            'installed': True,
+            'name': 'Hello World',
+            'method': 'post',
+            'permissions': 'read_stream,publish_stream,user_photos,offline_access',
+        }
+        
+        response = OpenFacebook._request(
+                'https://graph.facebook.com/%s/accounts/test-users?' % facebook_settings.FACEBOOK_APP_ID + 
+                                  urllib.urlencode(args))
+        
+        return response
+    
+    @classmethod              
+    def convert_code(cls, code, redirect_uri='http://local.mellowmorning.com:8000/facebook/connect/'):
+        from django_facebook import settings as facebook_settings
+        kwargs = dict(client_id=facebook_settings.FACEBOOK_APP_ID)
+        kwargs['client_secret'] = facebook_settings.FACEBOOK_APP_SECRET
+        kwargs['code'] = code
+        kwargs['redirect_uri'] = redirect_uri
+        facebook = OpenFacebook()
+        return facebook.get('oauth/access_token', **kwargs)
+    
+
+
+
+
+class OpenFacebook(object):
+    '''
+    ========================================
+    Getting your authentication started
+    ========================================
+    OpenFacebook gives you access to the facebook api. For most user related actions
+    you need an access_token.
+    There are 3 ways of getting a facebook access_token
+    1.) code is passed as request parameter and traded for an access_token using the api
+    2.) code is passed through a signed cookie and traded for an access_token
+    3.) access_token is passed directly (retrieved through javascript, which
+        would be bad security, or through one of the mobile flows.)
+        
+    Requesting a code for flow 1 and 2 is quite easy. Facebook doc's are here:
+    http://developers.facebook.com/docs/authentication/
+    
+    Client side code request
+    For the client side flow simply use the FB.login functionality and on the landing page call
+    facebook = get_facebook_graph(request)
+    print facebook.me()
+    
+    Server side code request
+    
+    facebook = get_facebook_graph(request)
+    print facebook.me()
+    
+    ========================================
+    Actually using the facebook API
+    ========================================
+    After retrieving an access token API calls are relatively straigh forward
+    
+    Getting info about me
+    facebook.get('me')
+    
+    Learning some more about fashiolista
+    facebook.get('fashiolista')
+    
+    Writing your first comment
+    facebook.set('fashiolista/comments', message='I love Fashiolista!')
+    
+    Posting to a users wall
+    facebook.set('me/feed', message='check out fashiolista', url='http://www.fashiolista.com')
+    
+    Liking a page
+    facebook.set('fashiolista/likes')
+    
+    Executing some fql
+    facebook.fql('SELECT name FROM user WHERE uid = me()')
+    
+    Uploading pictures
+    photo_urls = [
+        'http://e.fashiocdn.com/images/entities/0/7/B/I/9/0.365x365.jpg',
+        'http://e.fashiocdn.com/images/entities/0/5/e/e/r/0.365x365.jpg',
+    ]
+    for photo in photo_urls:
+        print facebook.set('me/feed', message='Check out Fashiolista', picture=photo, url='http://www.fashiolista.com')
+    
+    ========================================
+    Contributing
+    ========================================
+    
+    This API is actively maintained, just fork on github if you want to improve things.
+    Follow the author: Thierry Schellenbach (@tschellenbach)
+    blog: http://www.mellowmorning.com/
+    my company: http://www.fashiolista.com/
+    
+    '''
+    def __init__(self, access_token=None):
+        self.access_token = access_token
+        self.api_url = 'https://graph.facebook.com/'
+        #this older url is still used for fql requests
+        self.old_api_url = 'https://api.facebook.com/method/'
+        
+    def is_authenticated(self):
+        '''
+        Ask facebook if we have access to the users data
+        '''
+        try:
+            me = self.me()
+        except facebook_exceptions.OpenFacebookException, e:
+            me = None
+        authenticated = bool(me)
+        return authenticated
+        
+    def get(self, path, **kwargs):
+        response = self.request(path, **kwargs)
+        return response
+    
+    def get_many(self, *ids, **kwargs):
+        kwargs['ids'] = ','.join(ids)
+        return self.request(**kwargs)
+    
+    def set(self, path, params=None, **post_data):
+        assert self.access_token, 'Write operations require an access token'
+        if not params:
+            params = {}
+        params['method'] = 'post'
+        
+        response = self.request(path, post_data=post_data, **params)
+        return response
+    
+    def delete(self, *args, **kwargs):
+        kwargs['method'] = 'delete'
+        self.request(*args, **kwargs)
+    
+    def fql(self, query, **kwargs):
+        """Runs the specified query against the Facebook FQL API.
+        """
+        kwargs['format'] = 'JSON'
+        kwargs['query'] = query
+        path = 'fql.query'
+        
+        response = self.request(path, old_api=True, **kwargs)
+    
+        return response
+        
+    def me(self):
+        '''
+        Cached method of requesting information about me
+        '''
+        me = getattr(self, '_me', False)
+        if not me:
+            self._me = me = self.get('me')
+        
+        return me
+        
+    def request(self, path='', post_data=None, old_api=False, **params):
+        '''
+        Main function for sending the request to facebook
+        '''
+        api_base_url = self.old_api_url if old_api else self.api_url
+        if self.access_token:
+            params['access_token'] = self.access_token
+        url = '%s%s?%s' % (api_base_url, path, urllib.urlencode(params))
+        print path
+        response = self._request(url, post_data)
+        return response
+    
+    @classmethod
+    def _request(cls, url, post_data=None, timeout=5, attempts=2):
+        '''
+        request the given url and parse it as json
+        
+        urllib2 raises errors on different status codes so use a try except
+        '''
+        logger.info('requesting url %s with post data %s', url, post_data)
+        opener = urllib2.build_opener()
+        opener.addheaders = [('User-agent', 'Open Facebook Python')]
+        #give it a few shots, connection is buggy at times
+        
+        while attempts:
+            print '.', attempts
+            response_file = None
+            post_string = urllib.urlencode(post_data) if post_data else None
+            try:
+                try:
+                    #response_file = opener.open(url, post_string, timeout=timeout)
+                    response_file = opener.open(url, post_string)
+                except (urllib2.HTTPError,), e:
+                    #catch the silly status code errors
+                    if 'HTTP Error' in unicode(e):
+                        response_file = e
+                    else:
+                        raise
+                response = response_file.read().decode('utf8')
+                break
+            except (urllib2.HTTPError, urllib2.URLError), e:
+                attempts -= 1
+                if not attempts:
+                    raise
+            finally:
+                if response_file:
+                    response_file.close()        
+        
+        try:
+            parsed_response = json.loads(response)
+            if parsed_response and isinstance(parsed_response, dict) and parsed_response.get('error'):
+                cls.raise_error(parsed_response['error']['type'], parsed_response['error']['message'])
+        except Exception, e:
+            parsed_response = QueryDict(response, True)
+        
+        return parsed_response
+    
+    @classmethod
+    def raise_error(self, type, message):
+        '''
+        Search for a corresponding error class and fall back to open facebook exception
+        '''
+        error_class = globals().get(type)
+        if not issubclass(error_class, facebook_exceptions.OpenFacebookException):
+            error_class = None
+        
+        #map error classes to facebook error ids
+        id_mapping = {
+            '#3': facebook_exceptions.PermissionException,
+            '#506': facebook_exceptions.DuplicateStatusMessage, 
+        }
+        for key, class_ in id_mapping.items():
+            if key in message:
+                error_class = class_
+                break
+            
+        if 'Missing' in message and 'parameter' in message:
+            error_class = facebook_exceptions.MissingParameter
+            
+        if not error_class:
+            error_class = facebook_exceptions.OpenFacebookException
+        
+        raise error_class(message)
+        
+            
+
+    
+
+    
+
+if __name__ == '__main__':
+    test_facebook()
