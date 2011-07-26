@@ -13,38 +13,54 @@ from django_facebook.utils import mass_get_or_create
 
 logger = logging.getLogger(__name__)
 
+def get_persistent_graph(request, *args, **kwargs):
+    '''
+    Wraps itself around get facebook graph
+    But stores the graph in the session, allowing usage across multiple pageviews
+    Note that Facebook session's expire at some point, you can't store this for permanent usage
+    Atleast not without asking for the offline_access permission
+    '''
+    if not request:
+        raise ValidationError, 'Request is required if you want to use persistent tokens'
+    
+    #get the new graph
+    facebook_open_graph = get_facebook_graph(request, *args, **kwargs)
+    
+    #if it's valid replace the old cache
+    if facebook_open_graph.access_token:
+        request.session['facebook_open_graph'] = facebook_open_graph
+    else:
+        facebook_open_graph_cached = request.session.get('facebook_open_graph')
+        if facebook_open_graph_cached:
+            facebook_open_graph_cached._me = None
+        facebook_open_graph = facebook_open_graph_cached   
+        
+    return facebook_open_graph
+        
+    
 
-def get_facebook_graph(request=None, access_token=None, persistent_token=facebook_settings.FACEBOOK_PERSISTENT_TOKEN):
+def get_facebook_graph(request=None, access_token=None):
     '''
     given a request from one of these
-    - js authentication flow
-    - facebook app authentication flow
-    - mobile authentication flow
-    
-    store authentication data in the session
+    - js authentication flow (signed cookie)
+    - facebook app authentication flow (signed cookie)
+    - facebook oauth redirect (code param in url)
+    - mobile authentication flow (direct access_token)
     
     returns a graph object
     '''
-    if not request and persistent_token:
-        raise ValidationError, 'Request is required if you want to use persistent tokens'
-    from django_facebook import official_sdk
-    
+    from open_facebook import OpenFacebook
     additional_data = None
-    facebook_open_graph_cached = False
-    if persistent_token:
-        facebook_open_graph_cached = request.session.get('facebook_open_graph')
-    if facebook_open_graph_cached:
-        #TODO: should handle this in class' pickle protocol, but this is easier
-        facebook_open_graph_cached._is_authenticated = None
         
     if not access_token:
         signed_request = request.REQUEST.get('signed_request')
-        cookie_name = 'fbs_%s' % facebook_settings.FACEBOOK_APP_ID
-        oauth_cookie = request.COOKIES.get(cookie_name)
+        cookie_name = 'fbsr_%s' % facebook_settings.FACEBOOK_APP_ID
+        oauth_cookie = request.COOKIES.get(OpenFacebook.cookie_name())
         #scenario A, we're on a canvas page and need to parse the signed data
         if signed_request:
             additional_data = FacebookAPI.parse_signed_data(signed_request)
             access_token = additional_data.get('oauth_token')
+            raise Thierry, additional_data
         #scenario B, we're using javascript and cookies to authenticate
         elif oauth_cookie:
             additional_data = official_sdk.get_user_from_cookie(request.COOKIES, facebook_settings.FACEBOOK_APP_ID, facebook_settings.FACEBOOK_APP_SECRET)

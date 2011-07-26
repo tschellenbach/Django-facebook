@@ -20,12 +20,12 @@ facebookClass.prototype = {
          * requiredPerms is a list of permissions
          */
         var requiredPermString = requiredPerms.join(',');
-        
-        FB.api('/me/permissions', function(response) {
-            //above request will fail if the user isn't yet authenticated
-            var permissions = response.data ? response.data[0] : response;
 
-            // check if all permissions are met
+        FB.api('/me/permissions', function(response) {
+            // above request will fail if the user isn't yet authenticated
+                var permissions = response.data ? response.data[0] : response;
+
+                // check if all permissions are met
                 var permissionsGranted = true;
                 for ( var i = 0; i < requiredPerms.length; i++) {
                     var requiredPerm = requiredPerms[i];
@@ -38,24 +38,25 @@ facebookClass.prototype = {
                 if (permissionsGranted) {
                     callback(response)
                 } else {
-                    FB.login(function(){console.log(arguments)}, {'scope': 'offline_access'});
+                    FB.login(function() {
+                        console.log(arguments)
+                    }, {
+                        'scope' : 'offline_access'
+                    });
                 }
-         });
+            });
     },
 
     connect : function(formElement, requiredPerms) {
         // ,'publish_stream','offline_access'
-        alert('hey');
         requiredPerms = requiredPerms
                 || [ 'email', 'user_about_me', 'user_birthday', 'user_website' ];
         FB.login(function(response) {
-            console.log('hello worl');
-            console.log(response);
             var accessToken = response.authResponse.accessToken;
-            // formElement.submit();
-            }, {
-                scope : requiredPerms.join(',')
-            });
+            formElement.submit();
+        }, {
+            scope : requiredPerms.join(',')
+        });
     },
 
     load : function() {

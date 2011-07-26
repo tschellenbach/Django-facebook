@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings
-from django_facebook.api import get_facebook_graph
+from django_facebook.api import get_facebook_graph, get_persistent_graph
 from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
 from django_facebook.utils import next_redirect
@@ -103,6 +103,27 @@ def connect(request):
     return render_to_response('django_facebook/connect.html', context)
 
 
+
+def image_upload(request):
+    '''
+    Handle image uploading to Facebook
+    '''
+    fb = get_persistent_graph(request)
+    if fb.is_authenticated():
+        raise Exception, 'test'
+        #handling the form without a form class for explanation
+        #in your own app you could use a neat django form to do this
+        pictures = request.POST.getlist('pictures')
+        from django.contrib import messages
+        
+        for picture in pictures:
+            fb.set('me/photos', url=picture, message='the writing is one the wall', name='FashiolistaTest')
+        
+        messages.info(request, 'The images have been added to your profile!')
+    
+    return next_redirect(request)
+
+
 @csrf_exempt
 def canvas(request):
     context = RequestContext(request)
@@ -114,6 +135,8 @@ def canvas(request):
         logger.info('found these likes %s', likes)
     
     return render_to_response('django_facebook/canvas.html', context)
+
+
 
 
 @csrf_exempt

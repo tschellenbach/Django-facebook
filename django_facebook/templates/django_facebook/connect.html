@@ -70,6 +70,14 @@
 		Couldn't load the static Javascript files, is django static configured correctly?
 		<a href="http://docs.djangoproject.com/en/1.3/howto/static-files/" target="_blank">See the docs here.</a>
 	</div>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    
 	<div style="margin-top: 60px;">
         <div class="inner_content">
         	
@@ -108,6 +116,26 @@
 	        </form>
 		</div>
 	</div>
+
+    <div id="image_upload" style="margin: 60px 0px 20px 0px;">
+        <h2>Album upload flow</h2>
+        <div>
+            <form action="{% url facebook_image_upload %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" value="{{ request.path }}" name="next" />
+                
+                <img src="http://d.fashiocdn.com/images/entities/0/6/7/-/v/0.126x126.jpg" alt="image"/>
+                <input type="hidden" value="http://d.fashiocdn.com/images/entities/0/6/7/-/v/0.126x126.jpg" name="pictures" />
+                
+                <img src="http://e.fashiocdn.com/images/entities/0/5/7/t/K/0.126x126.jpg" alt="image"/>
+                <input type="hidden" value="http://e.fashiocdn.com/images/entities/0/5/7/t/K/0.126x126.jpg" name="pictures" />
+                <br />
+                <a href="javascript:void(0)" onclick="F.connect(this.parentNode, ['user_photos', 'publish_stream']);">
+                    Upload to your album
+                </a>
+            </form>
+        </div>
+    </div>
 	
 	
 </div>

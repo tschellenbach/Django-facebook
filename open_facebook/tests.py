@@ -1,3 +1,8 @@
+import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'facebook_example.settings'
+from facebook_example import settings
+from django.conf import settings
+from open_facebook.api import *
 import unittest
 
 class TestOpenFacebook(unittest.TestCase):
@@ -8,18 +13,22 @@ class TestOpenFacebook(unittest.TestCase):
 
 
 def test_facebook():
+    
     cookie = 'F7cndfQuSIkcVHWIgg_SHQ4LIDJXeeHhiXUNjesOw5g.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImNvZGUiOiJVMTZuMFNoWVUxSTJ5VEFJMVZ0RmlvZTdhRVRaaEZ4cGV5d1hwYnZvOUprLmV5SnBkaUk2SW1OcmFGVXlWR053ZDA1VlMwSTRlUzFzZDA1WmFtY2lmUS5rZl9RTUhCMnVFTVh5YW83UU5UcnFGMlJzOGxxQUxrM1AxYm8zazBLMm5YUXpOZW5LSVlfczBVV3ZNbE1jTXAzcE04TXNLNVVDQUpjWlQ1N1ZaZXFkS3ZPeXRFbmdoODFxTmczTXVDeTBHNjB6WjFBOWZGZlpHenVDejdKSEVSSCIsImlzc3VlZF9hdCI6MTMxMTYwMDEyNywidXNlcl9pZCI6Nzg0Nzg1NDMwfQ'
     print FacebookAuthorization.parse_signed_data(cookie)
     
     token = FacebookAuthorization.get_app_access_token()
+    print token
+    
+    print FacebookAuthorization.create_test_user(token)
     
     code = 'hPcK30IZB4G01VFitzWfR4P0JkF6UAmZ6PpRtUlANNQ.eyJpdiI6ImpkWTVFSEdQbVFpb1dBbHU3blUtdFEifQ.hKs8HRWGuZ7aRnspguBW1SjLrKCmdp0KNS6tJNvcikQnLjyZgEnMSqTdPM4WGZqI5UQl8uTr2cppwSm67eOQ-cIRUknXRq5wIwADO6PdJ7ZhTlKMqiTXJHfMqTmml6FO'
     user_token = FacebookAuthorization.convert_code(code)
     print user_token
-    #print FacebookAuthorization.create_test_user(token)
     token = '215464901804004|2.AQBHGHuWRllFbN4E.3600.1311465600.0-100002619711402|EtaLBkqHGsTa0cpMlFA4bmL4aAc'
     token = '215464901804004|2.AQAwYr7AYNkKS9Rn.3600.1311469200.0-100002646981608|NtiF-ioL-98NF5juQtN2UXc0wKU'
     token = '215464901804004|b8d73771906a072829857c2f.0-100002661892257|DALPDLEZl4B0BNm0RYXnAsuri-I'
+    token = '215464901804004|be98bc9dcf5fd49954f7dcc2.0-100002657905797|E2wuIsrFR4VV3HRDQ54rO8s6f4w'
     facebook = OpenFacebook(token)
     
     result = facebook.fql('SELECT name FROM user WHERE uid = me()')
@@ -58,3 +67,8 @@ def test_facebook():
     #this should give a lazy iterable instead of the default result..
     
     #print facebook.get_many('cocacola', 'me')
+    
+
+
+if __name__ == '__main__':
+    test_facebook()
