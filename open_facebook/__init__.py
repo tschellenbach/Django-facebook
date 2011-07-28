@@ -1,1 +1,1 @@
-from open_facebook.api import OpenFacebook
+from open_facebook.api import OpenFacebook, FacebookConnection, FacebookAuthorization

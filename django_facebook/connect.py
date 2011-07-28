@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login
 from django.utils import simplejson as json
 from django_facebook import settings as facebook_settings
 from django_facebook import exceptions as facebook_exceptions
-from django_facebook.api import get_facebook_graph
+from django_facebook.api import get_facebook_graph, FacebookUserConverter
 from random import randint
 import logging
 from utils import get_profile_class
@@ -28,9 +28,10 @@ def connect_user(request, access_token=None, facebook_graph=None):
     - login
     - register
     '''
-    #TODO, instead of using access_token this should probably accept a facebook_graph as well
     user = None
-    facebook = facebook_graph or get_facebook_graph(request, access_token)
+    graph = facebook_graph or get_facebook_graph(request, access_token)
+    facebook = FacebookUserConverter(graph)
+    
     assert facebook.is_authenticated()
     facebook_data = facebook.facebook_profile_data()
     force_registration = request.REQUEST.get('force_registration') or request.REQUEST.get('force_registration_hard')

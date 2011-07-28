@@ -3,15 +3,16 @@ from django.core.mail import mail_admins
 from django.forms.util import ValidationError
 from django.utils import simplejson as json
 from django_facebook import settings as facebook_settings
-from django_facebook.official_sdk import GraphAPI, GraphAPIError
+from django_facebook.utils import mass_get_or_create
+from open_facebook.exceptions import OpenFacebookException
 import datetime
 import hashlib
 import hmac
 import logging
 import sys
-from django_facebook.utils import mass_get_or_create
 
 logger = logging.getLogger(__name__)
+
 
 def get_persistent_graph(request, *args, **kwargs):
     '''
@@ -49,117 +50,48 @@ def get_facebook_graph(request=None, access_token=None):
     
     returns a graph object
     '''
-    from open_facebook import OpenFacebook
-    additional_data = None
+    print 'querying'
+    from open_facebook import OpenFacebook, FacebookAuthorization
+    parsed_data = None
         
     if not access_token:
-        signed_request = request.REQUEST.get('signed_request')
+        signed_data = request.REQUEST.get('signed_request')
         cookie_name = 'fbsr_%s' % facebook_settings.FACEBOOK_APP_ID
-        oauth_cookie = request.COOKIES.get(OpenFacebook.cookie_name())
-        #scenario A, we're on a canvas page and need to parse the signed data
-        if signed_request:
-            additional_data = FacebookAPI.parse_signed_data(signed_request)
-            access_token = additional_data.get('oauth_token')
-            raise Thierry, additional_data
-        #scenario B, we're using javascript and cookies to authenticate
-        elif oauth_cookie:
-            additional_data = official_sdk.get_user_from_cookie(request.COOKIES, facebook_settings.FACEBOOK_APP_ID, facebook_settings.FACEBOOK_APP_SECRET)
-            access_token = additional_data.get('access_token')
-    
-    facebook_open_graph = FacebookAPI(access_token, additional_data)
-    
-    if facebook_open_graph.access_token and persistent_token:
-        request.session['facebook_open_graph'] = facebook_open_graph
-    elif facebook_open_graph_cached:
-        facebook_open_graph = facebook_open_graph_cached
+        cookie_data = request.COOKIES.get(cookie_name)
+        if cookie_data:
+            signed_data = cookie_data
+        
+        code = None
+        if signed_data:
+            parsed_data = FacebookAuthorization.parse_signed_data(signed_data)
+            code = parsed_data['code']
+        access_token = FacebookAuthorization.convert_code(code)
+        
+    facebook_open_graph = OpenFacebook(access_token, parsed_data)
     
     return facebook_open_graph
 
+class FacebookAPI(object):
+    pass
 
 
-
-class FacebookAPI(GraphAPI):
+class FacebookUserConverter(object):
     '''
-    Wrapper around the default facebook api with
-    - support for creating django users
-    - caches registration and profile data, ensuring
-    efficient use of facebook connections
+    This conversion class helps you to convert Facebook users to Django users
+    
+    Helps with
+    - extracting and prepopulating full profile data
+    - invite flows
+    - importing and storing likes
     '''
-    def __init__(self, access_token=None, additional_data=None):
-        self.access_token = access_token
-        self.additional_data = additional_data
-
-        self._is_authenticated = None
+    def __init__(self, open_facebook):
+        from open_facebook.api import OpenFacebook
+        self.open_facebook = open_facebook
+        assert isinstance(open_facebook, OpenFacebook)
         self._profile = None
-        GraphAPI.__init__(self, access_token)
-        
-    def __repr__(self):
-        return 'FB %s with data %s' % (self.access_token, self.additional_data)
 
-    @classmethod
-    def parse_signed_data(cls, signed_request, secret=facebook_settings.FACEBOOK_APP_SECRET):
-        '''
-        Thanks to 
-        http://stackoverflow.com/questions/3302946/how-to-base64-url-decode-in-python
-        and
-        http://sunilarora.org/parsing-signedrequest-parameter-in-python-bas
-        '''
-        l = signed_request.split('.', 2)
-        encoded_sig = l[0]
-        payload = l[1]
-
-        sig = base64_url_decode_php_style(encoded_sig)
-        data = json.loads(base64_url_decode_php_style(payload))
-    
-        if data.get('algorithm').upper() != 'HMAC-SHA256':
-            logger.error('Unknown algorithm')
-            return None
-        else:
-            expected_sig = hmac.new(secret, msg=payload, digestmod=hashlib.sha256).digest()
-    
-        if sig != expected_sig:
-            return None
-        else:
-            logger.debug('valid signed request received..')
-            return data
-
-
-    @classmethod
-    def generate_signature(cls, postdata, secret=settings.FACEBOOK_APP_SECRET):
-        #TODO: is this the same as the cookie based version, if so merge :)
-        dlist = sorted(postdata.items(), key=lambda x: x[0])
-        signature = hashlib.md5('%s%s' % (''.join(['%s=%s' % (k, v) for k, v in dlist]), secret)).hexdigest()
-        return signature
-
-    def is_authenticated(self, raise_=False):
-        '''
-        Checks if the cookie/post data provided is actually valid
-        '''
-        if self._is_authenticated is None:
-            self._is_authenticated = False
-            if self.access_token:
-                try:
-                    self.facebook_profile_data()
-                    self._is_authenticated = True
-                except GraphAPIError, e:
-                    self._is_authenticated = False
-                    if raise_:
-                        raise
-
-        return self._is_authenticated
-    
-
-    def facebook_profile_data(self):
-        '''
-        Returns the facebook profile data, together with the image locations
-        '''
-        if self._profile is None:
-            profile = self.get_object('me')
-            profile['image'] = 'https://graph.facebook.com/me/picture?type=large&access_token=%s' % self.access_token
-            profile['image_thumb'] = 'https://graph.facebook.com/me/picture?access_token=%s' % self.access_token
-            self._profile = profile
-        return self._profile
-
+    def is_authenticated(self):
+        return self.open_facebook.is_authenticated()
 
     def facebook_registration_data(self):
         '''
@@ -169,12 +101,23 @@ class FacebookAPI(GraphAPI):
         facebook_profile_data = self.facebook_profile_data()
         user_data = {}
         try:
-            user_data = FacebookAPI._convert_facebook_data(facebook_profile_data)
-        except Exception, e:
-            FacebookAPI._report_broken_facebook_data(user_data, facebook_profile_data, e)
+            user_data = self._convert_facebook_data(facebook_profile_data)
+        except OpenFacebookException, e:
+            self._report_broken_facebook_data(user_data, facebook_profile_data, e)
             raise
 
         return user_data
+    
+    def facebook_profile_data(self):
+        '''
+        Returns the facebook profile data, together with the image locations
+        '''
+        if self._profile is None:
+            profile = self.open_facebook.me()
+            profile['image'] = self.open_facebook.my_image_url('large')
+            profile['image_thumb'] = self.open_facebook.my_image_url()
+            self._profile = profile
+        return self._profile
 
     @classmethod
     def _convert_facebook_data(cls, facebook_profile_data):
@@ -200,8 +143,8 @@ class FacebookAPI(GraphAPI):
         elif gender == 'female':
             user_data['gender'] = 'f'
 
-        user_data['username'] = FacebookAPI._retrieve_facebook_username(user_data)
-        user_data['password2'] = user_data['password1'] = FacebookAPI._generate_fake_password()
+        user_data['username'] = cls._retrieve_facebook_username(user_data)
+        user_data['password2'] = user_data['password1'] = cls._generate_fake_password()
 
         facebook_map = dict(birthday='date_of_birth', about='about_me', id='facebook_id')
         for k, v in facebook_map.items():
@@ -210,10 +153,10 @@ class FacebookAPI(GraphAPI):
         if not user_data['about_me'] and user_data.get('quotes'):
             user_data['about_me'] = user_data.get('quotes')
             
-        user_data['date_of_birth'] = FacebookAPI._parse_data_of_birth(user_data['date_of_birth'])
+        user_data['date_of_birth'] = cls._parse_data_of_birth(user_data['date_of_birth'])
         
 
-        user_data['username'] = FacebookAPI._create_unique_username(user_data['username'])
+        user_data['username'] = cls._create_unique_username(user_data['username'])
 
         return user_data
 
@@ -290,8 +233,6 @@ class FacebookAPI(GraphAPI):
         data_dump_python = pformat(original_facebook_data)
         message_format = 'The following facebook data failed with error %s\n\n json %s \n\n python %s \n'
         data_tuple = (unicode(e), data_dump, data_dump_python)
-        #message = message_format % data_tuple
-        #mail_admins('Broken facebook data', message)
         
         logger.error(message_format % data_tuple,
             exc_info=sys.exc_info(), extra={
@@ -302,7 +243,6 @@ class FacebookAPI(GraphAPI):
                  'body': message_format % data_tuple,
              }
         })
-
 
     @classmethod
     def _create_unique_username(cls, base_username):
@@ -318,7 +258,6 @@ class FacebookAPI(GraphAPI):
             base_username = username + str(i)
             i += 1
         return base_username
-
 
     @classmethod
     def _retrieve_facebook_username(cls, facebook_data):
@@ -351,13 +290,11 @@ class FacebookAPI(GraphAPI):
         from django.template.defaultfilters import slugify
         return slugify(username).replace('-', '_')
     
-    
-    
     def get_likes(self, limit=1000):
         '''
         Parses the facebook response and returns the likes
         '''
-        likes_response = self.get_connections('me', 'likes', limit=limit)
+        likes_response = self.open_facebook.get('me/likes', limit=limit)
         likes = likes_response and likes_response.get('data')
         logger.info('found %s likes', len(likes))
         return likes
@@ -405,7 +342,7 @@ class FacebookAPI(GraphAPI):
         '''
         friends = getattr(self, '_friends', None)
         if friends is None:
-            friends_response = self.get_connections('me', 'friends', limit=limit)
+            friends_response = self.open_facebook.get('me/friends', limit=limit)
             friends = friends_response and friends_response.get('data')
         
         logger.info('found %s friends', len(friends))
@@ -444,8 +381,6 @@ class FacebookAPI(GraphAPI):
                     
         return friends
     
-    
-    
     def registered_friends(self, user):
         '''
         Returns all profile models which are already registered on your site
@@ -467,20 +402,3 @@ class FacebookAPI(GraphAPI):
             
         return friend_objects, new_friends
     
-def base64_url_decode_php_style(inp):
-    '''
-    PHP follows a slightly different protocol for base64 url decode.
-    For a full explanation see:
-    http://stackoverflow.com/questions/3302946/how-to-base64-url-decode-in-python
-    and
-    http://sunilarora.org/parsing-signedrequest-parameter-in-python-bas
-    '''
-    import base64
-    padding_factor = (4 - len(inp) % 4) % 4
-    inp += "=" * padding_factor 
-    return base64.b64decode(unicode(inp).translate(dict(zip(map(ord, u'-_'), u'+/'))))
-
-
-def get_app_access_token():
-    from django_facebook.official_sdk import get_app_access_token
-    return get_app_access_token(facebook_settings.FACEBOOK_APP_ID, facebook_settings.FACEBOOK_APP_SECRET)

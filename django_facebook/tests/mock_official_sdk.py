@@ -1,16 +1,17 @@
-from django_facebook.api import FacebookAPI
 from django.utils.encoding import force_unicode
 
+from open_facebook.api import OpenFacebook
 
-
-class MockFacebookAPI(FacebookAPI):
-    def get_object(self, id, **args):
-        assert id == 'me'
+class MockFacebookAPI(OpenFacebook):
+    mock = True
+    
+    def me(self):
         from django_facebook.tests.sample_data.user_data import user_data
         data = user_data[self.access_token]
         return data
     
     def is_authenticated(self, *args, **kwargs):
         from django_facebook.tests.sample_data.user_data import user_data
+        print user_data
         return self.access_token in user_data
     

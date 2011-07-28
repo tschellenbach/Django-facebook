@@ -389,6 +389,19 @@ class OpenFacebook(FacebookConnection):
         
         return me
     
+    def my_image_url(self, size=None):
+        '''
+        Returns the image url from your profile
+        '''
+        query_dict = QueryDict('', True)
+        if size:
+            query_dict['type'] = size
+        query_dict['access_token'] = self.access_token
+        
+        url = '%sme/picture?%s' % (self.api_url, query_dict.urlencode())
+        return url
+    
+    
     def request(self, path='', post_data=None, old_api=False, **params):
         '''
         Main function for sending the request to facebook
