@@ -129,7 +129,6 @@ def canvas(request):
     context = RequestContext(request)
     
     context['auth_url'] = generate_oauth_url()
-    
     if fb.is_authenticated():
         likes = context['facebook'].get_connections("me", "likes", limit=3)
         logger.info('found these likes %s', likes)

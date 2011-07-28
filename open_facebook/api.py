@@ -57,7 +57,6 @@ class FacebookConnection(object):
         Main function for sending the request to facebook
         '''
         api_base_url = cls.old_api_url if old_api else cls.api_url
-        print 'token', getattr(cls, 'access_token', None)
         if getattr(cls, 'access_token', None):
             params['access_token'] = cls.access_token
         url = '%s%s?%s' % (api_base_url, path, urllib.urlencode(params))
@@ -75,7 +74,6 @@ class FacebookConnection(object):
         opener = urllib2.build_opener()
         opener.addheaders = [('User-agent', 'Open Facebook Python')]
         #give it a few shots, connection is buggy at times
-        print url
         while attempts:
             response_file = None
             post_string = urllib.urlencode(post_data) if post_data else None
@@ -108,8 +106,12 @@ class FacebookConnection(object):
             parsed_response = QueryDict(response, True)
             logger.info('facebook send response %s' % parsed_response)
 
-        if parsed_response and isinstance(parsed_response, dict) and parsed_response.get('error'):
-            cls.raise_error(parsed_response['error']['type'], parsed_response['error']['message'])
+        if parsed_response and isinstance(parsed_response, dict):
+            #of course we have two different syntaxes
+            if parsed_response.get('error'):
+                cls.raise_error(parsed_response['error']['type'], parsed_response['error']['message'])
+            elif parsed_response.get('error_code'):
+                cls.raise_error(parsed_response['error_code'], parsed_response['error_msg'])
         
         return parsed_response
     
@@ -118,7 +120,10 @@ class FacebookConnection(object):
         '''
         Search for a corresponding error class and fall back to open facebook exception
         '''
-        error_class = getattr(facebook_exceptions, type, None)
+        error_class = None
+        if not isinstance(type, int):
+            error_class = getattr(facebook_exceptions, type, None)
+        
         
         if error_class and not issubclass(error_class, facebook_exceptions.OpenFacebookException):
             error_class = None
@@ -389,7 +394,6 @@ class OpenFacebook(FacebookConnection):
         Main function for sending the request to facebook
         '''
         api_base_url = self.old_api_url if old_api else self.api_url
-        print 'token', getattr(self, 'access_token', None)
         if getattr(self, 'access_token', None):
             params['access_token'] = self.access_token
         url = '%s%s?%s' % (api_base_url, path, urllib.urlencode(params))

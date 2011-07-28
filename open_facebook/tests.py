@@ -4,71 +4,83 @@ from facebook_example import settings
 from django.conf import settings
 from open_facebook.api import *
 import unittest
+import logging
+logger = logging.getLogger()
 
 class TestOpenFacebook(unittest.TestCase):
-    def test_setting_likes(self):
-        pass
-
-
-
-
-def test_facebook():
-    
-    cookie = 'F7cndfQuSIkcVHWIgg_SHQ4LIDJXeeHhiXUNjesOw5g.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImNvZGUiOiJVMTZuMFNoWVUxSTJ5VEFJMVZ0RmlvZTdhRVRaaEZ4cGV5d1hwYnZvOUprLmV5SnBkaUk2SW1OcmFGVXlWR053ZDA1VlMwSTRlUzFzZDA1WmFtY2lmUS5rZl9RTUhCMnVFTVh5YW83UU5UcnFGMlJzOGxxQUxrM1AxYm8zazBLMm5YUXpOZW5LSVlfczBVV3ZNbE1jTXAzcE04TXNLNVVDQUpjWlQ1N1ZaZXFkS3ZPeXRFbmdoODFxTmczTXVDeTBHNjB6WjFBOWZGZlpHenVDejdKSEVSSCIsImlzc3VlZF9hdCI6MTMxMTYwMDEyNywidXNlcl9pZCI6Nzg0Nzg1NDMwfQ'
-    print FacebookAuthorization.parse_signed_data(cookie)
-    
-    token = FacebookAuthorization.get_app_access_token()
-    print token
-    
-    print FacebookAuthorization.create_test_user(token)
-    
-    code = 'hPcK30IZB4G01VFitzWfR4P0JkF6UAmZ6PpRtUlANNQ.eyJpdiI6ImpkWTVFSEdQbVFpb1dBbHU3blUtdFEifQ.hKs8HRWGuZ7aRnspguBW1SjLrKCmdp0KNS6tJNvcikQnLjyZgEnMSqTdPM4WGZqI5UQl8uTr2cppwSm67eOQ-cIRUknXRq5wIwADO6PdJ7ZhTlKMqiTXJHfMqTmml6FO'
-    user_token = FacebookAuthorization.convert_code(code)
-    print user_token
-    token = '215464901804004|2.AQBHGHuWRllFbN4E.3600.1311465600.0-100002619711402|EtaLBkqHGsTa0cpMlFA4bmL4aAc'
-    token = '215464901804004|2.AQAwYr7AYNkKS9Rn.3600.1311469200.0-100002646981608|NtiF-ioL-98NF5juQtN2UXc0wKU'
-    token = '215464901804004|b8d73771906a072829857c2f.0-100002661892257|DALPDLEZl4B0BNm0RYXnAsuri-I'
-    token = '215464901804004|be98bc9dcf5fd49954f7dcc2.0-100002657905797|E2wuIsrFR4VV3HRDQ54rO8s6f4w'
-    facebook = OpenFacebook(token)
-    
-    result = facebook.fql('SELECT name FROM user WHERE uid = me()')
-    print 'result', result
-    albums = facebook.get('me/albums')
-    album_names = [album['name'] for album in albums['data']]
-    print album_names
-    
-    print facebook.me()
-    
-    print facebook.get('fashiolista')
-    
-    print facebook.set('fashiolista/likes')
-    
-    #print facebook.post_on_wall('me', 'the writing is one the wall')
-    
-    
-#    for photo in photo_urls:
-#        print facebook.set('me/photos', url=photo, message='the writing is one the wall', name='FashiolistaTest')
+    def test_app_access_token(self):
+        token = FacebookAuthorization.get_app_access_token()
+        test_user = FacebookAuthorization.create_test_user(token)
+        assert 'access_token' in test_user, 'App authentication failed %s' % test_user
         
-#    albums = facebook.get('me/albums')
-#    album_response = facebook.set('me/albums', params=dict(name='FashiolistaSuperAlbum', message='Your latest fashion finds'))
-#    album_id = album_response['id']
-#    for photo in photo_urls:
-#        print facebook.set('%s/photos' % album_id, url=photo, message='the writing is one the wall', name='FashiolistaTest')
+    def test_cookie_parsing(self):
+        cookie = 'F7cndfQuSIkcVHWIgg_SHQ4LIDJXeeHhiXUNjesOw5g.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImNvZGUiOiJVMTZuMFNoWVUxSTJ5VEFJMVZ0RmlvZTdhRVRaaEZ4cGV5d1hwYnZvOUprLmV5SnBkaUk2SW1OcmFGVXlWR053ZDA1VlMwSTRlUzFzZDA1WmFtY2lmUS5rZl9RTUhCMnVFTVh5YW83UU5UcnFGMlJzOGxxQUxrM1AxYm8zazBLMm5YUXpOZW5LSVlfczBVV3ZNbE1jTXAzcE04TXNLNVVDQUpjWlQ1N1ZaZXFkS3ZPeXRFbmdoODFxTmczTXVDeTBHNjB6WjFBOWZGZlpHenVDejdKSEVSSCIsImlzc3VlZF9hdCI6MTMxMTYwMDEyNywidXNlcl9pZCI6Nzg0Nzg1NDMwfQ'
+        parsed_cookie = FacebookAuthorization.parse_signed_data(cookie)
+        assert 'code' in parsed_cookie
+        
+        
+    def test_code_conversion(self):
+        return
+        #TODO: does facebook have a way to get test tokens?
+        code = 'hPcK30IZB4G01VFitzWfR4P0JkF6UAmZ6PpRtUlANNQ.eyJpdiI6ImpkWTVFSEdQbVFpb1dBbHU3blUtdFEifQ.hKs8HRWGuZ7aRnspguBW1SjLrKCmdp0KNS6tJNvcikQnLjyZgEnMSqTdPM4WGZqI5UQl8uTr2cppwSm67eOQ-cIRUknXRq5wIwADO6PdJ7ZhTlKMqiTXJHfMqTmml6FO'
+        user_token = FacebookAuthorization.convert_code(code)
+        facebook = OpenFacebook(user_token)
+        
+    def test_fql(self):
+        token = self.get_access_token()
+        facebook = OpenFacebook(token)
+        result = facebook.fql('SELECT name FROM user WHERE uid = me()')
+        assert 'name' in result[0]
 
-    photo_urls = [
-        'http://e.fashiocdn.com/images/entities/0/7/B/I/9/0.365x365.jpg',
-        'http://e.fashiocdn.com/images/entities/0/5/e/e/r/0.365x365.jpg',
-    ]
-    for photo in photo_urls:
-        print facebook.set('me/feed', message='the writing is one the wall', picture=photo)
-    
-    #print facebook.get('me/permissions')
-    print facebook.get('me/feed')
-    #this should give a lazy iterable instead of the default result..
-    
-    #print facebook.get_many('cocacola', 'me')
-    
+    def get_access_token(self):
+        token = FacebookAuthorization.get_app_access_token()
+        test_user = FacebookAuthorization.create_test_user(token)
+        print test_user['login_url']
+        return test_user['access_token']
+
+    def test_open_api(self):
+        token = self.get_access_token()
+        facebook = OpenFacebook(token)
+        assert 'name' in facebook.me()
+        
+        assert facebook.get('fashiolista')
+        
+    def test_album_upload(self):
+        token = self.get_access_token()
+        facebook = OpenFacebook(token)
+        photo_urls = [
+            'http://d.fashiocdn.com/images/entities/0/6/t/p/d/0.365x365.jpg',
+            'http://e.fashiocdn.com/images/entities/0/5/E/b/Q/0.365x365.jpg',
+        ]
+        #feed method
+        for photo in photo_urls:
+            uploaded = facebook.set('me/feed', message='Fashiolista is awesome - part one', picture=photo)
+        
+        #app album method
+        #gives an unknown error for some reason
+#        for photo in photo_urls:
+#            uploaded = facebook.set('me/photos', url=photo, message='Fashiolista 2 is awesome - part two', name='FashiolistaTest2')
+#        
+        albums = facebook.get('me/albums')
+        album_names = [album['name'] for album in albums['data']]
+        
+        album_name = 'FashiolistaSuperAlbum'
+        album_response = facebook.set('me/albums', params=dict(name=album_name, message='Your latest fashion finds'))
+        
+        albums = facebook.get('me/albums')
+        album_names = [album['name'] for album in albums['data']]
+        assert album_name in album_names
+        
+        album_id = album_response['id']
+        for photo in photo_urls:
+            photo_uploaded = facebook.set('%s/photos' % album_id, url=photo, message='the writing is one the wall tw', name='FashiolistaTestt')
 
 
 if __name__ == '__main__':
-    test_facebook()
+    import logging
+    handler = logging.StreamHandler()
+    logger = logging.getLogger('')
+    logger.setLevel(logging.DEBUG)
+    handler.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    unittest.main(defaultTest='TestOpenFacebook.test_album_upload')
