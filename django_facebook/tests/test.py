@@ -64,7 +64,8 @@ class UserConnectTest(FacebookTest):
         assert action == CONNECT_ACTIONS.REGISTER
         
     def test_gender(self):
-        facebook = get_facebook_graph(access_token='new_user')
+        graph = get_facebook_graph(access_token='new_user')
+        facebook = FacebookUserConverter(graph)
         data = facebook.facebook_registration_data()
         assert data['gender'] == 'm'
     
