@@ -57,6 +57,8 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     falls back to the current page without code in the request params
     specify redirect_uri if you are not posting and recieving the code on the same page
     '''
+    #should drop query params be included in the open facebook api, maybe, weird this...
+    DROP_QUERY_PARAMS = ['code','signed_request','state']
     from open_facebook import OpenFacebook, FacebookAuthorization
     parsed_data = None
         
@@ -76,8 +78,11 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 code = parsed_data['code']
         
         #exchange the code for an access token
+        #based on the php api 
+        #https://github.com/facebook/php-sdk/blob/master/src/base_facebook.php
+        #we need to drop signed_request, code and state
         if not redirect_uri:
-            query_dict_items = [(k,v) for k, v in request.GET.items() if k != 'code']
+            query_dict_items = [(k,v) for k, v in request.GET.items() if k not in DROP_QUERY_PARAMS]
             new_query_dict = QueryDict('', True)
             new_query_dict.update(dict(query_dict_items))
             redirect_uri = 'http://' + request.META['HTTP_HOST'] + request.path
