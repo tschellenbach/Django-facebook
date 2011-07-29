@@ -10,6 +10,7 @@ import hashlib
 import hmac
 import logging
 import sys
+from django.http import QueryDict
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ def get_persistent_graph(request, *args, **kwargs):
         
     
 
-def get_facebook_graph(request=None, access_token=None):
+def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     '''
     given a request from one of these
     - js authentication flow (signed cookie)
@@ -49,23 +50,41 @@ def get_facebook_graph(request=None, access_token=None):
     - mobile authentication flow (direct access_token)
     
     returns a graph object
+    
+    redirect path is the path from which you requested the token
+    for some reason facebook needs exactly this uri when converting the code
+    to a token
+    falls back to the current page without code in the request params
+    specify redirect_uri if you are not posting and recieving the code on the same page
     '''
-    print 'querying'
     from open_facebook import OpenFacebook, FacebookAuthorization
     parsed_data = None
         
     if not access_token:
-        signed_data = request.REQUEST.get('signed_request')
-        cookie_name = 'fbsr_%s' % facebook_settings.FACEBOOK_APP_ID
-        cookie_data = request.COOKIES.get(cookie_name)
-        if cookie_data:
-            signed_data = cookie_data
+        #easy case, code is in the get
+        code = request.REQUEST.get('code')
         
-        code = None
-        if signed_data:
-            parsed_data = FacebookAuthorization.parse_signed_data(signed_data)
-            code = parsed_data['code']
-        access_token = FacebookAuthorization.convert_code(code)
+        if not code:
+            #signed request or cookie leading, base 64 decoding needed
+            signed_data = request.REQUEST.get('signed_request')
+            cookie_name = 'fbsr_%s' % facebook_settings.FACEBOOK_APP_ID
+            cookie_data = request.COOKIES.get(cookie_name)
+            if cookie_data:
+                signed_data = cookie_data
+            if signed_data:
+                parsed_data = FacebookAuthorization.parse_signed_data(signed_data)
+                code = parsed_data['code']
+        
+        #exchange the code for an access token
+        if not redirect_uri:
+            query_dict_items = [(k,v) for k, v in request.GET.items() if k != 'code']
+            new_query_dict = QueryDict('', True)
+            new_query_dict.update(dict(query_dict_items))
+            redirect_uri = 'http://' + request.META['HTTP_HOST'] + request.path
+            if new_query_dict:
+                redirect_uri += '?%s' % new_query_dict.urlencode()
+        token_response = FacebookAuthorization.convert_code(code, redirect_uri=redirect_uri)
+        access_token = token_response['access_token']
         
     facebook_open_graph = OpenFacebook(access_token, parsed_data)
     

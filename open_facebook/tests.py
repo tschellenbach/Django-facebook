@@ -20,11 +20,12 @@ class TestOpenFacebook(unittest.TestCase):
         
         
     def test_code_conversion(self):
-        return
-        #TODO: does facebook have a way to get test tokens?
-        code = 'hPcK30IZB4G01VFitzWfR4P0JkF6UAmZ6PpRtUlANNQ.eyJpdiI6ImpkWTVFSEdQbVFpb1dBbHU3blUtdFEifQ.hKs8HRWGuZ7aRnspguBW1SjLrKCmdp0KNS6tJNvcikQnLjyZgEnMSqTdPM4WGZqI5UQl8uTr2cppwSm67eOQ-cIRUknXRq5wIwADO6PdJ7ZhTlKMqiTXJHfMqTmml6FO'
-        user_token = FacebookAuthorization.convert_code(code)
-        facebook = OpenFacebook(user_token)
+        #before testing update this with a valid code, hope facebook comes with a way to automate this
+        code = 'AQDByzD95HCaQLIY3PyQFvCJ67bkYx5f692TylEXARQ0p6_XK0mXGRVBU3G759qOIa_A966Wmm-kxxw1GbXkXQiJj0A3b_XNFewFhT8GSro4i9F8b_7q1RSnKzfq327XYno-Qw4NGxm0ordSl0gJ0YTjhwY8TwSMy2b2whD5ZhHvaYkEaC1J-GcBhkF7o4F2-W8'
+        #the redirect uri needs to be connected
+        user_token = FacebookAuthorization.convert_code(code, redirect_uri='http://local.mellowmorning.com:8000/facebook/connect/?facebook_login=1')
+        facebook = OpenFacebook(user_token['access_token'])
+        mine = facebook.me()
         
     def test_fql(self):
         token = self.get_access_token()
@@ -83,4 +84,4 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     handler.setLevel(logging.DEBUG)
     logger.addHandler(handler)
-    unittest.main(defaultTest='TestOpenFacebook.test_album_upload')
+    unittest.main(defaultTest='TestOpenFacebook.test_code_conversion')

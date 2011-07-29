@@ -7,7 +7,8 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings
-from django_facebook.api import get_facebook_graph, get_persistent_graph
+from django_facebook.api import get_facebook_graph, get_persistent_graph,\
+    FacebookUserConverter
 from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
 from django_facebook.utils import next_redirect
@@ -46,7 +47,8 @@ def connect(request):
     - login
     - register
     '''
-    uri = 'http://' + request.META['HTTP_HOST'] + request.path
+    #test code time to remove
+    uri = 'http://' + request.META['HTTP_HOST'] + request.path + '?facebook_login=1'
     if request.GET.get('redirect'):
         return facebook_login_required(uri, scope='read_stream')
     context = RequestContext(request)
@@ -54,18 +56,9 @@ def connect(request):
     assert context.get('FACEBOOK_APP_ID'), 'Please specify a facebook app id and ensure the context processor is enabled'
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
 
-    access_token = None
-    if request.GET.get('code'):
-        facebook = get_facebook_graph(request)
-        response_string = facebook.convert_code(request.GET.get('code'), redirect_uri=uri)
-        data = QueryDict(response_string)
-        #access token with expires
-        access_token = data['access_token']
-        print access_token
-    
     if facebook_login:
-        facebook = get_facebook_graph(request, access_token=access_token)
-        
+        graph = get_facebook_graph(request)
+        facebook = FacebookUserConverter(graph)
         
         if facebook.is_authenticated():
             facebook_data = facebook.facebook_profile_data()
