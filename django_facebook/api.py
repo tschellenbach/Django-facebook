@@ -85,6 +85,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
             query_dict_items = [(k,v) for k, v in request.GET.items() if k not in DROP_QUERY_PARAMS]
             new_query_dict = QueryDict('', True)
             new_query_dict.update(dict(query_dict_items))
+            #TODO support http and https
             redirect_uri = 'http://' + request.META['HTTP_HOST'] + request.path
             if new_query_dict:
                 redirect_uri += '?%s' % new_query_dict.urlencode()
