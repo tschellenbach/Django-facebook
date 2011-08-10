@@ -59,7 +59,6 @@ def connect(request):
     if facebook_login:
         graph = get_facebook_graph(request)
         facebook = FacebookUserConverter(graph)
-        
         if facebook.is_authenticated():
             facebook_data = facebook.facebook_profile_data()
             #either, login register or connect the user
@@ -103,16 +102,32 @@ def image_upload(request):
     '''
     fb = get_persistent_graph(request)
     if fb.is_authenticated():
-        raise Exception, 'test'
         #handling the form without a form class for explanation
         #in your own app you could use a neat django form to do this
         pictures = request.POST.getlist('pictures')
         from django.contrib import messages
         
         for picture in pictures:
-            fb.set('me/photos', url=picture, message='the writing is one the wall', name='FashiolistaTest')
+            fb.set('me/photos', url=picture, message='the writing is one the wall image %s' % picture)
         
         messages.info(request, 'The images have been added to your profile!')
+    
+    return next_redirect(request)
+
+
+def wall_post(request):
+    '''
+    Handle image uploading to Facebook
+    '''
+    fb = get_persistent_graph(request)
+    if fb.is_authenticated():
+        #handling the form without a form class for explanation
+        #in your own app you could use a neat django form to do this
+        message = request.POST.get('message')
+        fb.set('me/feed', message=message)
+        
+        from django.contrib import messages
+        messages.info(request, 'Posted the message to your wall')
     
     return next_redirect(request)
 

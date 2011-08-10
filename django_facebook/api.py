@@ -73,6 +73,8 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
             cookie_data = request.COOKIES.get(cookie_name)
             if cookie_data:
                 signed_data = cookie_data
+                #the javascript api assumes a redirect uri of ''
+                redirect_uri = ''
             if signed_data:
                 parsed_data = FacebookAuthorization.parse_signed_data(signed_data)
                 code = parsed_data['code']
@@ -81,7 +83,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
         #based on the php api 
         #https://github.com/facebook/php-sdk/blob/master/src/base_facebook.php
         #we need to drop signed_request, code and state
-        if not redirect_uri:
+        if redirect_uri is None:
             query_dict_items = [(k,v) for k, v in request.GET.items() if k not in DROP_QUERY_PARAMS]
             new_query_dict = QueryDict('', True)
             new_query_dict.update(dict(query_dict_items))

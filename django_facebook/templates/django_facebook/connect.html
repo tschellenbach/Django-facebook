@@ -124,11 +124,11 @@
                 {% csrf_token %}
                 <input type="hidden" value="{{ request.path }}" name="next" />
                 
-                <img src="http://d.fashiocdn.com/images/entities/0/6/7/-/v/0.126x126.jpg" alt="image"/>
-                <input type="hidden" value="http://d.fashiocdn.com/images/entities/0/6/7/-/v/0.126x126.jpg" name="pictures" />
+                <img src="http://e.fashiocdn.com/images/entities/0/7/z/0/D/0.126x126.jpg" alt="image"/>
+                <input type="hidden" value="http://e.fashiocdn.com/images/entities/0/7/z/0/D/0.365x365.jpg" name="pictures" />
                 
-                <img src="http://e.fashiocdn.com/images/entities/0/5/7/t/K/0.126x126.jpg" alt="image"/>
-                <input type="hidden" value="http://e.fashiocdn.com/images/entities/0/5/7/t/K/0.126x126.jpg" name="pictures" />
+                <img src="http://d.fashiocdn.com/images/entities/0/6/T/p/8/0.126x126.jpg" alt="image"/>
+                <input type="hidden" value="http://d.fashiocdn.com/images/entities/0/6/T/p/8/0.365x365.jpg" name="pictures" />
                 <br />
                 <a href="javascript:void(0)" onclick="F.connect(this.parentNode, ['user_photos', 'publish_stream']);">
                     Upload to your album
@@ -141,6 +141,23 @@
         <h2>No Javascript version</h2>
         <div>
             <a href="{{ request.path }}?redirect=1">Go to Facebook OAuth flow</a>
+        </div>
+    </div>
+    
+
+    <div id="wall_post" style="margin: 60px 0px 20px 0px;">
+        <h2>Post to My Wall</h2>
+        <div>
+            <form action="{% url facebook_wall_post %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" value="{{ request.path }}" name="next" />
+
+                <textarea name="message">Check out fashiolista.com, loving it :)</textarea>
+                <br />
+                <a href="javascript:void(0)" onclick="F.connect(this.parentNode, ['publish_stream']);">
+                    Post to your Wall
+                </a>
+            </form>
         </div>
     </div>
 	
