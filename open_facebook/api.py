@@ -24,10 +24,11 @@ Syntax
 >>> facebook.set('me/feed', message='check out fashiolista', url='http://www.fashiolista.com')
 >>> facebook.set('cocacola/likes')
 
-When the facebook api get's more stable we will move to a chaining syntax
+Maybe when the facebook api get's more stable we will move to a chaining syntax
 Which validates input
 facebook('me').loves()
 facebook('myalbum').comment('Fashiolista is awesome ♥')
+Currently that would be a bad idea though because of maintenance
 
 '''
 from django.http import QueryDict
@@ -79,8 +80,9 @@ class FacebookConnection(object):
             post_string = urllib.urlencode(post_data) if post_data else None
             try:
                 try:
-                    #response_file = opener.open(url, post_string, timeout=timeout)
-                    response_file = opener.open(url, post_string)
+                    #For older python versions you could leave out the timeout
+                    #response_file = opener.open(url, post_string)
+                    response_file = opener.open(url, post_string, timeout=timeout)
                 except (urllib2.HTTPError,), e:
                     #catch the silly status code errors
                     if 'HTTP Error' in unicode(e):
