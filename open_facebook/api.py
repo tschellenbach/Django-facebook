@@ -40,7 +40,8 @@ import urllib
 import urllib2
 logger = logging.getLogger(__name__)
 
-
+REQUEST_TIMEOUT = 15
+REQUEST_ATTEMPTS = 2
 
     
 class FacebookConnection(object):
@@ -65,7 +66,7 @@ class FacebookConnection(object):
         return response
     
     @classmethod
-    def _request(cls, url, post_data=None, timeout=5, attempts=2):
+    def _request(cls, url, post_data=None, timeout=REQUEST_TIMEOUT, attempts=REQUEST_ATTEMPTS):
         '''
         request the given url and parse it as json
         
