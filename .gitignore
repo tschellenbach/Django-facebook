@@ -19,6 +19,9 @@ bulkloader-*
 .*
 .settings/
 
+#app specific
+facebook_example/django_fb_test/
+
 # But allow the gitignore file
 !.gitignore
 
