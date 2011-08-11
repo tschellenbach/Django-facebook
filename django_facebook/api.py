@@ -98,9 +98,6 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     
     return facebook_open_graph
 
-class FacebookAPI(object):
-    pass
-
 
 class FacebookUserConverter(object):
     '''
