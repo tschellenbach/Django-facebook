@@ -403,7 +403,6 @@ class OpenFacebook(FacebookConnection):
         url = '%sme/picture?%s' % (self.api_url, query_dict.urlencode())
         return url
     
-    
     def request(self, path='', post_data=None, old_api=False, **params):
         '''
         Main function for sending the request to facebook
