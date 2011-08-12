@@ -40,7 +40,7 @@ import urllib
 import urllib2
 logger = logging.getLogger(__name__)
 
-REQUEST_TIMEOUT = 15
+REQUEST_TIMEOUT = 8
 REQUEST_ATTEMPTS = 2
 
     
