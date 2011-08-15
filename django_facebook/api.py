@@ -102,7 +102,8 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 access_token = token_response['access_token']
             else:
                 from open_facebook import exceptions
-                raise exceptions.MissingParameter('Cant find code or access token')
+                return None
+                #raise exceptions.MissingParameter('Cant find code or access token')
         
     facebook_open_graph = OpenFacebook(access_token, parsed_data)
     
