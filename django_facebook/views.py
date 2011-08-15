@@ -58,32 +58,33 @@ def connect(request):
 
     if facebook_login:
         graph = get_facebook_graph(request)
-        facebook = FacebookUserConverter(graph)
-        if facebook.is_authenticated():
-            facebook_data = facebook.facebook_profile_data()
-            #either, login register or connect the user
-            try:
-                action, user = connect_user(request)
-            except facebook_exceptions.IncompleteProfileError, e:
-                logger.warn(u'Incomplete profile data encountered with error %s' % e, 
-                    exc_info=sys.exc_info(), extra={
-                    'request': request,
-                    'data': {
-                         'username': request.user.username,
-                         'facebook_data': facebook.facebook_profile_data(),
-                         'body': unicode(e),
-                     }
-                })
-                
-                context['facebook_mode'] = True
-                context['form'] = e.form
-                return render_to_response('registration/registration_form.html', context)
-                
-            if action is CONNECT_ACTIONS.CONNECT:
-                messages.info(request, _("You have connected your account to %s's facebook profile") % facebook_data['name'])
-            elif action is CONNECT_ACTIONS.REGISTER:
-                response = user.get_profile().post_facebook_registration(request)
-                return response
+        if graph:
+            facebook = FacebookUserConverter(graph)
+            if facebook.is_authenticated():
+                facebook_data = facebook.facebook_profile_data()
+                #either, login register or connect the user
+                try:
+                    action, user = connect_user(request)
+                except facebook_exceptions.IncompleteProfileError, e:
+                    logger.warn(u'Incomplete profile data encountered with error %s' % e, 
+                        exc_info=sys.exc_info(), extra={
+                        'request': request,
+                        'data': {
+                             'username': request.user.username,
+                             'facebook_data': facebook.facebook_profile_data(),
+                             'body': unicode(e),
+                         }
+                    })
+                    
+                    context['facebook_mode'] = True
+                    context['form'] = e.form
+                    return render_to_response('registration/registration_form.html', context)
+                    
+                if action is CONNECT_ACTIONS.CONNECT:
+                    messages.info(request, _("You have connected your account to %s's facebook profile") % facebook_data['name'])
+                elif action is CONNECT_ACTIONS.REGISTER:
+                    response = user.get_profile().post_facebook_registration(request)
+                    return response
         else:
             return next_redirect(request, additional_params=dict(fb_error_or_cancel=1), next_key=['error_next', 'next'])
             
