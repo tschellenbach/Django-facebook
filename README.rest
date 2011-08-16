@@ -96,21 +96,10 @@ add this to your ``AUTHENTICATION_BACKENDS`` setting::
 
 **Update your models**
 
-Add the following fields to your profile model:
-
-::
-
-    about_me = models.TextField(blank=True, null=True)
-    facebook_id = models.IntegerField(blank=True, null=True)
-    facebook_name = models.CharField(max_length=255, blank=True, null=True)
-    facebook_profile_url = models.TextField(blank=True, null=True)
-    website_url = models.TextField(blank=True, null=True)
-    blog_url = models.TextField(blank=True, null=True)
-    image = models.ImageField(blank=True, null=True, upload_to='profile_images')
-    date_of_birth = models.DateField(blank=True, null=True)
-    raw_data = models.TextField(blank=True, null=True)
-
-An abstract model is specified for convenience django_facebook/models.py FacebookProfileModel
+An abstract model is specified for convenience django_facebook/models.py
+FacebookProfileModel. You'll need to copy these fields into your UserProfile
+model, together with the post_facebook_registration function included in the
+model
 
 **Check the example**
 
