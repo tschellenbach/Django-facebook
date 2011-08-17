@@ -8,6 +8,17 @@ import logging
 logger = logging.getLogger()
 
 class TestOpenFacebook(unittest.TestCase):
+    def test_thijs_profile(self):
+        message = "Hi! I'm on Fashiolista, a worldwide community for fashion inspiration. Click to see my style profile and discover great new shops and fashion items!"
+        image_url = 'http://e.fashiocdn.com/images/users/0/0/D/P/C/0.150x150.jpg'
+        token = None
+        #fill in a real token for this to work
+        fb = OpenFacebook(token)
+        print fb.get('thijsgoos', metadata='1')['metadata']
+        
+        #print fb.set('thijsgoos/feed', message=message, url=image_url)
+        print fb.set('696010430_10150752137065431/likes')
+    
     def test_app_access_token(self):
         token = FacebookAuthorization.get_app_access_token()
         test_user = FacebookAuthorization.create_test_user(token)
@@ -17,7 +28,6 @@ class TestOpenFacebook(unittest.TestCase):
         cookie = 'F7cndfQuSIkcVHWIgg_SHQ4LIDJXeeHhiXUNjesOw5g.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImNvZGUiOiJVMTZuMFNoWVUxSTJ5VEFJMVZ0RmlvZTdhRVRaaEZ4cGV5d1hwYnZvOUprLmV5SnBkaUk2SW1OcmFGVXlWR053ZDA1VlMwSTRlUzFzZDA1WmFtY2lmUS5rZl9RTUhCMnVFTVh5YW83UU5UcnFGMlJzOGxxQUxrM1AxYm8zazBLMm5YUXpOZW5LSVlfczBVV3ZNbE1jTXAzcE04TXNLNVVDQUpjWlQ1N1ZaZXFkS3ZPeXRFbmdoODFxTmczTXVDeTBHNjB6WjFBOWZGZlpHenVDejdKSEVSSCIsImlzc3VlZF9hdCI6MTMxMTYwMDEyNywidXNlcl9pZCI6Nzg0Nzg1NDMwfQ'
         parsed_cookie = FacebookAuthorization.parse_signed_data(cookie)
         assert 'code' in parsed_cookie
-        
         
     def test_code_conversion(self):
         #before testing update this with a valid code, hope facebook comes with a way to automate this
@@ -84,4 +94,4 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     handler.setLevel(logging.DEBUG)
     logger.addHandler(handler)
-    unittest.main(defaultTest='TestOpenFacebook.test_code_conversion')
+    unittest.main(defaultTest='TestOpenFacebook.test_thijs_profile')

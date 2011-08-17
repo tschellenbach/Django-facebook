@@ -335,7 +335,6 @@ class OpenFacebook(FacebookConnection):
     
     def __init__(self, access_token=None, prefetched_data=None):
         self.access_token = access_token
-        
         #extra data coming from signed cookies
         self.prefetched_data = prefetched_data
         
