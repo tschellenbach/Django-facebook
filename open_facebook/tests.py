@@ -9,15 +9,36 @@ logger = logging.getLogger()
 
 class TestOpenFacebook(unittest.TestCase):
     def test_thijs_profile(self):
-        message = "Hi! I'm on Fashiolista, a worldwide community for fashion inspiration. Click to see my style profile and discover great new shops and fashion items!"
-        image_url = 'http://e.fashiocdn.com/images/users/0/0/D/P/C/0.150x150.jpg'
-        token = None
-        #fill in a real token for this to work
-        fb = OpenFacebook(token)
-        print fb.get('thijsgoos', metadata='1')['metadata']
         
-        #print fb.set('thijsgoos/feed', message=message, url=image_url)
-        print fb.set('696010430_10150752137065431/likes')
+#        token = FacebookAuthorization.get_app_access_token()
+#        test_user = FacebookAuthorization.create_test_user(token)
+#        print test_user
+#        return
+#        
+        message = "Hi! I'm on Fashiolista, a worldwide community for fashion inspiration. Click to see my style profile and discover great new shops and fashion items!"
+        image_urls = [
+            'http://e.fashiocdn.com/images/entities/0/0/x/l/W/0.365x365.jpg',
+            'http://d.fashiocdn.com/images/entities/0/9/9/j/j/0.365x365.jpg',
+            'http://e.fashiocdn.com/images/entities/0/8/0/7/4/0.365x365.jpg',
+        ]
+        token = None
+        access_token = '215464901804004|fc589819a12431167c3bd571.0-100002862180253|by58p1KHqf_XiqA4ux390XBGBIo'
+        link = 'http://www.fashiolista.com/'
+        #login
+        #https://www.facebook.com/platform/test_account_login.php?user_id=100002898600225&n=I4x8lGXREnEhea7
+        #fill in a real token for this to work
+        #{u'access_token': u'215464901804004|fc589819a12431167c3bd571.0-100002862180253|by58p1KHqf_XiqA4ux390XBGBIo', u'password': u'1439799010', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002862180253&n=4xdwSTQbstgOzUt', u'id': u'100002862180253', u'email': u'hello_edztofa_world@tfbnw.net'}
+        fb = OpenFacebook(access_token)
+        print fb.fql("SELECT uid, name, sex FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me())")
+        return
+        actions = [dict(name='Follow', link='http://www.fashiolista.com/')]
+        #print fb.get('thijsgoos', metadata='1')['metadata']
+        types = ['link', 'photo']
+        
+        for type in types:
+            for image_url in image_urls:
+                post = fb.set('me/feed', picture=image_url, actions=actions, type=type, message=type)
+        #print fb.set('696010430_10150752137065431/likes')
     
     def test_app_access_token(self):
         token = FacebookAuthorization.get_app_access_token()

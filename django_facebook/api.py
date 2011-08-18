@@ -377,8 +377,14 @@ class FacebookUserConverter(object):
         '''
         friends = getattr(self, '_friends', None)
         if friends is None:
-            friends_response = self.open_facebook.get('me/friends', limit=limit)
-            friends = friends_response and friends_response.get('data')
+            friends_response = self.open_facebook.fql("SELECT uid, name, sex FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me()) LIMIT %s" % limit)
+            #friends_response = self.open_facebook.get('me/friends', limit=limit)
+            #friends = friends_response and friends_response.get('data')
+            friends = []
+            for response_dict in friends_response:
+                response_dict['id'] = response_dict['uid']
+                friends.append(response_dict)
+            
         
         logger.info('found %s friends', len(friends))
         
@@ -406,7 +412,7 @@ class FacebookUserConverter(object):
             default_dict = {}
             for f in friends:
                 name = f.get('name')
-                default_dict[f['id']] = dict(name=name)
+                default_dict[str(f['id'])] = dict(name=name)
             id_field = 'facebook_id'
 
             current_friends, inserted_friends = mass_get_or_create(
