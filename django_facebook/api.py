@@ -11,6 +11,7 @@ import hmac
 import logging
 import sys
 from django.http import QueryDict
+from open_facebook import exceptions as open_facebook_exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -98,10 +99,12 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                     redirect_uri = 'http://' + request.META['HTTP_HOST'] + request.path
                     if new_query_dict:
                         redirect_uri += '?%s' % new_query_dict.urlencode()
-                token_response = FacebookAuthorization.convert_code(code, redirect_uri=redirect_uri)
+                try:
+                    token_response = FacebookAuthorization.convert_code(code, redirect_uri=redirect_uri)
+                except open_facebook_exceptions.OAuthException, e:
+                    return None
                 access_token = token_response['access_token']
             else:
-                from open_facebook import exceptions
                 return None
                 #raise exceptions.MissingParameter('Cant find code or access token')
         

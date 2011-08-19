@@ -133,7 +133,9 @@ class FacebookConnection(object):
         
         #map error classes to facebook error ids
         id_mapping = {
+            '#1': facebook_exceptions.UnknownException,
             '#3': facebook_exceptions.PermissionException,
+            '#210': facebook_exceptions.PermissionException,
             '#506': facebook_exceptions.DuplicateStatusMessage,
             '#803': facebook_exceptions.AliasException,
         }

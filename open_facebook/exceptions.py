@@ -4,6 +4,12 @@
 class OpenFacebookException(Exception):
     pass
 
+class UnknownException(OpenFacebookException):
+    '''
+    Raised when facebook themselves don't know what went wrong
+    '''
+    pass
+
 class OAuthException(OpenFacebookException):
     pass 
 

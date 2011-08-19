@@ -29,6 +29,9 @@ class TestOpenFacebook(unittest.TestCase):
         #fill in a real token for this to work
         #{u'access_token': u'215464901804004|fc589819a12431167c3bd571.0-100002862180253|by58p1KHqf_XiqA4ux390XBGBIo', u'password': u'1439799010', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002862180253&n=4xdwSTQbstgOzUt', u'id': u'100002862180253', u'email': u'hello_edztofa_world@tfbnw.net'}
         fb = OpenFacebook(access_token)
+        permissions = [p for p, v in fb.get('me/permissions')['data'][0].items() if v]
+        print permissions
+        return
         print fb.fql("SELECT uid, name, sex FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me())")
         return
         actions = [dict(name='Follow', link='http://www.fashiolista.com/')]
