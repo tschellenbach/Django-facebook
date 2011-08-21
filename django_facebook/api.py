@@ -67,7 +67,6 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     if not access_token:
         #easy case, code is in the get
         code = request.REQUEST.get('code')
-        
         if not code:
             #signed request or cookie leading, base 64 decoding needed
             signed_data = request.REQUEST.get('signed_request')
@@ -98,7 +97,8 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                     new_query_dict = QueryDict('', True)
                     new_query_dict.update(dict(query_dict_items))
                     #TODO support http and https
-                    redirect_uri = 'http://' + request.META['HTTP_HOST'] + request.path
+#                    redirect_uri = 'http://' + request.META['HTTP_HOST'] + request.path
+                    redirect_uri = facebook_settings.FACEBOOK_CANVAS_PAGE
                     if new_query_dict:
                         redirect_uri += '?%s' % new_query_dict.urlencode()
                 try:
