@@ -83,7 +83,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                     access_token = parsed_data['oauth_token']
                 else:
                     # no access token, need to use this code to get one
-                    code = parsed_data['code']
+                    code = parsed_data.get('code', None)
 
         if not access_token:
             if code:
