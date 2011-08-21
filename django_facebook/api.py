@@ -30,7 +30,7 @@ def get_persistent_graph(request, *args, **kwargs):
     facebook_open_graph = get_facebook_graph(request, *args, **kwargs)
     
     #if it's valid replace the old cache
-    if facebook_open_graph.access_token:
+    if facebook_open_graph is not None and facebook_open_graph.access_token:
         request.session['facebook_open_graph'] = facebook_open_graph
     else:
         facebook_open_graph_cached = request.session.get('facebook_open_graph')
