@@ -43,7 +43,7 @@ class UserConnector(object):
         #TODO, instead of using access_token this should probably accept a facebook_graph as well
         user = None
         facebook = self.facebook_graph or get_facebook_graph(self.request, self.access_token)
-        assert facebook.is_authenticated()
+        assert facebook.is_authenticated(), 'Facebook not authenticated'
         facebook_data = facebook.facebook_profile_data()
         force_registration = self.request.REQUEST.get('force_registration') or self.request.REQUEST.get('force_registration_hard')
 
