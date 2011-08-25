@@ -117,16 +117,26 @@ def _register_user(request, facebook, profile_callback=None):
     if not facebook.is_authenticated():
         raise ValueError, 'Facebook needs to be authenticated for connect flows'
     
+    from django.conf import settings
     from registration.forms import RegistrationFormUniqueEmail
     import registration
     
     new_reg_module = True
+    backend = None
     try:        
+        #support for the newer implementation
         from registration.backends import get_backend
+        try:
+            backend = get_backend(settings.REGISTRATION_BACKEND)
+        except:
+            raise ValueError, 'Cannot get django-registration backend from settings.REGISTRATION_BACKEND'
     except ImportError, e:
         new_reg_module = False
-        
-    form_class = RegistrationFormUniqueEmail
+
+    if new_reg_module and backend:
+        form_class = backend.get_form_class(request)
+    else:
+        form_class = RegistrationFormUniqueEmail
     facebook_data = facebook.facebook_registration_data()
 
     data = request.POST.copy()
@@ -145,13 +155,7 @@ def _register_user(request, facebook, profile_callback=None):
         error.form = form
         raise error
 
-    if new_reg_module:
-        #support for the newer implementation
-        try:
-            from django.conf import settings
-            backend = get_backend(settings.REGISTRATION_BACKEND)
-        except:
-            raise ValueError, 'Cannot get django-registration backend from settings.REGISTRATION_BACKEND'
+    if new_reg_module and backend:
         new_user = backend.register(request, **form.cleaned_data)
     else:
         new_user = form.save(profile_callback=profile_callback)
