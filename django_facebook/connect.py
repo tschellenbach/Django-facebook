@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, login
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.utils import simplejson as json
+from django.conf import settings
 
 from utils import get_profile_class
 
