@@ -49,10 +49,16 @@ Works best with (not required)
 
 TODO (again help is appreciated!)
 ---------------------------------
-* simplify these instructions
-* separate user data conversion and FB api improvements
-* fully replace the facebook GraphAPI which they no longer support
-* add nice exception classes to the facebook official sdk replacement
+Empty for now, suggestions are welcome
+
+Running tests
+-------------
+Tests are run from within the example project. You
+can run them yourself as follows:
+
+install from git
+facebook_example/manage.py test django_facebook
+
 
 Installation
 ------------
