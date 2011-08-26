@@ -66,5 +66,22 @@ def mass_get_or_create(model_class, base_queryset, id_field, default_dict, globa
     #returns a list of existing and new items
     return current_instances, inserted_model_instances
 
+
+def get_registration_backend():
+    '''
+    Ensures compatability with the new and old version of django registration
+    '''
+    backend = None
+    try:        
+        #support for the newer implementation
+        from registration.backends import get_backend
+        try:
+            backend = get_backend(settings.REGISTRATION_BACKEND)
+        except:
+            raise ValueError, 'Cannot get django-registration backend from settings.REGISTRATION_BACKEND'
+    except ImportError, e:
+        backend = None
+    return backend
+
     
     
