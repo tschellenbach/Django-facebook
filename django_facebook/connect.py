@@ -55,7 +55,11 @@ class UserConnector(object):
         user = None
         facebook = self.facebook_graph or get_facebook_graph(self.request, self.access_token)
         assert facebook.is_authenticated(), 'Facebook not authenticated'
-        facebook_data = facebook.facebook_profile_data()
+
+        facebook_user_converter = FacebookUserConverter(facebook)
+
+        facebook_data = facebook_user_converter.facebook_profile_data()
+
         force_registration = self.request.REQUEST.get('force_registration') or self.request.REQUEST.get('force_registration_hard')
 
         logger.debug('force registration is set to %s', force_registration)
