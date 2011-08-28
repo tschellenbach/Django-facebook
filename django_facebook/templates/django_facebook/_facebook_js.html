@@ -1,7 +1,7 @@
 <script>
 	facebookAppId = '{{ FACEBOOK_APP_ID }}';
 	function facebookJSLoaded(){
-		FB.init({appId: facebookAppId, status: false, cookie: true, xfbml: true});
+		FB.init({appId: facebookAppId, status: false, cookie: true, xfbml: true, oauth: true});
 	}
 	window.fbAsyncInit = facebookJSLoaded;
 	F = new facebookClass(facebookAppId);

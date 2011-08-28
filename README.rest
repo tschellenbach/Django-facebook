@@ -4,6 +4,14 @@ Django Facebook by Thierry Schellenbach (http://www.mellowmorning.com)
 
 First
 -----
+Facebook is changing their authentication flow. Expect Django Facebook to upgrade in the coming week.
+You will need to upgrade to a new version of Django Facebook to keep things working.
+Read more about the changes here:
+http://developers.facebook.com/blog/post/499/
+http://developers.facebook.com/roadmap/ (migrations)
+http://developers.facebook.com/docs/authentication/
+Their migration is now scheduled for September 1st so we still have some time :)
+
 Please contribute code :)
 
 This project is actively maintained and I appreciate improvements to the code.
@@ -41,10 +49,16 @@ Works best with (not required)
 
 TODO (again help is appreciated!)
 ---------------------------------
-* simplify these instructions
-* separate user data conversion and FB api improvements
-* fully replace the facebook GraphAPI which they no longer support
-* add nice exception classes to the facebook official sdk replacement
+Empty for now, suggestions are welcome
+
+Running tests
+-------------
+Tests are run from within the example project. You
+can run them yourself as follows:
+
+install from git
+facebook_example/manage.py test django_facebook
+
 
 Installation
 ------------
@@ -77,7 +91,7 @@ add this line to your url config::
 
     (r'^facebook/', include('django_facebook.urls')),
 
-add this line to your context processors (``TEMPLATE_CONTEXT_PRCESSORS``
+add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS``
 setting)::
 
     'django_facebook.context_processors.facebook',
@@ -88,21 +102,10 @@ add this to your ``AUTHENTICATION_BACKENDS`` setting::
 
 **Update your models**
 
-Add the following fields to your profile model:
-
-::
-
-    about_me = models.TextField(blank=True, null=True)
-    facebook_id = models.IntegerField(blank=True, null=True)
-    facebook_name = models.CharField(max_length=255, blank=True, null=True)
-    facebook_profile_url = models.TextField(blank=True, null=True)
-    website_url = models.TextField(blank=True, null=True)
-    blog_url = models.TextField(blank=True, null=True)
-    image = models.ImageField(blank=True, null=True, upload_to='profile_images')
-    date_of_birth = models.DateField(blank=True, null=True)
-    raw_data = models.TextField(blank=True, null=True)
-
-An abstract model is specified for convenience django_facebook/models.py FacebookProfileModel
+An abstract model is specified for convenience django_facebook/models.py
+FacebookProfileModel. You'll need to copy these fields into your UserProfile
+model, together with the post_facebook_registration function included in the
+model
 
 **Check the example**
 
@@ -134,7 +137,7 @@ I recommend that you insert this code at the bottom of your page.
     <script>
     facebookAppId = '{{ FACEBOOK_APP_ID }}';
     function facebookJSLoaded(){
-    FB.init({appId: facebookAppId, status: false, cookie: true, xfbml: true});
+    FB.init({appId: facebookAppId, status: false, cookie: true, xfbml: true, oauth: true});
     }
     window.fbAsyncInit = facebookJSLoaded;
     F = new facebookClass(facebookAppId);

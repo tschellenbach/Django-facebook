@@ -1,7 +1,7 @@
 
 from django.http import QueryDict
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
+from django.db import models
 
 
 
@@ -28,12 +28,12 @@ def next_redirect(request, default='/', additional_params=None, next_key='next')
         
     return HttpResponseRedirect(redirect_url)
 
+
 def get_profile_class():
-    #TODO: isn't there a dedicated function for this in django somewhere?
     profile_string = settings.AUTH_PROFILE_MODULE
-    profile_model = profile_string.split('.')[-1]
-    profile_class = ContentType.objects.get(model=profile_model.lower()).model_class()
-    return profile_class
+    app_label, model = profile_string.split('.')
+
+    return models.get_model(app_label, model)
     
     
 def mass_get_or_create(model_class, base_queryset, id_field, default_dict, global_defaults):
@@ -65,6 +65,23 @@ def mass_get_or_create(model_class, base_queryset, id_field, default_dict, globa
         
     #returns a list of existing and new items
     return current_instances, inserted_model_instances
+
+
+def get_registration_backend():
+    '''
+    Ensures compatability with the new and old version of django registration
+    '''
+    backend = None
+    try:        
+        #support for the newer implementation
+        from registration.backends import get_backend
+        try:
+            backend = get_backend(settings.REGISTRATION_BACKEND)
+        except:
+            raise ValueError, 'Cannot get django-registration backend from settings.REGISTRATION_BACKEND'
+    except ImportError, e:
+        backend = None
+    return backend
 
     
     

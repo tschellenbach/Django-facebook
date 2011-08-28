@@ -127,8 +127,8 @@ setup(
     license = license_text,
     packages=find_packages(),
     package_data=package_data,
-    data_files=[('', ['LICENSE.txt',
-                      'README.rest'])],
+#    data_files=[('', ['LICENSE.txt',
+#                      'README.rest'])],
     description = DESCRIPTION,
     long_description=long_description,
     classifiers = CLASSIFIERS

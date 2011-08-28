@@ -1,23 +1,34 @@
+import logging
+from random import randint
+import sys
+
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
+from django.db import transaction
+from django.db.utils import IntegrityError
 from django.utils import simplejson as json
+from django.conf import settings
+
+from utils import get_profile_class
+
 from django_facebook import settings as facebook_settings
 from django_facebook import exceptions as facebook_exceptions
-from django_facebook.api import get_facebook_graph
-from random import randint
-import logging
-from utils import get_profile_class
-from django.db.utils import IntegrityError
-import sys
-from django.db import transaction
+from django_facebook.api import get_facebook_graph, FacebookUserConverter
+from django_facebook.utils import get_registration_backend
 
 logger = logging.getLogger(__name__)
 
 
 class CONNECT_ACTIONS:
-    class LOGIN: pass
-    class CONNECT(LOGIN): pass
-    class REGISTER: pass
+    class LOGIN:
+        pass
+
+    class CONNECT(LOGIN):
+        pass
+
+    class REGISTER:
+        pass
+
 
 class UserConnector(object):
     """Overridable way of handling login/connect/register
@@ -76,9 +87,12 @@ class UserConnector(object):
         sid = transaction.savepoint()
         try:
             if facebook_settings.FACEBOOK_STORE_LIKES:
-                facebook.store_likes(user)
+                likes = facebook.get_likes()
+                facebook.store_likes(user, likes)
             if facebook_settings.FACEBOOK_STORE_FRIENDS:
-                facebook.store_friends(user)
+                friends = facebook.get_friends()
+                facebook.store_friends(user, friends)
+            transaction.savepoint_commit(sid)
         except IntegrityError, e:
             logger.warn(u'Integrity error encountered during registration, probably a double submission %s' % e, 
                 exc_info=sys.exc_info(), extra={
@@ -88,6 +102,7 @@ class UserConnector(object):
                  }
             })
 
+            transaction.savepoint_rollback(sid)
         return action, user
 
 
@@ -125,15 +140,14 @@ class UserConnector(object):
             raise ValueError, 'Facebook needs to be authenticated for connect flows'
 
         from registration.forms import RegistrationFormUniqueEmail
-        import registration
+        #get the backend on new registration systems, or none if we are on an older version
+        backend = get_registration_backend()
 
-        new_reg_module = True
-        try:
-            from registration.backends import get_backend
-        except ImportError, e:
-            new_reg_module = False
-
+        #get the form used for registration and fall back to uniqueemail version
         form_class = RegistrationFormUniqueEmail
+        if backend:
+            form_class = backend.get_form_class(request)
+            
         facebook_data = facebook.facebook_registration_data()
 
         data = self.request.POST.copy()
@@ -152,19 +166,14 @@ class UserConnector(object):
             error.form = form
             raise error
 
-        if new_reg_module:
-            #support for the newer implementation
-            try:
-                from django.conf import settings
-                backend = get_backend(settings.REGISTRATION_BACKEND)
-            except:
-                raise ValueError, 'Cannot get django-registration backend from settings.REGISTRATION_BACKEND'
-            new_user = backend.register(self.request, **form.cleaned_data)
+        #for new registration systems use the backends methods of saving
+        if backend:
+            new_user = backend.register(request, **form.cleaned_data)
         else:
             new_user = form.save(profile_callback=profile_callback)
 
         #update some extra data not yet done by the form
-        new_user = _update_user(new_user, facebook)
+        new_user = self._update_user(new_user, facebook)
 
         #IS this the correct way for django 1.3? seems to require the backend attribute for some reason
         new_user.backend = 'django_facebook.auth_backends.FacebookBackend'
@@ -227,5 +236,4 @@ def connect_user(request, access_token=None, facebook_graph=None):
     user_connector = UserConnector(request, access_token=access_token, facebook_graph=facebook_graph)
 
     return user_connector.connect_user()
-
 

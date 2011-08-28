@@ -3,6 +3,7 @@ from django.conf.urls.defaults import *
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
+
 urlpatterns = patterns('',
     (r'^accounts/', include('registration.backends.default.urls')),
     (r'^facebook/', include('django_facebook.urls')),
