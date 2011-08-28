@@ -139,6 +139,8 @@ class UserConnector(object):
         if not facebook.is_authenticated():
             raise ValueError, 'Facebook needs to be authenticated for connect flows'
 
+        facebook_user_converter = FacebookUserConverter(facebook)
+
         from registration.forms import RegistrationFormUniqueEmail
         #get the backend on new registration systems, or none if we are on an older version
         backend = get_registration_backend()
@@ -148,7 +150,7 @@ class UserConnector(object):
         if backend:
             form_class = backend.get_form_class(request)
             
-        facebook_data = facebook.facebook_registration_data()
+        facebook_data = facebook_user_converter.facebook_registration_data()
 
         data = self.request.POST.copy()
         for k, v in facebook_data.items():
