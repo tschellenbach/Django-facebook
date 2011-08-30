@@ -2,12 +2,12 @@ import logging
 import sys
 
 from django.conf import settings
-from django.contrib import messages
+#from django.contrib import messages
 from django.http import Http404, HttpResponseRedirect, QueryDict
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib.csrf.middleware import csrf_exempt
 
 # NOTE: from inside the application, you can directly import the file
 from django_facebook import exceptions as facebook_exceptions, \
@@ -91,8 +91,9 @@ def connect(request):
                     )
 
                 if action is CONNECT_ACTIONS.CONNECT:
-                    messages.info(request, _("You have connected your account "
-                        "to %s's facebook profile") % facebook_data['name'])
+                    pass
+#                    messages.info(request, _("You have connected your account "
+#                        "to %s's facebook profile") % facebook_data['name'])
                 elif action is CONNECT_ACTIONS.REGISTER:
                     return user.get_profile().post_facebook_registration(request)
         else:
@@ -116,13 +117,13 @@ def image_upload(request):
         #handling the form without a form class for explanation
         #in your own app you could use a neat django form to do this
         pictures = request.POST.getlist('pictures')
-        from django.contrib import messages
+#        from django.contrib import messages
 
         for picture in pictures:
             fb.set('me/photos', url=picture, message='the writing is one The '
                 'wall image %s' % picture)
 
-        messages.info(request, 'The images have been added to your profile!')
+#        messages.info(request, 'The images have been added to your profile!')
 
     return next_redirect(request)
 
@@ -138,8 +139,8 @@ def wall_post(request):
         message = request.POST.get('message')
         fb.set('me/feed', message=message)
 
-        from django.contrib import messages
-        messages.info(request, 'Posted the message to your wall')
+#        from django.contrib import messages
+#        messages.info(request, 'Posted the message to your wall')
 
     return next_redirect(request)
 

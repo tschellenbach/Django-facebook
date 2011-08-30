@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-
+from facebookconnect.models import BigIntegerField
 
 class FacebookProfileModel(models.Model):
     '''
@@ -11,7 +11,7 @@ class FacebookProfileModel(models.Model):
     the fields in.
     '''
     about_me = models.TextField(blank=True, null=True)
-    facebook_id = models.BigIntegerField(blank=True, null=True, unique=True)
+    facebook_id = BigIntegerField(blank=True, null=True, unique=True)
     facebook_name = models.CharField(max_length=255, blank=True, null=True)
     facebook_profile_url = models.TextField(blank=True, null=True)
     website_url = models.TextField(blank=True, null=True)
@@ -44,7 +44,7 @@ class FacebookUser(models.Model):
     '''
     #in order to be able to easily move these to a another db, use a user_id and no foreign key
     user_id = models.IntegerField()
-    facebook_id = models.BigIntegerField()
+    facebook_id = BigIntegerField()
     name = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -56,7 +56,7 @@ class FacebookLike(models.Model):
     '''
     #in order to be able to easily move these to a another db, use a user_id and no foreign key
     user_id = models.IntegerField()
-    facebook_id = models.BigIntegerField()
+    facebook_id = BigIntegerField()
     name = models.TextField(blank=True, null=True)
     category = models.TextField(blank=True, null=True)
     created_time = models.DateTimeField(blank=True, null=True)
