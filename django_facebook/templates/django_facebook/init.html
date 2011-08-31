@@ -1,0 +1,10 @@
+<div id="fb-root"></div>
+<script>
+    facebookAppId = '{{ facebook_app_id }}';
+    function facebookJSLoaded(){
+        FB.init({appId: facebookAppId, status: false, cookie: true, xfbml: true, oauth: true});
+    }
+    window.fbAsyncInit = facebookJSLoaded;
+    F = new facebookClass(facebookAppId);
+    F.load();
+</script>
