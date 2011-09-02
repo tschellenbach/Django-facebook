@@ -194,7 +194,9 @@ class UserConnector(object):
         user = self.request.user
         #if you want to add fields to ur user model instead of the profile thats fine
         #partial support (everything except raw_data and facebook_id is included)
-        facebook_data = facebook.facebook_registration_data()
+
+        facebook_user_converter = FacebookUserConverter(facebook)
+        facebook_data = facebook_user_converter.facebook_registration_data()
         facebook_fields = ['facebook_name', 'facebook_profile_url', 'date_of_birth', 'about_me', 'website_url', 'first_name', 'last_name']
         user_dirty = profile_dirty = False
         profile = user.get_profile()
@@ -222,7 +224,7 @@ class UserConnector(object):
 
         #write the raw data in case we missed something
         if hasattr(profile, 'raw_data'):
-            serialized_fb_data = json.dumps(facebook.facebook_profile_data())
+            serialized_fb_data = json.dumps(facebook_user_converter.facebook_profile_data())
             profile.raw_data = serialized_fb_data
             profile_dirty = True
 
