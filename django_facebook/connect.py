@@ -34,18 +34,21 @@ class UserConnector(object):
     """Overridable way of handling login/connect/register
     """
 
-    def __init__(self, request, access_token=None, facebook_graph=None):
+    def __init__(self, request, access_token=None, facebook_graph=None, facebook_fields=('facebook_name', 'facebook_profile_url', 'date_of_birth', 'about_me', 'website_url', 'first_name', 'last_name')):
         """Construct the connector for a web request
         Given a request either
 
         - (if authenticated) connect the user
         - login
         - register
+
+        facebook_fields describes which fields we care about
         """
 
         self.request = request
         self.access_token = access_token
         self.facebook_graph = facebook_graph
+        self.facebook_fields = facebook_fields
 
     def connect_user(self):
         """Main functionality
@@ -195,7 +198,6 @@ class UserConnector(object):
         #if you want to add fields to ur user model instead of the profile thats fine
         #partial support (everything except raw_data and facebook_id is included)
         facebook_data = facebook.facebook_registration_data()
-        facebook_fields = ['facebook_name', 'facebook_profile_url', 'date_of_birth', 'about_me', 'website_url', 'first_name', 'last_name']
         user_dirty = profile_dirty = False
         profile = user.get_profile()
         profile_field_names = [f.name for f in profile._meta.fields]
@@ -210,7 +212,7 @@ class UserConnector(object):
             profile_class.objects.filter(facebook_id=profile.facebook_id).exclude(user__id=user.id).update(facebook_id=None)
 
         #update all fields on both user and profile
-        for f in facebook_fields:
+        for f in self.facebook_fields:
             facebook_value = facebook_data.get(f, False)
             if facebook_value:
                 if f in profile_field_names and not getattr(profile, f, False):
