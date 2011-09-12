@@ -221,6 +221,7 @@ class FacebookAuthorization(FacebookConnection):
         kwargs = {'grant_type':'client_credentials',
                 'client_id':facebook_settings.FACEBOOK_APP_ID,
                 'client_secret':facebook_settings.FACEBOOK_APP_SECRET}
+        print kwargs
         response = cls.request('oauth/access_token', **kwargs)
         return response['access_token']
     
@@ -253,7 +254,7 @@ class FacebookAuthorization(FacebookConnection):
     @classmethod
     def get_or_create_test_user(cls, app_access_token, permissions=None):
         if not permissions:
-            permissions = 'read_stream,publish_stream,user_photos,offline_access'
+            permissions = ['read_stream','publish_stream', 'user_photos', 'offline_access']
         
         kwargs = {
             'access_token': app_access_token,
@@ -413,6 +414,7 @@ class OpenFacebook(FacebookConnection):
         if getattr(self, 'access_token', None):
             params['access_token'] = self.access_token
         url = '%s%s?%s' % (api_base_url, path, urllib.urlencode(params))
+        logger.info('requesting url %s', url)
         response = self._request(url, post_data)
         return response
         
@@ -421,6 +423,5 @@ class OpenFacebook(FacebookConnection):
         
             
 
-    
 
     
