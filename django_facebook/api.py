@@ -62,7 +62,8 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     DROP_QUERY_PARAMS = ['code','signed_request','state']
     from open_facebook import OpenFacebook, FacebookAuthorization
     parsed_data = None
-        
+    expires = None
+    
     if not access_token:
         #easy case, code is in the get
         code = request.REQUEST.get('code')
@@ -72,6 +73,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
             signed_data = request.REQUEST.get('signed_request')
             cookie_name = 'fbsr_%s' % facebook_settings.FACEBOOK_APP_ID
             cookie_data = request.COOKIES.get(cookie_name)
+
             if cookie_data:
                 signed_data = cookie_data
                 #the javascript api assumes a redirect uri of ''
@@ -101,6 +103,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                         redirect_uri += '?%s' % new_query_dict.urlencode()
                 try:
                     token_response = FacebookAuthorization.convert_code(code, redirect_uri=redirect_uri)
+                    expires = token_response.get('expires')
                 except open_facebook_exceptions.OAuthException, e:
                     return None
                 access_token = token_response['access_token']
@@ -108,7 +111,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 return None
                 #raise exceptions.MissingParameter('Cant find code or access token')
         
-    facebook_open_graph = OpenFacebook(access_token, parsed_data)
+    facebook_open_graph = OpenFacebook(access_token, parsed_data, expires=expires)
     
     return facebook_open_graph
 

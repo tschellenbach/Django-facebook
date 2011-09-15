@@ -221,7 +221,6 @@ class FacebookAuthorization(FacebookConnection):
         kwargs = {'grant_type':'client_credentials',
                 'client_id':facebook_settings.FACEBOOK_APP_ID,
                 'client_secret':facebook_settings.FACEBOOK_APP_SECRET}
-        print kwargs
         response = cls.request('oauth/access_token', **kwargs)
         return response['access_token']
     
@@ -336,10 +335,13 @@ class OpenFacebook(FacebookConnection):
     
     '''
     
-    def __init__(self, access_token=None, prefetched_data=None):
+    def __init__(self, access_token=None, prefetched_data=None, expires=None):
         self.access_token = access_token
         #extra data coming from signed cookies
         self.prefetched_data = prefetched_data
+        
+        #store to enable detection for offline usage
+        self.expires = expires
         
     def is_authenticated(self):
         '''
