@@ -140,7 +140,8 @@ class FacebookConnection(object):
             '#506': facebook_exceptions.DuplicateStatusMessage,
             '#803': facebook_exceptions.AliasException,
         }
-        for key, class_ in id_mapping.items():
+        for number, class_ in id_mapping.items():
+            key = '(%s)' % number
             if key in message:
                 error_class = class_
                 break
