@@ -16,6 +16,12 @@ class OAuthException(OpenFacebookException):
 class PermissionException(OAuthException):
     pass
 
+class FeedActionLimit(OAuthException):
+    '''
+    When you posted too many times from one user acount
+    '''
+    pass
+
 class DuplicateStatusMessage(OpenFacebookException):
     pass
 

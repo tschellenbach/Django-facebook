@@ -136,6 +136,7 @@ class FacebookConnection(object):
             '#1': facebook_exceptions.UnknownException,
             '#3': facebook_exceptions.PermissionException,
             '#210': facebook_exceptions.PermissionException,
+            '#341': facebook_exceptions.FeedActionLimit,
             '#506': facebook_exceptions.DuplicateStatusMessage,
             '#803': facebook_exceptions.AliasException,
         }
