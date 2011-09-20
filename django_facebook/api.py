@@ -347,7 +347,7 @@ class FacebookUserConverter(object):
         '''
         if facebook_settings.FACEBOOK_CELERY_STORE:
             from django_facebook.tasks import store_likes
-            store_likes(user, likes)
+            store_likes.delay(user, likes)
         else:
             self._store_likes(user, likes)
         
@@ -403,7 +403,7 @@ class FacebookUserConverter(object):
         '''
         if facebook_settings.FACEBOOK_CELERY_STORE:
             from django_facebook.tasks import store_friends
-            store_friends(user, friends)
+            store_friends.delay(user, friends)
         else:
             self._store_friends(user, friends)
         
