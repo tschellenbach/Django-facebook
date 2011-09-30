@@ -49,6 +49,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     - facebook app authentication flow (signed cookie)
     - facebook oauth redirect (code param in url)
     - mobile authentication flow (direct access_token)
+    - offline access token stored in user profile
     
     returns a graph object
     
@@ -107,6 +108,12 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 except open_facebook_exceptions.OAuthException, e:
                     return None
                 access_token = token_response['access_token']
+            elif request.user.is_authenticated():
+                #support for offline access tokens stored in the users profile
+                profile = request.user.get_profile()
+                access_token = getattr(profile, 'access_token', None)
+                if not access_token:
+                    return None 
             else:
                 return None
                 #raise exceptions.MissingParameter('Cant find code or access token')
