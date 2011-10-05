@@ -38,6 +38,8 @@ def get_persistent_graph(request, *args, **kwargs):
             facebook_open_graph_cached._me = None
         facebook_open_graph = facebook_open_graph_cached   
         
+    _add_current_user_id(graph, request.user)
+        
     return facebook_open_graph
         
     
@@ -60,7 +62,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     specify redirect_uri if you are not posting and recieving the code on the same page
     '''
     #should drop query params be included in the open facebook api, maybe, weird this...
-    DROP_QUERY_PARAMS = ['code','signed_request','state']
+    DROP_QUERY_PARAMS = ['code', 'signed_request', 'state']
     from open_facebook import OpenFacebook, FacebookAuthorization
     parsed_data = None
     expires = None
@@ -94,7 +96,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 #https://github.com/facebook/php-sdk/blob/master/src/base_facebook.php
                 #we need to drop signed_request, code and state
                 if redirect_uri is None:
-                    query_dict_items = [(k,v) for k, v in request.GET.items() if k not in DROP_QUERY_PARAMS]
+                    query_dict_items = [(k, v) for k, v in request.GET.items() if k not in DROP_QUERY_PARAMS]
                     new_query_dict = QueryDict('', True)
                     new_query_dict.update(dict(query_dict_items))
                     #TODO support http and https
@@ -118,10 +120,21 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 return None
                 #raise exceptions.MissingParameter('Cant find code or access token')
         
-    facebook_open_graph = OpenFacebook(access_token, parsed_data, expires=expires)
+    graph = OpenFacebook(access_token, parsed_data, expires=expires)
+    if request:
+        _add_current_user_id(graph, request.user)
     
-    return facebook_open_graph
+    return graph
 
+def _add_current_user_id(graph, user):
+    '''
+    set the current user id, convenient if you want to make sure you fb session and user belong together
+    '''
+    if user.is_authenticated() and graph:
+        profile = user.get_profile()
+        facebook_id = getattr(profile, 'facebook_id', None)
+        if facebook_id:
+            graph.current_user_id = facebook_id
 
 class FacebookUserConverter(object):
     '''
