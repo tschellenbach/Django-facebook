@@ -27,20 +27,20 @@ def get_persistent_graph(request, *args, **kwargs):
         raise ValidationError, 'Request is required if you want to use persistent tokens'
     
     #get the new graph
-    facebook_open_graph = get_facebook_graph(request, *args, **kwargs)
+    graph = get_facebook_graph(request, *args, **kwargs)
     
     #if it's valid replace the old cache
-    if facebook_open_graph is not None and facebook_open_graph.access_token:
-        request.session['facebook_open_graph'] = facebook_open_graph
+    if graph is not None and graph.access_token:
+        request.session['graph'] = graph
     else:
-        facebook_open_graph_cached = request.session.get('facebook_open_graph')
+        facebook_open_graph_cached = request.session.get('graph')
         if facebook_open_graph_cached:
             facebook_open_graph_cached._me = None
-        facebook_open_graph = facebook_open_graph_cached   
+        graph = facebook_open_graph_cached   
         
     _add_current_user_id(graph, request.user)
         
-    return facebook_open_graph
+    return graph
         
     
 

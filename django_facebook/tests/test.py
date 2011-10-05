@@ -5,11 +5,15 @@ from django_facebook.auth_backends import FacebookBackend
 from django_facebook.connect import connect_user, CONNECT_ACTIONS
 from django_facebook.tests.base import FacebookTest
 from open_facebook.exceptions import *
-from django_facebook.api import get_facebook_graph, FacebookUserConverter
+from django_facebook.api import get_facebook_graph, FacebookUserConverter, get_persistent_graph
 import logging
 import unittest
 
 logger = logging.getLogger(__name__)
+
+
+__doctests__ = ['django_facebook.api']
+
 
 '''
 TODO
@@ -23,6 +27,14 @@ class UserConnectTest(FacebookTest):
     Tests the connect user functionality
     '''
     fixtures = ['users.json']
+    
+    def test_persistent_graph(self):
+        from django.test import RequestFactory
+        from django.contrib.auth.models import AnonymousUser
+        request = RequestFactory()
+        request.session = {}
+        request.user = AnonymousUser()
+        graph = get_persistent_graph(request, access_token='short_username')
     
     def test_full_connect(self):
         #going for a register, connect and login
@@ -104,16 +116,6 @@ class AuthBackend(FacebookTest):
       
 
     
-class DataTransformTest(FacebookTest):
-    def test_doctest_api(self):
-        return
-        #TODO: fix this test somehow, doctest api seems to not work as I expect it
-        #tests dont get run
-        from django_facebook import api
-        import doctest
-        tests, failures = doctest.testmod(api)
-        assert tests
-        assert not failures
 
 
 
