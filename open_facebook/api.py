@@ -337,13 +337,17 @@ class OpenFacebook(FacebookConnection):
     
     '''
     
-    def __init__(self, access_token=None, prefetched_data=None, expires=None):
+    def __init__(self, access_token=None, prefetched_data=None, expires=None, current_user_id=None):
         self.access_token = access_token
         #extra data coming from signed cookies
         self.prefetched_data = prefetched_data
         
         #store to enable detection for offline usage
         self.expires = expires
+        
+        #hook to store the current user id if representing the facebook connection
+        #to a logged in user :)
+        self.current_user_id = None
         
     def is_authenticated(self):
         '''
