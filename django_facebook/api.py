@@ -135,6 +135,8 @@ def _add_current_user_id(graph, user):
         facebook_id = getattr(profile, 'facebook_id', None)
         if facebook_id:
             graph.current_user_id = facebook_id
+    elif graph:
+        graph.current_user_id = None
 
 class FacebookUserConverter(object):
     '''

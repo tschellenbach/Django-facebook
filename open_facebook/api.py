@@ -347,7 +347,7 @@ class OpenFacebook(FacebookConnection):
         
         #hook to store the current user id if representing the facebook connection
         #to a logged in user :)
-        self.current_user_id = None
+        self.current_user_id = current_user_id
         
     def is_authenticated(self):
         '''
