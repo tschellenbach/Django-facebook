@@ -1,20 +1,47 @@
 
-
+'''
+Facebook error classes also see
+http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
+'''
 
 class OpenFacebookException(Exception):
+    '''
+    BaseClass for all errors
+    
+    '''
     pass
+
+
+
+class ParameterException(OpenFacebookException):
+    '''
+    100-200
+    '''
+    codes = (100,200)
 
 class UnknownException(OpenFacebookException):
     '''
     Raised when facebook themselves don't know what went wrong
     '''
-    pass
+    codes = 1
 
 class OAuthException(OpenFacebookException):
     pass 
 
 class PermissionException(OAuthException):
-    pass
+    '''
+    200-300
+    '''
+    codes = (200,299)
+    
+    
+class UserPermissionException(PermissionException):
+    codes = (300,399)
+
+
+
+
+
 
 class FeedActionLimit(OAuthException):
     '''

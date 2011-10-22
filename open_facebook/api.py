@@ -38,6 +38,7 @@ from open_facebook.utils import json
 import logging
 import urllib
 import urllib2
+from django_facebook.utils import to_int
 logger = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT = 8
@@ -119,32 +120,65 @@ class FacebookConnection(object):
         return parsed_response
     
     @classmethod
-    def raise_error(self, type, message):
+    def raise_error(self, error_type, message):
         '''
         Search for a corresponding error class and fall back to open facebook exception
         '''
+        import re
         error_class = None
-        if not isinstance(type, int):
-            error_class = getattr(facebook_exceptions, type, None)
-        
+        if not isinstance(error_type, int):
+            error_class = getattr(facebook_exceptions, error_type, None)
         
         if error_class and not issubclass(error_class, facebook_exceptions.OpenFacebookException):
             error_class = None
         
         #map error classes to facebook error ids
+        #define a string to match a single error, use ranges for complexer cases
+        #also see http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
         id_mapping = {
-            '#1': facebook_exceptions.UnknownException,
-            '#3': facebook_exceptions.PermissionException,
-            '#210': facebook_exceptions.PermissionException,
-            '#341': facebook_exceptions.FeedActionLimit,
-            '#506': facebook_exceptions.DuplicateStatusMessage,
-            '#803': facebook_exceptions.AliasException,
+            1: facebook_exceptions.UnknownException,
+            3: facebook_exceptions.PermissionException,
+            (200,299): facebook_exceptions.PermissionException,
+            341: facebook_exceptions.FeedActionLimit,
+            506: facebook_exceptions.DuplicateStatusMessage,
+            803: facebook_exceptions.AliasException,
         }
+        exception_classes = [e for e in dir(facebook_exceptions) if getattr(e, 'codes', None) and issubclass(e, facebook_exceptions.OpenFacebookException)]
+        for e in dir(facebook_exceptions):
+            print e, getattr(e, 'codes', None)
+        id_mapping = dict([(e.codes, e) for e in exception_classes])
+        error_code_re = re.compile('\(#(\d+)\)')
+        matching_groups = error_code_re.match(message).groups() or [None]
+        error_code = to_int(matching_groups[0]) or None
+        
         for number, class_ in id_mapping.items():
-            key = '(%s)' % number
-            if key in message:
-                error_class = class_
+            #make sure we have a list
+            number_list = [number]
+            if isinstance(number, list):
+                number_list = number
+            #match the error class
+            matching_error_class = None
+            for number in number_list:
+                if isinstance(number, basestring):
+                    #match on string
+                    key = number
+                    if key in message:
+                        matching_error_class = class_
+                        break
+                elif isinstance(number, tuple) and error_code:
+                    start, stop = number
+                    if start <= error_code <= stop:
+                        matching_error_class = class_
+                        break
+                elif isinstance(number, (int, long)) and error_code:
+                    if int(number) == error_code:
+                        matching_error_class = class_
+                        break
+            #tell about the happy news if we found something
+            if matching_error_class:
+                error_class = matching_error_class
                 break
+                    
             
         if 'Missing' in message and 'parameter' in message:
             error_class = facebook_exceptions.MissingParameter

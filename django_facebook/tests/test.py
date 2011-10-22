@@ -8,6 +8,8 @@ from open_facebook.exceptions import *
 from django_facebook.api import get_facebook_graph, FacebookUserConverter, get_persistent_graph
 import logging
 import unittest
+from open_facebook.api import FacebookConnection
+from functools import partial
 
 logger = logging.getLogger(__name__)
 
@@ -115,6 +117,11 @@ class AuthBackend(FacebookTest):
         assert not auth_user
       
 
+class ErrorMappingTest(FacebookTest):
+    def test_mapping(self):
+        from open_facebook import exceptions as facebook_exceptions
+        raise_something = partial(FacebookConnection.raise_error, 0, "(#200) The user hasn't authorized the application to perform this action")
+        self.assertRaises(facebook_exceptions.PermissionException, raise_something)
     
 
 

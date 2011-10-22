@@ -1,25 +1,25 @@
 from django.conf import settings
 
 
-
+#these 3 should be provided by your app
 FACEBOOK_APP_ID = getattr(settings, 'FACEBOOK_APP_ID', None)
 FACEBOOK_APP_SECRET = getattr(settings, 'FACEBOOK_APP_SECRET', None)
+FACEBOOK_DEFAULT_SCOPE = getattr(settings, 'FACEBOOK_DEFAULT_SCOPE', ['email','user_about_me','user_birthday'])
+
+
 
 #Absolute canvas page url as per facebook standard
 FACEBOOK_CANVAS_PAGE = getattr(settings, 'FACEBOOK_CANVAS_PAGE', 'http://apps.facebook.com/fashiolista_test/')
-FACEBOOK_CANVAS_SCOPE = getattr(settings, 'FACEBOOK_CANVAS_SCOPE', 'email')
-
 
 #These you don't need to change
 FACEBOOK_HIDE_CONNECT_TEST = getattr(settings, 'FACEBOOK_HIDE_CONNECT_TEST', True)
 #Track all raw data coming in from FB
 FACEBOOK_TRACK_RAW_DATA = getattr(settings, 'FACEBOOK_TRACK_RAW_DATA', False)
-#Store the facebook authentication in session
-FACEBOOK_PERSISTENT_TOKEN = getattr(settings, 'FACEBOOK_PERSISTENT_TOKEN', False)
 
 #if we should store friends and likes
 FACEBOOK_STORE_LIKES = getattr(settings, 'FACEBOOK_STORE_LIKES', False)
 FACEBOOK_STORE_FRIENDS = getattr(settings, 'FACEBOOK_STORE_FRIENDS', False)
+#if we should be using celery to do the above two, recommended if you want to store friends or likes
 FACEBOOK_CELERY_STORE = getattr(settings, 'FACEBOOK_CELERY_STORE', False)
 
 #check for required settings
