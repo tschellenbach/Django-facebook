@@ -13,7 +13,6 @@ class TestOpenFacebook(unittest.TestCase):
         token = FacebookAuthorization.get_app_access_token()
         test_user = FacebookAuthorization.get_or_create_test_user(token)
         test_user = FacebookAuthorization.create_test_user(token)
-        print test_user
         return
 #        
         message = "Hi! I'm on Fashiolista, a worldwide community for fashion inspiration. Click to see my style profile and discover great new shops and fashion items!"
@@ -73,7 +72,6 @@ class TestOpenFacebook(unittest.TestCase):
     def get_access_token(self):
         token = FacebookAuthorization.get_app_access_token()
         test_user = FacebookAuthorization.create_test_user(token)
-        print test_user['login_url']
         return test_user['access_token']
 
     def test_open_api(self):

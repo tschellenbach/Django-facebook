@@ -135,45 +135,37 @@ class FacebookConnection(object):
         #map error classes to facebook error ids
         #define a string to match a single error, use ranges for complexer cases
         #also see http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
-        id_mapping = {
-            1: facebook_exceptions.UnknownException,
-            3: facebook_exceptions.PermissionException,
-            (200,299): facebook_exceptions.PermissionException,
-            341: facebook_exceptions.FeedActionLimit,
-            506: facebook_exceptions.DuplicateStatusMessage,
-            803: facebook_exceptions.AliasException,
-        }
-        exception_classes = [e for e in dir(facebook_exceptions) if getattr(e, 'codes', None) and issubclass(e, facebook_exceptions.OpenFacebookException)]
-        for e in dir(facebook_exceptions):
-            print e, getattr(e, 'codes', None)
-        id_mapping = dict([(e.codes, e) for e in exception_classes])
+        classes = [getattr(facebook_exceptions, e, None) for e in dir(facebook_exceptions)]
+        exception_classes = [e for e in classes if getattr(e, 'codes', None) and issubclass(e, facebook_exceptions.OpenFacebookException)]
+        exception_classes.sort(key=lambda e: e.range())
+
+        #find the error code
         error_code_re = re.compile('\(#(\d+)\)')
         matching_groups = error_code_re.match(message).groups() or [None]
         error_code = to_int(matching_groups[0]) or None
         
-        for number, class_ in id_mapping.items():
-            #make sure we have a list
-            number_list = [number]
-            if isinstance(number, list):
-                number_list = number
+        for class_ in exception_classes:
+            codes_list = class_.codes_list()
             #match the error class
             matching_error_class = None
-            for number in number_list:
-                if isinstance(number, basestring):
+            for code in codes_list:
+                if isinstance(code, basestring):
                     #match on string
-                    key = number
+                    key = code
                     if key in message:
                         matching_error_class = class_
                         break
-                elif isinstance(number, tuple) and error_code:
-                    start, stop = number
+                elif isinstance(code, tuple) and error_code:
+                    start, stop = code
                     if start <= error_code <= stop:
                         matching_error_class = class_
                         break
-                elif isinstance(number, (int, long)) and error_code:
-                    if int(number) == error_code:
+                elif isinstance(code, (int, long)) and error_code:
+                    if int(code) == error_code:
                         matching_error_class = class_
                         break
+                else:
+                    raise ValueError, 'Dont know how to handle %s' % code
             #tell about the happy news if we found something
             if matching_error_class:
                 error_class = matching_error_class
