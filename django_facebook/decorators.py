@@ -33,9 +33,6 @@ def facebook_required(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_S
             except facebook_exceptions.OAuthException, e:
                 #this happens when someone revokes their permissions while the session
                 #is still stored
-                #raise if this happens after a redirect though
-                if request.GET.get('attempt'):
-                    raise
                 permissions = {}
             permissions_dict = dict([(k,bool(int(v))) for k,v in permissions.items() if v == '1' or v == 1])
             
@@ -44,6 +41,10 @@ def facebook_required(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_S
         for permission in scope_list:
             if permission not in permissions_dict:
                 scope_allowed = False
+                
+        #raise if this happens after a redirect though
+        if not scope_allowed and request.GET.get('attempt'):
+            raise ValueError, 'Somehow facebook is not giving us the permissions needed, lets break instead of endless redirects. Fb was %s and permissions %s' % (fb, permissions_dict)
 
         return scope_allowed
             
