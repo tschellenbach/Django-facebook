@@ -4,14 +4,6 @@ Django Facebook by Thierry Schellenbach (http://www.mellowmorning.com)
 
 First
 -----
-Facebook is changing their authentication flow. Expect Django Facebook to upgrade in the coming week.
-You will need to upgrade to a new version of Django Facebook to keep things working.
-Read more about the changes here:
-http://developers.facebook.com/blog/post/499/
-http://developers.facebook.com/roadmap/ (migrations)
-http://developers.facebook.com/docs/authentication/
-Their migration is now scheduled for September 1st so we still have some time :)
-
 Please contribute code :)
 
 This project is actively maintained and I appreciate improvements to the code.
@@ -36,6 +28,7 @@ Integrated with Django it becomes easy to setup a login/register via Facebook fl
 * Django User Registration (Convert Facebook user data into a user model)
 * Use Facebook data to register a user with your Django app. Facebook connect using the open graph API.
 * Facebook FQL access
+* OAuth 2.0 compliant
 
 Requirements
 ------------------------------
