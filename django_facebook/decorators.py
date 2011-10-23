@@ -24,7 +24,6 @@ def facebook_required(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_S
         Call Facebook me/permissions to see if we are allowed to do this
         '''
         from django_facebook.api import get_persistent_graph
-        print 'permissions', redirect_uri
         fb = get_persistent_graph(request, redirect_uri=redirect_uri)
         permissions_dict = {}
         if fb:
@@ -50,7 +49,6 @@ def facebook_required(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_S
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
             oauth_url, redirect_uri = get_oauth_url(request, scope_list)
-            print 'asking', redirect_uri
             if test_permissions(request, redirect_uri):
                 return view_func(request, *args, **kwargs)
             
