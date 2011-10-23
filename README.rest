@@ -18,13 +18,9 @@ This project is actively maintained and I appreciate improvements to the code.
 
 Contact me here or `@tschellenbach <http://www.twitter.com/tschellenbach>`_
 
-New in Version 2.0 Alpha
+New in Version 3.2
 ------------------------
-* canvas page support for facebook applications
-* mobile facebook registration support (tested with titanium FB flow)
-* less requirements (jinja, view decorator, django notify and cjson requirements removed)
-* fql support
-* django static support
+* Facebook_required Decorator (see http://www.mellowmorning.com/)
 
 About Django Facebook
 ---------------------
@@ -41,15 +37,17 @@ Integrated with Django it becomes easy to setup a login/register via Facebook fl
 * Use Facebook data to register a user with your Django app. Facebook connect using the open graph API.
 * Facebook FQL access
 
-Works best with (not required)
+Requirements
 ------------------------------
-* Django registration
+* Django registration (required for the connect flow)
 * Django 1.3
-* Django static files
+* Django static files (alternatively copy and paste the javascript if you need it)
 
 TODO (again help is appreciated!)
 ---------------------------------
-Empty for now, suggestions are welcome
+* Implement the connect flow as a more extensible object
+* Write a facebook_connect_required decorator
+
 
 Running tests
 -------------
@@ -57,6 +55,7 @@ Tests are run from within the example project. You
 can run them yourself as follows:
 
 install from git
+
 facebook_example/manage.py test django_facebook
 
 
@@ -77,7 +76,6 @@ Define the following settings in your settings.py file:
 
 ::
 
-    FACEBOOK_API_KEY
     FACEBOOK_APP_ID
     FACEBOOK_APP_SECRET
 
