@@ -5,6 +5,22 @@ from django.db import models
 
 
 
+def get_oauth_url(request, scope, redirect_uri=None):
+    '''
+    Returns the oauth url for the given request and scope
+    Request maybe shouldnt be tied to this function, but for now it seems 
+    rather ocnvenient
+    '''
+    from django_facebook import settings as facebook_settings
+    scope = parse_scope(scope)
+    query_dict = QueryDict('', True)
+    query_dict['scope'] = ','.join(scope)
+    query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
+    redirect_uri = redirect_uri or request.build_absolute_uri()
+    query_dict['redirect_uri'] = redirect_uri
+    url = 'https://www.facebook.com/dialog/oauth?'
+    url += query_dict.urlencode()
+    return url, redirect_uri
 
 def next_redirect(request, default='/', additional_params=None, next_key='next'):
     from django.http import HttpResponseRedirect

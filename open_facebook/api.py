@@ -140,9 +140,12 @@ class FacebookConnection(object):
         exception_classes.sort(key=lambda e: e.range())
 
         #find the error code
+        error_code = None
         error_code_re = re.compile('\(#(\d+)\)')
-        matching_groups = error_code_re.match(message).groups() or [None]
-        error_code = to_int(matching_groups[0]) or None
+        matches = error_code_re.match(message)
+        matching_groups = matches.groups() if matches else None
+        if matching_groups:
+            error_code = to_int(matching_groups[0]) or None
         
         for class_ in exception_classes:
             codes_list = class_.codes_list()
@@ -155,17 +158,17 @@ class FacebookConnection(object):
                     if key in message:
                         matching_error_class = class_
                         break
-                elif isinstance(code, tuple) and error_code:
+                elif isinstance(code, tuple):
                     start, stop = code
-                    if start <= error_code <= stop:
+                    if error_code and start <= error_code <= stop:
                         matching_error_class = class_
                         break
-                elif isinstance(code, (int, long)) and error_code:
+                elif isinstance(code, (int, long)):
                     if int(code) == error_code:
                         matching_error_class = class_
                         break
                 else:
-                    raise ValueError, 'Dont know how to handle %s' % code
+                    raise ValueError, 'Dont know how to handle %s of type %s' % (code, type(code))
             #tell about the happy news if we found something
             if matching_error_class:
                 error_class = matching_error_class

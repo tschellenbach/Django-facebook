@@ -95,19 +95,27 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 #based on the php api 
                 #https://github.com/facebook/php-sdk/blob/master/src/base_facebook.php
                 #we need to drop signed_request, code and state
-                if redirect_uri is None:
-                    query_dict_items = [(k, v) for k, v in request.GET.items() if k not in DROP_QUERY_PARAMS]
-                    new_query_dict = QueryDict('', True)
-                    new_query_dict.update(dict(query_dict_items))
-                    #TODO support http and https
-#                    redirect_uri = 'http://' + request.META['HTTP_HOST'] + request.path
-                    redirect_uri = facebook_settings.FACEBOOK_CANVAS_PAGE
-                    if new_query_dict:
-                        redirect_uri += '?%s' % new_query_dict.urlencode()
+                if redirect_uri:
+                    redirect_base, redirect_query = redirect_uri.split('?', 1)
+                    query_dict_items = QueryDict(redirect_query).items()
+                else:
+                    redirect_base = facebook_settings.FACEBOOK_CANVAS_PAGE
+                    query_dict_items = request.GET.items()
+                    
+                filtered_query_items = [(k, v) for k, v in query_dict_items if k.lower() not in DROP_QUERY_PARAMS]
+                new_query_dict = QueryDict('', True)
+                new_query_dict.update(dict(filtered_query_items))
+                #TODO support http and https
+                redirect_uri = redirect_base
+                if new_query_dict:
+                    redirect_uri = '%s?%s' % (redirect_base, new_query_dict.urlencode())
+                    
                 try:
                     token_response = FacebookAuthorization.convert_code(code, redirect_uri=redirect_uri)
                     expires = token_response.get('expires')
                 except open_facebook_exceptions.OAuthException, e:
+                    #TODO: this sometimes fails, should it raise?
+                    raise
                     return None
                 access_token = token_response['access_token']
             elif request.user.is_authenticated():

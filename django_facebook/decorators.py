@@ -1,17 +1,14 @@
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django_facebook import settings as facebook_settings
-from django.http import QueryDict
-from django.contrib.auth.decorators import user_passes_test
-from django_facebook.utils import parse_scope
+from django.http import HttpResponseRedirect
+from django_facebook.utils import get_oauth_url
+from django.utils.decorators import available_attrs
+from django.utils.functional import wraps
+from open_facebook import exceptions as facebook_exceptions
 
 
 
-def connect_required():
-    pass
-
-
-
-def facebook_required(function=None, scope=facebook_settings.FACEBOOK_DEFAULT_SCOPE, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
+def facebook_required(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_SCOPE, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
     """
     Decorator which makes the view require the given Facebook perms, redirecting
     to the log-in page if necessary.
@@ -20,18 +17,56 @@ def facebook_required(function=None, scope=facebook_settings.FACEBOOK_DEFAULT_SC
     and upon a permission error redirect to login_url
     Querying the permissions would slow down things
     """
-    from django.conf import settings
-    scope = parse_scope(scope)
-    login_url = login_url or settings.LOGIN_URL
-    query_dict = QueryDict('', True)
-    query_dict['scope'] = ','.join(scope)
-    login_url = '%s?%s' % (login_url, query_dict.urlencode())
+    def test_permissions(request, redirect_uri=None):
+        '''
+        Call Facebook me/permissions to see if we are allowed to do this
+        '''
+        from django_facebook.api import get_persistent_graph
+        print redirect_uri
+        fb = get_persistent_graph(request, redirect_uri=redirect_uri)
+        permissions_dict = {}
+        if fb:
+            try:
+                permissions_response = fb.get('me/permissions')
+                permissions = permissions_response['data'][0]
+            except facebook_exceptions.OAuthException, e:
+                #this happens when someone revokes their permissions while the session
+                #is still stored
+                permissions = {}
+            
+            permissions_dict = dict([(k,bool(int(v))) for k,v in permissions.items() if v == '1' or v == 1])
+            
+        #see if we have all permissions
+        scope_allowed = True
+        for permission in scope:
+            if permission not in permissions_dict:
+                scope_allowed = False
+        
+        return scope_allowed
+            
+    def actual_decorator(view_func):
+        @wraps(view_func, assigned=available_attrs(view_func))
+        def _wrapped_view(request, *args, **kwargs):
+            oauth_url, redirect_uri = get_oauth_url(request, scope)
+            print redirect_uri
+            if test_permissions(request, redirect_uri):
+                return view_func(request, *args, **kwargs)
+            
+            
+            response = HttpResponseRedirect(oauth_url)
+            return response
+        return _wrapped_view
     
-    actual_decorator = user_passes_test(
-        lambda u: True,
-        login_url=login_url,
-        redirect_field_name=redirect_field_name
-    )
-    if function:
-        return actual_decorator(function)
+    if view_func:
+        return actual_decorator(view_func)
     return actual_decorator
+
+
+
+def facebook_connect_required():
+    """
+    Makes sure that the user is registered within your application (using facebook)
+    Before going on to the next page
+    """
+    pass
+

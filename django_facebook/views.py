@@ -22,26 +22,6 @@ from django_facebook.decorators import facebook_required
 logger = logging.getLogger(__name__)
 
 
-def facebook_login_required(redirect_uri, scope=None):
-    '''
-    Redirect uri is the url to redirect to
-
-    Scope can either be in the format ['email', 'read_stream'] or
-    'email,read_stream'
-    '''
-    url = 'https://www.facebook.com/dialog/oauth?'
-    query_dict = QueryDict('', True)
-    query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
-    query_dict['redirect_uri'] = redirect_uri
-    if scope:
-        if isinstance(scope, (basestring)):
-            query_dict['scope'] = scope
-        else:
-            query_dict['scope'] = scope
-    url += query_dict.urlencode()
-
-    return HttpResponseRedirect(url)
-
 
 @csrf_exempt
 def connect(request):
@@ -51,11 +31,6 @@ def connect(request):
     - login
     - register
     '''
-    #test code time to remove
-    uri = 'http://%s%s?facebook_login=1' % (request.META['HTTP_HOST'],
-            request.path)
-    if request.GET.get('redirect'):
-        return facebook_login_required(uri, scope='read_stream')
     context = RequestContext(request)
 
     assert context.get('FACEBOOK_APP_ID'), 'Please specify a facebook app id '\
