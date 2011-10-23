@@ -17,6 +17,13 @@ def get_oauth_url(request, scope, redirect_uri=None):
     query_dict['scope'] = ','.join(scope)
     query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
     redirect_uri = redirect_uri or request.build_absolute_uri()
+    
+    #prevent redirect urls
+    if '?' not in redirect_uri:
+        redirect_uri += '?attempt=1'
+    else:
+        redirect_uri += '&attempt=1'
+        
     if ('//localhost' in redirect_uri or '//127.0.0.1' in redirect_uri) and settings.DEBUG:
         raise ValueError, 'Facebook checks the domain name of your apps. Therefor you cannot run on localhost. Instead you should use something like local.fashiolista.com. Replace Fashiolista with your own domain name.'
     query_dict['redirect_uri'] = redirect_uri

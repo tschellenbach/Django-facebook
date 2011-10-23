@@ -33,10 +33,13 @@ def facebook_required(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_S
             except facebook_exceptions.OAuthException, e:
                 #this happens when someone revokes their permissions while the session
                 #is still stored
+                #raise if this happens after a redirect though
+                if request.GET.get('attempt'):
+                    raise
                 permissions = {}
             
             permissions_dict = dict([(k,bool(int(v))) for k,v in permissions.items() if v == '1' or v == 1])
-            
+            print permissions_dict
         #see if we have all permissions
         scope_allowed = True
         for permission in scope_list:
