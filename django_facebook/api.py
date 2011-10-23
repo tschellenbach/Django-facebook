@@ -111,10 +111,13 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                     redirect_uri = '%s?%s' % (redirect_base, new_query_dict.urlencode())
                     
                 try:
+                    
+                    logger.info('trying to convert the code with redirect uri: %s', redirect_uri)
                     token_response = FacebookAuthorization.convert_code(code, redirect_uri=redirect_uri)
                     expires = token_response.get('expires')
                 except open_facebook_exceptions.OAuthException, e:
                     #TODO: this sometimes fails, should it raise?
+                    raise
                     return None
                 access_token = token_response['access_token']
             elif request.user.is_authenticated():

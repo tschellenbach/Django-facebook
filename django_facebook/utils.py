@@ -3,6 +3,8 @@ from django.http import QueryDict
 from django.conf import settings
 from django.db import models
 
+import logging
+logger = logging.getLogger(__name__)
 
 
 def get_oauth_url(request, scope, redirect_uri=None):
@@ -19,12 +21,11 @@ def get_oauth_url(request, scope, redirect_uri=None):
     redirect_uri = redirect_uri or request.build_absolute_uri()
     
     #prevent redirect loops
-    print redirect_uri
     if '?' not in redirect_uri:
         redirect_uri += '?attempt=1'
     else:
         redirect_uri += '&attempt=1'
-    print redirect_uri
+    logger.info('requesting access with redirect uri: %s', redirect_uri)
         
     if ('//localhost' in redirect_uri or '//127.0.0.1' in redirect_uri) and settings.DEBUG:
         raise ValueError, 'Facebook checks the domain name of your apps. Therefor you cannot run on localhost. Instead you should use something like local.fashiolista.com. Replace Fashiolista with your own domain name.'
