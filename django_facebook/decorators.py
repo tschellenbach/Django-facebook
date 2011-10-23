@@ -1,7 +1,7 @@
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django_facebook import settings as facebook_settings
 from django.http import HttpResponseRedirect
-from django_facebook.utils import get_oauth_url
+from django_facebook.utils import get_oauth_url, parse_scope
 from django.utils.decorators import available_attrs
 from django.utils.functional import wraps
 from open_facebook import exceptions as facebook_exceptions
@@ -17,12 +17,14 @@ def facebook_required(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_S
     and upon a permission error redirect to login_url
     Querying the permissions would slow down things
     """
+    scope_list = parse_scope(scope)
+    
     def test_permissions(request, redirect_uri=None):
         '''
         Call Facebook me/permissions to see if we are allowed to do this
         '''
         from django_facebook.api import get_persistent_graph
-        print redirect_uri
+        print 'permissions', redirect_uri
         fb = get_persistent_graph(request, redirect_uri=redirect_uri)
         permissions_dict = {}
         if fb:
@@ -38,17 +40,17 @@ def facebook_required(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_S
             
         #see if we have all permissions
         scope_allowed = True
-        for permission in scope:
+        for permission in scope_list:
             if permission not in permissions_dict:
                 scope_allowed = False
-        
+
         return scope_allowed
             
     def actual_decorator(view_func):
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
-            oauth_url, redirect_uri = get_oauth_url(request, scope)
-            print redirect_uri
+            oauth_url, redirect_uri = get_oauth_url(request, scope_list)
+            print 'asking', redirect_uri
             if test_permissions(request, redirect_uri):
                 return view_func(request, *args, **kwargs)
             
@@ -68,5 +70,6 @@ def facebook_connect_required():
     Makes sure that the user is registered within your application (using facebook)
     Before going on to the next page
     """
+    #TODO: BUILD THIS :)
     pass
 

@@ -115,7 +115,6 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                     expires = token_response.get('expires')
                 except open_facebook_exceptions.OAuthException, e:
                     #TODO: this sometimes fails, should it raise?
-                    raise
                     return None
                 access_token = token_response['access_token']
             elif request.user.is_authenticated():
