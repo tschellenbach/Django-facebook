@@ -18,7 +18,6 @@ def facebook_required(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_S
     Querying the permissions would slow down things
     """
     scope_list = parse_scope(scope)
-    
     def test_permissions(request, redirect_uri=None):
         '''
         Call Facebook me/permissions to see if we are allowed to do this
@@ -26,6 +25,7 @@ def facebook_required(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_S
         from django_facebook.api import get_persistent_graph
         fb = get_persistent_graph(request, redirect_uri=redirect_uri)
         permissions_dict = {}
+        
         if fb:
             try:
                 permissions_response = fb.get('me/permissions')
@@ -51,10 +51,9 @@ def facebook_required(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_S
             oauth_url, redirect_uri = get_oauth_url(request, scope_list)
             if test_permissions(request, redirect_uri):
                 return view_func(request, *args, **kwargs)
-            
-            
-            response = HttpResponseRedirect(oauth_url)
-            return response
+            else:
+                response = HttpResponseRedirect(oauth_url)
+                return response
         return _wrapped_view
     
     if view_func:

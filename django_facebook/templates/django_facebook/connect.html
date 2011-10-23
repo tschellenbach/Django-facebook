@@ -120,10 +120,8 @@
     <div id="image_upload" style="margin: 60px 0px 20px 0px;">
         <h2>Album upload flow</h2>
         <div>
-            <form action="{% url facebook_image_upload %}" method="post">
+            <form action="{% url facebook_image_upload %}?next={{ request.path|urlencode }}" method="post">
                 {% csrf_token %}
-                <input type="hidden" value="{{ request.path }}" name="next" />
-                
                 <img src="http://e.fashiocdn.com/images/entities/0/7/z/0/D/0.126x126.jpg" alt="image"/>
                 <input type="hidden" value="http://e.fashiocdn.com/images/entities/0/7/z/0/D/0.365x365.jpg" name="pictures" />
                 
@@ -139,9 +137,8 @@
     <div id="wall_post" style="margin: 60px 0px 20px 0px;">
         <h2>Post to My Wall</h2>
         <div>
-            <form action="{% url facebook_wall_post %}" method="post">
+            <form action="{% url facebook_wall_post %}?next={{ request.path|urlencode }}" method="post">
                 {% csrf_token %}
-                <input type="hidden" value="{{ request.path }}" name="next" />
 
                 <textarea name="message" rows="3" cols="35">Check out fashiolista.com, loving it :)</textarea>
                 <br />
