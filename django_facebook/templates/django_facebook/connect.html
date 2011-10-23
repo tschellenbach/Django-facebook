@@ -130,20 +130,11 @@
                 <img src="http://d.fashiocdn.com/images/entities/0/6/T/p/8/0.126x126.jpg" alt="image"/>
                 <input type="hidden" value="http://d.fashiocdn.com/images/entities/0/6/T/p/8/0.365x365.jpg" name="pictures" />
                 <br />
-                <a href="javascript:void(0)" onclick="F.connect(this.parentNode, ['user_photos', 'publish_stream']);">
-                    Upload to your album
-                </a>
+
+                <input type="submit" value="Upload to your album" />
             </form>
         </div>
     </div>
-
-    <div id="no_javascript_version" style="margin: 60px 0px 20px 0px;">
-        <h2>No Javascript version</h2>
-        <div>
-            <a href="{{ request.path }}?redirect=1">Go to Facebook OAuth flow</a>
-        </div>
-    </div>
-    
 
     <div id="wall_post" style="margin: 60px 0px 20px 0px;">
         <h2>Post to My Wall</h2>
@@ -152,9 +143,23 @@
                 {% csrf_token %}
                 <input type="hidden" value="{{ request.path }}" name="next" />
 
-                <textarea name="message">Check out fashiolista.com, loving it :)</textarea>
+                <textarea name="message" rows="3" cols="35">Check out fashiolista.com, loving it :)</textarea>
                 <br />
                 <input type="submit" value="Post to your wall" />
+            </form>
+        </div>
+    </div>
+
+    <div id="wall_post" style="margin: 60px 0px 20px 0px;">
+        <h2>Post to My Wall - Javascript Popup version</h2>
+        <div>
+            <form action="{% url facebook_wall_post %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" value="{{ request.path }}" name="next" />
+
+                <textarea name="message" rows="3" cols="35">Check out fashiolista.com, loving it :)</textarea>
+                <br />
+                <input type="submit" value="Post to your wall" onclick="F.connect(this.parentNode, ['publish_stream']); return false;"/>
             </form>
         </div>
     </div>
