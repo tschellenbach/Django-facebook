@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 def wall_post(request):
     fb = get_persistent_graph(request)
 
-    message = request.POST.get('message')
+    message = request.REQUEST.get('message')
     fb.set('me/feed', message=message)
 
     messages.info(request, 'Posted the message to your wall')
@@ -38,7 +38,7 @@ def wall_post(request):
 @facebook_required(scope='publish_stream,user_photos')
 def image_upload(request):
     fb = get_persistent_graph(request)
-    pictures = request.POST.getlist('pictures')
+    pictures = request.REQUEST.getlist('pictures')
 
     for picture in pictures:
         fb.set('me/photos', url=picture, message='the writing is one The '
