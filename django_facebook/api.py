@@ -102,7 +102,8 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 #https://github.com/facebook/php-sdk/blob/master/src/base_facebook.php
                 #we need to drop signed_request, code and state
                 if not redirect_uri:
-                    redirect_base = facebook_settings.FACEBOOK_CANVAS_PAGE
+                    redirect_base = 'http://' + request.META['HTTP_HOST'] + request.path
+                    #redirect_base = facebook_settings.FACEBOOK_CANVAS_PAGE
                     query_dict_items = request.GET
                     if query_dict_items:
                         redirect_uri = redirect_uri = '%s?%s' % (redirect_base, query_dict_items.urlencode())
