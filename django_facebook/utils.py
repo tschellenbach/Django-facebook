@@ -2,9 +2,12 @@
 from django.http import QueryDict
 from django.conf import settings
 from django.db import models
-
 import logging
+import re
+
 logger = logging.getLogger(__name__)
+
+
 
 
 def get_oauth_url(request, scope, redirect_uri=None):
@@ -20,12 +23,12 @@ def get_oauth_url(request, scope, redirect_uri=None):
     query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
     redirect_uri = redirect_uri or request.build_absolute_uri()
     
-    #prevent redirect loops
-    if '?' not in redirect_uri:
-        redirect_uri += '?attempt=1'
-    else:
-        redirect_uri += '&attempt=1'
-    logger.info('requesting access with redirect uri: %s', redirect_uri)
+    #set attempt=1 to prevent endless redirect loops
+    if 'attempt=1' not in redirect_uri:
+        if '?' not in redirect_uri:
+            redirect_uri += '?attempt=1'
+        else:
+            redirect_uri += '&attempt=1'
         
     if ('//localhost' in redirect_uri or '//127.0.0.1' in redirect_uri) and settings.DEBUG:
         raise ValueError, 'Facebook checks the domain name of your apps. Therefor you cannot run on localhost. Instead you should use something like local.fashiolista.com. Replace Fashiolista with your own domain name.'
@@ -164,4 +167,45 @@ def to_int(input, default=0, exception=(ValueError, TypeError), regexp=None):
     except exception:
         return default
     
+def remove_query_param(url, key):
+    p = re.compile('%s=[^=&]*&' % key, re.VERBOSE)
+    url = p.sub('', url)
+    p = re.compile('%s=[^=&]*' % key, re.VERBOSE)
+    url = p.sub('', url)
+    return url
+
+def replace_query_param(url, key, value):
+    p = re.compile('%s=[^=&]*' % key, re.VERBOSE)
+    return p.sub('%s=%s' % (key, value), url)
+
+
+DROP_QUERY_PARAMS = ['code', 'signed_request', 'state']
+
+def cleanup_oauth_url(redirect_uri):
+    '''
+    We have to maintain order with respect to the queryparams which is a bit of a pain
+    
+    TODO: Very hacky will subclass QueryDict to SortedQueryDict at some point
+    And use a decent sort function
+    '''
+    if redirect_uri:
+        if '?' in redirect_uri:
+            redirect_base, redirect_query = redirect_uri.split('?', 1)
+            query_dict_items = QueryDict(redirect_query).items()
+        else:
+            redirect_base = redirect_uri
+            query_dict_items = QueryDict('', True)
+
+    filtered_query_items = [(k, v) for k, v in query_dict_items if k.lower() not in DROP_QUERY_PARAMS]
+    #new_query_dict = QueryDict('', True)
+    #new_query_dict.update(dict(filtered_query_items))
+    
+    excluded_query_items = [(k, v) for k, v in query_dict_items if k.lower() in DROP_QUERY_PARAMS]
+    for k, v in excluded_query_items:
+        redirect_uri = remove_query_param(redirect_uri, k)
+    
+    redirect_uri = redirect_uri.strip('?')
+    redirect_uri = redirect_uri.strip('&')
+    
+    return redirect_uri
     

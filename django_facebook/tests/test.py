@@ -10,6 +10,7 @@ import logging
 import unittest
 from open_facebook.api import FacebookConnection
 from functools import partial
+from django_facebook.utils import cleanup_oauth_url
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +125,23 @@ class ErrorMappingTest(FacebookTest):
         self.assertRaises(facebook_exceptions.PermissionException, raise_something)
     
 
+class OAuthUrlTest(FacebookTest):
+    def _test_equal(self, url, output):
+        converted = cleanup_oauth_url(url)
+        self.assertEqual(converted, output)
+        
+    def test_url(self):
+        url = 'http://www.google.com/'
+        output = 'http://www.google.com/'
+        self._test_equal(url, output)
+
+        url = 'http://www.google.com/?code=a'
+        output = 'http://www.google.com/'
+        self._test_equal(url, output)
+
+        url = 'http://www.google.com/?code=a&b=c&d=c'
+        output = 'http://www.google.com/?b=c&d=c'
+        self._test_equal(url, output)
 
 
 

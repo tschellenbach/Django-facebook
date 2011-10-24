@@ -3,7 +3,8 @@ from django.core.mail import mail_admins
 from django.forms.util import ValidationError
 from django.utils import simplejson as json
 from django_facebook import settings as facebook_settings
-from django_facebook.utils import mass_get_or_create
+from django_facebook.utils import mass_get_or_create, remove_query_param,\
+    cleanup_oauth_url
 from open_facebook.exceptions import OpenFacebookException
 import datetime
 import hashlib
@@ -62,7 +63,6 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     specify redirect_uri if you are not posting and recieving the code on the same page
     '''
     #should drop query params be included in the open facebook api, maybe, weird this...
-    DROP_QUERY_PARAMS = ['code', 'signed_request', 'state']
     from open_facebook import OpenFacebook, FacebookAuthorization
     parsed_data = None
     expires = None
@@ -95,23 +95,17 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 #based on the php api 
                 #https://github.com/facebook/php-sdk/blob/master/src/base_facebook.php
                 #we need to drop signed_request, code and state
-                if redirect_uri:
-                    redirect_base, redirect_query = redirect_uri.split('?', 1)
-                    query_dict_items = QueryDict(redirect_query).items()
-                else:
+                if not redirect_uri:
                     redirect_base = facebook_settings.FACEBOOK_CANVAS_PAGE
-                    query_dict_items = request.GET.items()
-                    
-                filtered_query_items = [(k, v) for k, v in query_dict_items if k.lower() not in DROP_QUERY_PARAMS]
-                new_query_dict = QueryDict('', True)
-                new_query_dict.update(dict(filtered_query_items))
-                #TODO support http and https
-                redirect_uri = redirect_base
-                if new_query_dict:
-                    redirect_uri = '%s?%s' % (redirect_base, new_query_dict.urlencode())
+                    query_dict_items = request.GET
+                    if query_dict_items:
+                        redirect_uri = redirect_uri = '%s?%s' % (redirect_base, query_dict_items.urlencode())
+                    else:
+                        redirect_uri = redirect_uri = '%s' % (redirect_base,)
+                
+                redirect_uri = cleanup_oauth_url(redirect_uri)
                     
                 try:
-                    
                     logger.info('trying to convert the code with redirect uri: %s', redirect_uri)
                     token_response = FacebookAuthorization.convert_code(code, redirect_uri=redirect_uri)
                     expires = token_response.get('expires')
