@@ -27,6 +27,11 @@ def get_persistent_graph(request, *args, **kwargs):
     if not request:
         raise ValidationError, 'Request is required if you want to use persistent tokens'
     
+    if hasattr(request, 'facebook'):
+        graph = request.facebook
+        _add_current_user_id(graph, request.user)
+        return graph
+        
     #get the new graph
     graph = get_facebook_graph(request, *args, **kwargs)
     
@@ -40,6 +45,7 @@ def get_persistent_graph(request, *args, **kwargs):
         graph = facebook_open_graph_cached   
         
     _add_current_user_id(graph, request.user)
+    request.facebook = graph
         
     return graph
         
