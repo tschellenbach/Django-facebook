@@ -1,17 +1,11 @@
-from django.conf import settings
-from django.core.mail import mail_admins
 from django.forms.util import ValidationError
 from django.utils import simplejson as json
 from django_facebook import settings as facebook_settings
-from django_facebook.utils import mass_get_or_create, remove_query_param,\
-    cleanup_oauth_url
+from django_facebook.utils import mass_get_or_create, cleanup_oauth_url
 from open_facebook.exceptions import OpenFacebookException
 import datetime
-import hashlib
-import hmac
 import logging
 import sys
-from django.http import QueryDict
 from open_facebook import exceptions as open_facebook_exceptions
 
 logger = logging.getLogger(__name__)
@@ -100,16 +94,13 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 #exchange the code for an access token
                 #based on the php api 
                 #https://github.com/facebook/php-sdk/blob/master/src/base_facebook.php
-                #we need to drop signed_request, code and state
-                if not redirect_uri:
-                    redirect_base = 'http://' + request.META['HTTP_HOST'] + request.path
-                    #redirect_base = facebook_settings.FACEBOOK_CANVAS_PAGE
-                    query_dict_items = request.GET
-                    if query_dict_items:
-                        redirect_uri = redirect_uri = '%s?%s' % (redirect_base, query_dict_items.urlencode())
-                    else:
-                        redirect_uri = redirect_uri = '%s' % (redirect_base,)
                 
+                #create a default for the redirect_uri
+                #when using the javascript sdk the default should be '' an empty string
+                if not redirect_uri:
+                    redirect_uri = ''
+                
+                #we need to drop signed_request, code and state
                 redirect_uri = cleanup_oauth_url(redirect_uri)
                     
                 try:

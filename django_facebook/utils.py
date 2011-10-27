@@ -188,13 +188,13 @@ def cleanup_oauth_url(redirect_uri):
     TODO: Very hacky will subclass QueryDict to SortedQueryDict at some point
     And use a decent sort function
     '''
-    if redirect_uri:
-        if '?' in redirect_uri:
-            redirect_base, redirect_query = redirect_uri.split('?', 1)
-            query_dict_items = QueryDict(redirect_query).items()
-        else:
-            redirect_base = redirect_uri
-            query_dict_items = QueryDict('', True)
+    
+    if '?' in redirect_uri:
+        redirect_base, redirect_query = redirect_uri.split('?', 1)
+        query_dict_items = QueryDict(redirect_query).items()
+    else:
+        redirect_base = redirect_uri
+        query_dict_items = QueryDict('', True)
 
     filtered_query_items = [(k, v) for k, v in query_dict_items if k.lower() not in DROP_QUERY_PARAMS]
     #new_query_dict = QueryDict('', True)
