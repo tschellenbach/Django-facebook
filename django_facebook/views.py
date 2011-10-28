@@ -70,7 +70,7 @@ def connect(request):
         oauth_url, redirect_uri = get_oauth_url(request, scope_list)
         if not test_permissions(request, scope_list, redirect_uri):
             return HttpResponseRedirect(oauth_url)
-        graph = get_facebook_graph(request)
+        graph = get_persistent_graph(request)
         if graph:
             facebook = FacebookUserConverter(graph)
             if facebook.is_authenticated():
