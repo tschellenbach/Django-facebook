@@ -162,7 +162,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        '':{
+        'django_facebook':{
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,

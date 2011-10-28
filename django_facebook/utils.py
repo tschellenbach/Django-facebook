@@ -52,7 +52,7 @@ def get_oauth_url(request, scope, redirect_uri=None):
     query_dict['scope'] = ','.join(scope)
     query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
     redirect_uri = redirect_uri or request.build_absolute_uri()
-    
+
     #set attempt=1 to prevent endless redirect loops
     if 'attempt=1' not in redirect_uri:
         if '?' not in redirect_uri:

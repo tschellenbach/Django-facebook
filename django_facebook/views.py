@@ -67,9 +67,12 @@ def connect(request):
     if facebook_login:
         from django_facebook.utils import test_permissions
         scope_list = ['email','user_about_me','user_birthday','user_website']
-        oauth_url, redirect_uri = get_oauth_url(request, scope_list)
+        redirect_uri = request.build_absolute_uri(request.path)
+        oauth_url, redirect_uri = get_oauth_url(request, scope_list, redirect_uri=redirect_uri)
         if not test_permissions(request, scope_list, redirect_uri):
             return HttpResponseRedirect(oauth_url)
+        
+        
         graph = get_persistent_graph(request)
         if graph:
             facebook = FacebookUserConverter(graph)
