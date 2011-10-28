@@ -4,10 +4,39 @@ from django.conf import settings
 from django.db import models
 import logging
 import re
+from open_facebook import exceptions as facebook_exceptions
 
 logger = logging.getLogger(__name__)
 
+def test_permissions(request, scope_list, redirect_uri=None):
+    '''
+    Call Facebook me/permissions to see if we are allowed to do this
+    '''
+    from django_facebook.api import get_persistent_graph
+    fb = get_persistent_graph(request, redirect_uri=redirect_uri)
+    permissions_dict = {}
+    
+    if fb:
+        try:
+            permissions_response = fb.get('me/permissions')
+            permissions = permissions_response['data'][0]
+        except facebook_exceptions.OAuthException, e:
+            #this happens when someone revokes their permissions while the session
+            #is still stored
+            permissions = {}
+        permissions_dict = dict([(k,bool(int(v))) for k,v in permissions.items() if v == '1' or v == 1])
+        
+    #see if we have all permissions
+    scope_allowed = True
+    for permission in scope_list:
+        if permission not in permissions_dict:
+            scope_allowed = False
+            
+    #raise if this happens after a redirect though
+    if not scope_allowed and request.GET.get('attempt'):
+        raise ValueError, 'Somehow facebook is not giving us the permissions needed, lets break instead of endless redirects. Fb was %s and permissions %s' % (fb, permissions_dict)
 
+    return scope_allowed
 
 
 def get_oauth_url(request, scope, redirect_uri=None):
