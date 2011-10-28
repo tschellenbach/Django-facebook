@@ -112,11 +112,11 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                     logger.info('trying to convert the code with redirect uri: %s', redirect_uri)
                     token_response = FacebookAuthorization.convert_code(code, redirect_uri=redirect_uri)
                     expires = token_response.get('expires')
+                    access_token = token_response['access_token']
                 except open_facebook_exceptions.OAuthException, e:
-                    #TODO: this sometimes fails, should it raise?
-                    raise
+                    #this sometimes fails, but it shouldnt raise because it happens when users remove your
+                    #permissions and then try to reauthenticate
                     return None
-                access_token = token_response['access_token']
             elif request.user.is_authenticated():
                 #support for offline access tokens stored in the users profile
                 profile = request.user.get_profile()
