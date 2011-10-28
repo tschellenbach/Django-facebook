@@ -67,6 +67,11 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     parsed_data = None
     expires = None
     
+    if hasattr(request, 'facebook'):
+        graph = request.facebook
+        _add_current_user_id(graph, request.user)
+        return graph
+    
     if not access_token:
         #easy case, code is in the get
         code = request.REQUEST.get('code')

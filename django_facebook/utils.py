@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db import models
 import logging
 import re
-from open_facebook import exceptions as facebook_exceptions
+
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +13,7 @@ def test_permissions(request, scope_list, redirect_uri=None):
     Call Facebook me/permissions to see if we are allowed to do this
     '''
     from django_facebook.api import get_persistent_graph
+    from open_facebook import exceptions as facebook_exceptions
     fb = get_persistent_graph(request, redirect_uri=redirect_uri)
     permissions_dict = {}
     

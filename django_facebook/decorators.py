@@ -4,7 +4,6 @@ from django.http import HttpResponseRedirect
 from django_facebook.utils import get_oauth_url, parse_scope
 from django.utils.decorators import available_attrs
 from django.utils.functional import wraps
-from open_facebook import exceptions as facebook_exceptions
 
 import logging
 logger = logging.getLogger(__name__)
