@@ -178,7 +178,11 @@ def _register_user(request, facebook, profile_callback=None):
     if backend:
         new_user = backend.register(request, **form.cleaned_data)
     else:
-        new_user = form.save()
+        # For backward compatibility, if django-registration form is used
+        try:
+            new_user = form.save(profile_callback=profile_callback)
+        except TypeError:
+            new_user = form.save()
     
     signals.facebook_user_registered.send(sender=get_profile_class(),
         user=new_user, facebook_data=facebook_data)
