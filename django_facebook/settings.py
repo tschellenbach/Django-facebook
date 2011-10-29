@@ -31,3 +31,7 @@ for setting_name in required_settings:
 # Allow custom registration template
 FACEBOOK_REGISTRATION_TEMPLATE = getattr(settings,
     'FACEBOOK_REGISTRATION_TEMPLATE', 'registration/registration_form.html')
+
+# Allow custom signup form
+FACEBOOK_REGISTRATION_FORM = getattr(settings,
+    'FACEBOOK_REGISTRATION_FORM', None)
