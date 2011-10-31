@@ -9,6 +9,12 @@ facebookClass.prototype = {
         function javascriptLoaded() {
             scope.javascriptLoaded.call(scope);
         }
+        
+        var iphone = navigator.userAgent.match(/iPhone/i)
+        var ipod = navigator.userAgent.match(/iPod/i);
+        var ipad = navigator.userAgent.match(/iPad/i);
+        var ithing = iphone || ipod || ipad;
+        this.ithing = ithing;
     },
 
     requirePermissions : function(requiredPerms, callback) {
@@ -48,7 +54,10 @@ facebookClass.prototype = {
     },
 
     connect : function(formElement, requiredPerms) {
-        // ,'publish_stream','offline_access'
+        if (this.ithing) {
+            formElement.submit();
+            return false;
+        }
         requiredPerms = requiredPerms
                 || [ 'email', 'user_about_me', 'user_birthday', 'user_website' ];
         FB.login(function(response) {

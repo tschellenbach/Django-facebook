@@ -116,6 +116,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 except open_facebook_exceptions.OAuthException, e:
                     #this sometimes fails, but it shouldnt raise because it happens when users remove your
                     #permissions and then try to reauthenticate
+                    logger.warn('Error when trying to convert code %s', unicode(e))
                     return None
             elif request.user.is_authenticated():
                 #support for offline access tokens stored in the users profile
