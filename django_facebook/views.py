@@ -65,13 +65,14 @@ def connect(request):
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
 
     if facebook_login:
+        #code to redirect if we don't have adequate permissions
         from django_facebook.utils import test_permissions
         scope_list = ['email','user_about_me','user_birthday','user_website']
+        #standardizing the url to prevent things like attempt from being included
         redirect_uri = request.build_absolute_uri(request.path) + '?facebook_login=1'
         oauth_url, redirect_uri = get_oauth_url(request, scope_list, redirect_uri=redirect_uri)
         if not test_permissions(request, scope_list, redirect_uri):
             return HttpResponseRedirect(oauth_url)
-        
         
         graph = get_persistent_graph(request)
         if graph:
