@@ -124,7 +124,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 REGISTRATION_BACKEND = 'registration.backends.default.DefaultBackend'
 FACEBOOK_APP_ID = '215464901804004'
 FACEBOOK_APP_SECRET = '0aceba27823a9dfefa955f76949fa4b4'
-FACEBOOK_API_KEY = '012e7284acbc5bbbc5e967e07e5a468f'
 FACEBOOK_STORE_LIKES = False
 FACEBOOK_STORE_FRIENDS = False
 
@@ -156,11 +155,20 @@ LOGGING = {
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+        },
     },
     'loggers': {
+        'django_facebook':{
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
         'django.request':{
-            'handlers': ['mail_admins'],
+            'handlers': ['console'],
             'level': 'ERROR',
             'propagate': True,
         },

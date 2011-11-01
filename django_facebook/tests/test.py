@@ -5,11 +5,18 @@ from django_facebook.auth_backends import FacebookBackend
 from django_facebook.connect import connect_user, CONNECT_ACTIONS
 from django_facebook.tests.base import FacebookTest
 from open_facebook.exceptions import *
-from django_facebook.api import get_facebook_graph, FacebookUserConverter
+from django_facebook.api import get_facebook_graph, FacebookUserConverter, get_persistent_graph
 import logging
 import unittest
+from open_facebook.api import FacebookConnection
+from functools import partial
+from django_facebook.utils import cleanup_oauth_url
 
 logger = logging.getLogger(__name__)
+
+
+__doctests__ = ['django_facebook.api']
+
 
 '''
 TODO
@@ -23,6 +30,14 @@ class UserConnectTest(FacebookTest):
     Tests the connect user functionality
     '''
     fixtures = ['users.json']
+    
+    def test_persistent_graph(self):
+        from django.test import RequestFactory
+        from django.contrib.auth.models import AnonymousUser
+        request = RequestFactory()
+        request.session = {}
+        request.user = AnonymousUser()
+        graph = get_persistent_graph(request, access_token='short_username')
     
     def test_full_connect(self):
         #going for a register, connect and login
@@ -103,18 +118,30 @@ class AuthBackend(FacebookTest):
         assert not auth_user
       
 
+class ErrorMappingTest(FacebookTest):
+    def test_mapping(self):
+        from open_facebook import exceptions as facebook_exceptions
+        raise_something = partial(FacebookConnection.raise_error, 0, "(#200) The user hasn't authorized the application to perform this action")
+        self.assertRaises(facebook_exceptions.PermissionException, raise_something)
     
-class DataTransformTest(FacebookTest):
-    def test_doctest_api(self):
-        return
-        #TODO: fix this test somehow, doctest api seems to not work as I expect it
-        #tests dont get run
-        from django_facebook import api
-        import doctest
-        tests, failures = doctest.testmod(api)
-        assert tests
-        assert not failures
 
+class OAuthUrlTest(FacebookTest):
+    def _test_equal(self, url, output):
+        converted = cleanup_oauth_url(url)
+        self.assertEqual(converted, output)
+        
+    def test_url(self):
+        url = 'http://www.google.com/'
+        output = 'http://www.google.com/'
+        self._test_equal(url, output)
+
+        url = 'http://www.google.com/?code=a'
+        output = 'http://www.google.com/'
+        self._test_equal(url, output)
+
+        url = 'http://www.google.com/?code=a&b=c&d=c'
+        output = 'http://www.google.com/?b=c&d=c'
+        self._test_equal(url, output)
 
 
 

@@ -4,7 +4,7 @@ __credits__ = ['Thierry Schellenbach, mellowmorning.com, @tschellenbach']
 
 
 __license__ = 'BSD'
-__version__ = '3.0.8'
+__version__ = '3.2.6'
 __maintainer__ = 'Thierry Schellenbach'
 __email__ = 'thierryschellenbach@gmail.com'
 __status__ = 'Production'
@@ -23,10 +23,6 @@ setting up pip for editing
 http://www.pip-installer.org/en/latest/index.html
 pip install -e ./
 
-TODO
-- paco error, login not authenticating somehow
-- Retry on facebook connection errors
-- errors op email already in use op register flow (auth backend issues, threading issue?)
 '''
 
 

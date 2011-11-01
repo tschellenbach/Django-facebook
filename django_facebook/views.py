@@ -16,30 +16,38 @@ from django_facebook.api import get_facebook_graph, get_persistent_graph,\
     FacebookUserConverter
 from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
-from django_facebook.utils import next_redirect
+from django_facebook.utils import next_redirect, get_oauth_url
+from django_facebook.decorators import facebook_required
+
 
 logger = logging.getLogger(__name__)
 
 
-def facebook_login_required(redirect_uri, scope=None):
-    '''
-    Redirect uri is the url to redirect to
 
-    Scope can either be in the format ['email', 'read_stream'] or
-    'email,read_stream'
-    '''
-    url = 'https://www.facebook.com/dialog/oauth?'
-    query_dict = QueryDict('', True)
-    query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
-    query_dict['redirect_uri'] = redirect_uri
-    if scope:
-        if isinstance(scope, (basestring)):
-            query_dict['scope'] = scope
-        else:
-            query_dict['scope'] = scope
-    url += query_dict.urlencode()
+@facebook_required(scope='publish_stream')
+def wall_post(request):
+    fb = get_persistent_graph(request)
 
-    return HttpResponseRedirect(url)
+    message = request.REQUEST.get('message')
+    fb.set('me/feed', message=message)
+
+    messages.info(request, 'Posted the message to your wall')
+
+    return next_redirect(request)
+
+
+@facebook_required(scope='publish_stream,user_photos')
+def image_upload(request):
+    fb = get_persistent_graph(request)
+    pictures = request.REQUEST.getlist('pictures')
+
+    for picture in pictures:
+        fb.set('me/photos', url=picture, message='the writing is one The '
+            'wall image %s' % picture)
+
+    messages.info(request, 'The images have been added to your profile!')
+
+    return next_redirect(request)
 
 
 @csrf_exempt
@@ -50,11 +58,6 @@ def connect(request):
     - login
     - register
     '''
-    #test code time to remove
-    uri = 'http://%s%s?facebook_login=1' % (request.META['HTTP_HOST'],
-            request.path)
-    if request.GET.get('redirect'):
-        return facebook_login_required(uri, scope='read_stream')
     context = RequestContext(request)
 
     assert context.get('FACEBOOK_APP_ID'), 'Please specify a facebook app id '\
@@ -62,7 +65,15 @@ def connect(request):
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
 
     if facebook_login:
-        graph = get_facebook_graph(request)
+        from django_facebook.utils import test_permissions
+        scope_list = ['email','user_about_me','user_birthday','user_website']
+        redirect_uri = request.build_absolute_uri(request.path)
+        oauth_url, redirect_uri = get_oauth_url(request, scope_list, redirect_uri=redirect_uri)
+        if not test_permissions(request, scope_list, redirect_uri):
+            return HttpResponseRedirect(oauth_url)
+        
+        
+        graph = get_persistent_graph(request)
         if graph:
             facebook = FacebookUserConverter(graph)
             if facebook.is_authenticated():
@@ -106,43 +117,6 @@ def connect(request):
         raise Http404
 
     return render_to_response('django_facebook/connect.html', context)
-
-
-def image_upload(request):
-    '''
-    Handle image uploading to Facebook
-    '''
-    fb = get_persistent_graph(request)
-    if fb.is_authenticated():
-        #handling the form without a form class for explanation
-        #in your own app you could use a neat django form to do this
-        pictures = request.POST.getlist('pictures')
-#        from django.contrib import messages
-
-        for picture in pictures:
-            fb.set('me/photos', url=picture, message='the writing is one The '
-                'wall image %s' % picture)
-
-#        messages.info(request, 'The images have been added to your profile!')
-
-    return next_redirect(request)
-
-
-def wall_post(request):
-    '''
-    Handle image uploading to Facebook
-    '''
-    fb = get_persistent_graph(request)
-    if fb.is_authenticated():
-        #handling the form without a form class for explanation
-        #in your own app you could use a neat django form to do this
-        message = request.POST.get('message')
-        fb.set('me/feed', message=message)
-
-#        from django.contrib import messages
-#        messages.info(request, 'Posted the message to your wall')
-
-    return next_redirect(request)
 
 
 @csrf_exempt

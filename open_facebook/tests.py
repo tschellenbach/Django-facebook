@@ -10,10 +10,10 @@ logger = logging.getLogger()
 class TestOpenFacebook(unittest.TestCase):
     def test_thijs_profile(self):
         
-#        token = FacebookAuthorization.get_app_access_token()
-#        test_user = FacebookAuthorization.create_test_user(token)
-#        print test_user
-#        return
+        token = FacebookAuthorization.get_app_access_token()
+        test_user = FacebookAuthorization.get_or_create_test_user(token)
+        test_user = FacebookAuthorization.create_test_user(token)
+        return
 #        
         message = "Hi! I'm on Fashiolista, a worldwide community for fashion inspiration. Click to see my style profile and discover great new shops and fashion items!"
         image_urls = [
@@ -29,6 +29,8 @@ class TestOpenFacebook(unittest.TestCase):
         #fill in a real token for this to work
         #{u'access_token': u'215464901804004|fc589819a12431167c3bd571.0-100002862180253|by58p1KHqf_XiqA4ux390XBGBIo', u'password': u'1439799010', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002862180253&n=4xdwSTQbstgOzUt', u'id': u'100002862180253', u'email': u'hello_edztofa_world@tfbnw.net'}
         fb = OpenFacebook(access_token)
+        print fb.get('me/accounts')
+        return
         permissions = [p for p, v in fb.get('me/permissions')['data'][0].items() if v]
         print permissions
         return
@@ -70,7 +72,6 @@ class TestOpenFacebook(unittest.TestCase):
     def get_access_token(self):
         token = FacebookAuthorization.get_app_access_token()
         test_user = FacebookAuthorization.create_test_user(token)
-        print test_user['login_url']
         return test_user['access_token']
 
     def test_open_api(self):

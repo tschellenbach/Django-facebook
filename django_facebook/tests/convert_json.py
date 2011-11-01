@@ -8,8 +8,6 @@ def json_to_python(json_string):
     '''
 
     python_dict = simplejson.loads(json_string)
-    from pprint import pprint
-    pprint(python_dict)
     return python_dict
 
 if __name__ == '__main__':    

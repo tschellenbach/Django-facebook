@@ -94,6 +94,15 @@ def connect_user(request, access_token=None, facebook_graph=None):
         })
         transaction.savepoint_rollback(sid)
 
+    profile = user.get_profile()
+    #store the access token for later usage if the profile model supports it
+    if hasattr(profile, 'access_token'):
+        #only update the access token if it is long lived and not equal to the current token
+        if not graph.expires and graph.access_token != profile.access_token:
+            #TODO, maybe we should just always do this.
+            profile.access_token = graph.access_token
+            profile.save()
+
     return action, user
 
 

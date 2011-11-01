@@ -12,6 +12,5 @@ class MockFacebookAPI(OpenFacebook):
     
     def is_authenticated(self, *args, **kwargs):
         from django_facebook.tests.sample_data.user_data import user_data
-        print user_data
         return self.access_token in user_data
     

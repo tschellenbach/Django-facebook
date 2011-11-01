@@ -1,16 +1,11 @@
-from django.conf import settings
-from django.core.mail import mail_admins
 from django.forms.util import ValidationError
 from django.utils import simplejson as json
 from django_facebook import settings as facebook_settings
-from django_facebook.utils import mass_get_or_create
+from django_facebook.utils import mass_get_or_create, cleanup_oauth_url
 from open_facebook.exceptions import OpenFacebookException
 import datetime
-import hashlib
-import hmac
 import logging
 import sys
-from django.http import QueryDict
 from open_facebook import exceptions as open_facebook_exceptions
 
 logger = logging.getLogger(__name__)
@@ -26,19 +21,27 @@ def get_persistent_graph(request, *args, **kwargs):
     if not request:
         raise ValidationError, 'Request is required if you want to use persistent tokens'
     
+    if hasattr(request, 'facebook'):
+        graph = request.facebook
+        _add_current_user_id(graph, request.user)
+        return graph
+        
     #get the new graph
-    facebook_open_graph = get_facebook_graph(request, *args, **kwargs)
+    graph = get_facebook_graph(request, *args, **kwargs)
     
     #if it's valid replace the old cache
-    if facebook_open_graph is not None and facebook_open_graph.access_token:
-        request.session['facebook_open_graph'] = facebook_open_graph
+    if graph is not None and graph.access_token:
+        request.session['graph'] = graph
     else:
-        facebook_open_graph_cached = request.session.get('facebook_open_graph')
+        facebook_open_graph_cached = request.session.get('graph')
         if facebook_open_graph_cached:
             facebook_open_graph_cached._me = None
-        facebook_open_graph = facebook_open_graph_cached   
+        graph = facebook_open_graph_cached   
         
-    return facebook_open_graph
+    _add_current_user_id(graph, request.user)
+    request.facebook = graph
+        
+    return graph
         
     
 
@@ -49,6 +52,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     - facebook app authentication flow (signed cookie)
     - facebook oauth redirect (code param in url)
     - mobile authentication flow (direct access_token)
+    - offline access token stored in user profile
     
     returns a graph object
     
@@ -59,19 +63,24 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     specify redirect_uri if you are not posting and recieving the code on the same page
     '''
     #should drop query params be included in the open facebook api, maybe, weird this...
-    DROP_QUERY_PARAMS = ['code','signed_request','state']
     from open_facebook import OpenFacebook, FacebookAuthorization
     parsed_data = None
-        
+    expires = None
+    
+    if hasattr(request, 'facebook'):
+        graph = request.facebook
+        _add_current_user_id(graph, request.user)
+        return graph
+    
     if not access_token:
         #easy case, code is in the get
         code = request.REQUEST.get('code')
-        
         if not code:
             #signed request or cookie leading, base 64 decoding needed
             signed_data = request.REQUEST.get('signed_request')
             cookie_name = 'fbsr_%s' % facebook_settings.FACEBOOK_APP_ID
             cookie_data = request.COOKIES.get(cookie_name)
+
             if cookie_data:
                 signed_data = cookie_data
                 #the javascript api assumes a redirect uri of ''
@@ -90,28 +99,53 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 #exchange the code for an access token
                 #based on the php api 
                 #https://github.com/facebook/php-sdk/blob/master/src/base_facebook.php
+                
+                #create a default for the redirect_uri
+                #when using the javascript sdk the default should be '' an empty string
+                if not redirect_uri:
+                    redirect_uri = ''
+                
                 #we need to drop signed_request, code and state
-                if redirect_uri is None:
-                    query_dict_items = [(k,v) for k, v in request.GET.items() if k not in DROP_QUERY_PARAMS]
-                    new_query_dict = QueryDict('', True)
-                    new_query_dict.update(dict(query_dict_items))
-                    #TODO support http and https
-                    redirect_uri = 'http://' + request.META['HTTP_HOST'] + request.path
-                    if new_query_dict:
-                        redirect_uri += '?%s' % new_query_dict.urlencode()
+                redirect_uri = cleanup_oauth_url(redirect_uri)
+                    
                 try:
+                    logger.info('trying to convert the code with redirect uri: %s', redirect_uri)
                     token_response = FacebookAuthorization.convert_code(code, redirect_uri=redirect_uri)
+                    expires = token_response.get('expires')
+                    access_token = token_response['access_token']
                 except open_facebook_exceptions.OAuthException, e:
+                    #this sometimes fails, but it shouldnt raise because it happens when users remove your
+                    #permissions and then try to reauthenticate
+                    logger.warn('Error when trying to convert code %s', unicode(e))
                     return None
-                access_token = token_response['access_token']
+            elif request.user.is_authenticated():
+                #support for offline access tokens stored in the users profile
+                profile = request.user.get_profile()
+                access_token = getattr(profile, 'access_token', None)
+                if not access_token:
+                    return None 
             else:
                 return None
                 #raise exceptions.MissingParameter('Cant find code or access token')
         
-    facebook_open_graph = OpenFacebook(access_token, parsed_data)
+    graph = OpenFacebook(access_token, parsed_data, expires=expires)
+    if request:
+        _add_current_user_id(graph, request.user)
     
-    return facebook_open_graph
+    return graph
 
+def _add_current_user_id(graph, user):
+    '''
+    set the current user id, convenient if you want to make sure you fb session and user belong together
+    '''
+    if graph:
+        graph.current_user_id = None
+        
+    if user.is_authenticated() and graph:
+        profile = user.get_profile()
+        facebook_id = getattr(profile, 'facebook_id', None)
+        if facebook_id:
+            graph.current_user_id = facebook_id
 
 class FacebookUserConverter(object):
     '''
@@ -344,7 +378,7 @@ class FacebookUserConverter(object):
         '''
         if facebook_settings.FACEBOOK_CELERY_STORE:
             from django_facebook.tasks import store_likes
-            store_likes(user, likes)
+            store_likes.delay(user, likes)
         else:
             self._store_likes(user, likes)
         
@@ -400,7 +434,7 @@ class FacebookUserConverter(object):
         '''
         if facebook_settings.FACEBOOK_CELERY_STORE:
             from django_facebook.tasks import store_friends
-            store_friends(user, friends)
+            store_friends.delay(user, friends)
         else:
             self._store_friends(user, friends)
         

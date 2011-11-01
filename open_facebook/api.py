@@ -38,6 +38,7 @@ from open_facebook.utils import json
 import logging
 import urllib
 import urllib2
+from django_facebook.utils import to_int
 logger = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT = 8
@@ -119,30 +120,60 @@ class FacebookConnection(object):
         return parsed_response
     
     @classmethod
-    def raise_error(self, type, message):
+    def raise_error(self, error_type, message):
         '''
         Search for a corresponding error class and fall back to open facebook exception
         '''
+        import re
         error_class = None
-        if not isinstance(type, int):
-            error_class = getattr(facebook_exceptions, type, None)
-        
+        if not isinstance(error_type, int):
+            error_class = getattr(facebook_exceptions, error_type, None)
         
         if error_class and not issubclass(error_class, facebook_exceptions.OpenFacebookException):
             error_class = None
         
         #map error classes to facebook error ids
-        id_mapping = {
-            '#1': facebook_exceptions.UnknownException,
-            '#3': facebook_exceptions.PermissionException,
-            '#210': facebook_exceptions.PermissionException,
-            '#506': facebook_exceptions.DuplicateStatusMessage,
-            '#803': facebook_exceptions.AliasException,
-        }
-        for key, class_ in id_mapping.items():
-            if key in message:
-                error_class = class_
+        #define a string to match a single error, use ranges for complexer cases
+        #also see http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
+        classes = [getattr(facebook_exceptions, e, None) for e in dir(facebook_exceptions)]
+        exception_classes = [e for e in classes if getattr(e, 'codes', None) and issubclass(e, facebook_exceptions.OpenFacebookException)]
+        exception_classes.sort(key=lambda e: e.range())
+
+        #find the error code
+        error_code = None
+        error_code_re = re.compile('\(#(\d+)\)')
+        matches = error_code_re.match(message)
+        matching_groups = matches.groups() if matches else None
+        if matching_groups:
+            error_code = to_int(matching_groups[0]) or None
+        
+        for class_ in exception_classes:
+            codes_list = class_.codes_list()
+            #match the error class
+            matching_error_class = None
+            for code in codes_list:
+                if isinstance(code, basestring):
+                    #match on string
+                    key = code
+                    if key in message:
+                        matching_error_class = class_
+                        break
+                elif isinstance(code, tuple):
+                    start, stop = code
+                    if error_code and start <= error_code <= stop:
+                        matching_error_class = class_
+                        break
+                elif isinstance(code, (int, long)):
+                    if int(code) == error_code:
+                        matching_error_class = class_
+                        break
+                else:
+                    raise ValueError, 'Dont know how to handle %s of type %s' % (code, type(code))
+            #tell about the happy news if we found something
+            if matching_error_class:
+                error_class = matching_error_class
                 break
+                    
             
         if 'Missing' in message and 'parameter' in message:
             error_class = facebook_exceptions.MissingParameter
@@ -253,7 +284,7 @@ class FacebookAuthorization(FacebookConnection):
     @classmethod
     def get_or_create_test_user(cls, app_access_token, permissions=None):
         if not permissions:
-            permissions = 'read_stream,publish_stream,user_photos,offline_access'
+            permissions = ['read_stream','publish_stream', 'user_photos', 'offline_access']
         
         kwargs = {
             'access_token': app_access_token,
@@ -335,10 +366,17 @@ class OpenFacebook(FacebookConnection):
     
     '''
     
-    def __init__(self, access_token=None, prefetched_data=None):
+    def __init__(self, access_token=None, prefetched_data=None, expires=None, current_user_id=None):
         self.access_token = access_token
         #extra data coming from signed cookies
         self.prefetched_data = prefetched_data
+        
+        #store to enable detection for offline usage
+        self.expires = expires
+        
+        #hook to store the current user id if representing the facebook connection
+        #to a logged in user :)
+        self.current_user_id = current_user_id
         
     def is_authenticated(self):
         '''
@@ -413,6 +451,7 @@ class OpenFacebook(FacebookConnection):
         if getattr(self, 'access_token', None):
             params['access_token'] = self.access_token
         url = '%s%s?%s' % (api_base_url, path, urllib.urlencode(params))
+        logger.info('requesting url %s', url)
         response = self._request(url, post_data)
         return response
         
@@ -421,6 +460,5 @@ class OpenFacebook(FacebookConnection):
         
             
 
-    
 
     
