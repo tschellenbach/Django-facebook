@@ -19,15 +19,40 @@ def encode_params(params_dict):
     '''
     Take the dictionary of params and encode keys and values to ascii if it's unicode
     '''
-    encoded = [(encode_unicode(k), encode_unicode(v)) for k, v in params_dict.items()]
+    encoded = [(smart_str(k), smart_str(v)) for k, v in params_dict.items()]
     encoded_dict = dict(encoded)
     return encoded_dict
 
-def encode_unicode(unicode_string):
-    if hasattr(unicode_string, 'encode'):
-        return unicode_string.encode()
+
+
+def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
+    """
+    Adapted from django, needed for urlencoding
+    
+    Returns a bytestring version of 's', encoded as specified in 'encoding'.
+
+    If strings_only is True, don't convert (some) non-string-like objects.
+    """
+    import types
+    if strings_only and isinstance(s, (types.NoneType, int)):
+        return s
+    elif not isinstance(s, basestring):
+        try:
+            return str(s)
+        except UnicodeEncodeError:
+            if isinstance(s, Exception):
+                # An Exception subclass containing non-ASCII data that doesn't
+                # know how to print itself properly. We shouldn't raise a
+                # further exception.
+                return ' '.join([smart_str(arg, encoding, strings_only,
+                        errors) for arg in s])
+            return unicode(s).encode(encoding, errors)
+    elif isinstance(s, unicode):
+        return s.encode(encoding, errors)
+    elif s and encoding != 'utf-8':
+        return s.decode('utf-8', errors).encode(encoding, errors)
     else:
-        return unicode_string
+        return s
 
 
 try:
