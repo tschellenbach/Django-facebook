@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import models, backends
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.query_utils import Q
+from django.db.utils import DatabaseError
 import operator
 from django_facebook.utils import get_profile_class
 #from user import models as models_user
@@ -27,8 +28,13 @@ class FacebookBackend(backends.ModelBackend):
                 profiles = profile_query.filter(facebook_id=facebook_id)[:1]
                 profile = profiles[0] if profiles else None
             if profile is None and facebook_email:
-                profiles = profile_query.filter(user__email__iexact=facebook_email)[:1]
-                profile = profiles[0] if profiles else None
+                try:
+                    profiles = profile_query.filter(user__email__iexact=facebook_email)[:1]
+                    profile = profiles[0] if profiles else None
+                except DatabaseError:
+                    try: user = models.User.objects.get(email=facebook_email)
+                    except models.User.DoesNotExist: user = None
+                    profile = user.get_profile() if user else None
 
             if profile:
                 # populate the profile cache while we're getting it anyway
