@@ -34,7 +34,7 @@ Currently that would be a bad idea though because of maintenance
 from django.http import QueryDict
 from django_facebook import settings as facebook_settings
 from open_facebook import exceptions as facebook_exceptions
-from open_facebook.utils import json
+from open_facebook.utils import json, encode_params
 import logging
 import urllib
 import urllib2
@@ -79,7 +79,8 @@ class FacebookConnection(object):
         #give it a few shots, connection is buggy at times
         while attempts:
             response_file = None
-            post_string = urllib.urlencode(post_data) if post_data else None
+            encoded_params = encode_params(post_data) if post_data else None
+            post_string = urllib.urlencode(encoded_params) if post_data else None
             try:
                 try:
                     #For older python versions you could leave out the timeout

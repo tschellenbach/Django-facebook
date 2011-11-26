@@ -12,11 +12,9 @@
 		    font-family: "lucida grande",tahoma,verdana,arial,sans-serif;
 		    font-size: 11px;
 		}
-		
 		#footer {
 			height: 80px;	
 		}
-		
 		.content {
 			width:600px;
 			margin:0px auto; /* Right and left margin widths set to "auto" */
@@ -43,6 +41,11 @@
 		    cursor: pointer;
 		    text-decoration: none;
 		}
+		.messages {
+		    padding: 15px;
+		    background-color: #cdc;
+		    list-style: none;
+		}
 	</style>
 	
 	
@@ -59,7 +62,7 @@
 	</p>
 </div>
 <div class="content" style="margin-top: 10px;">
-	{% if request.GET.fb_error_or_cancel %}
+	{% if request.GET.fb_error_or_cancel or request.GET.error %}
 		<div class="error">
 			Please click allow in the facebook interface, to access Fashiolista
 		</div>
@@ -82,15 +85,21 @@
         	
 			<!--form to call registration via facebook -->
             <form action="{% url facebook_connect %}?facebook_login=1" method="post">
-	            <a href="javascript:void(0);" style="font-size: 20px;" onclick="F.connect(this.parentNode);">Register, login or connect with facebook</a>
+	            <h2>Register, login or connect with facebook</h2>
 				<input type="hidden" value="{{ request.path }}" name="next" />
+				
 				<!--
 				use error next for a seperate error page
 				<input type="hidden" value="/error/" name="error_next" />
 				-->
+				
+				<iframe src="http://www.facebook.com/plugins/facepile.php?app_id={{ FACEBOOK_APP_ID }}&amp;width=500&amp;max_rows=1" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:500px; height:80px;" allowTransparency="true"></iframe>
+				<input type="image" src="http://e.fashiocdn.com/images/b_signin_facebook_small.png" />
+				<br /><br />
+				<a href="javascript:void(0);" onclick="F.connect(this.parentNode); return false;"type="image">Popup version</a>
 	        </form>
 			
-			<iframe src="http://www.facebook.com/plugins/facepile.php?app_id={{ FACEBOOK_APP_ID }}&amp;width=500&amp;max_rows=1" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:500px;" allowTransparency="true"></iframe>
+			
         </div>
 	</div>
 	
@@ -99,7 +108,7 @@
 		{% if request.user.is_authenticated %}
 			Hello {{ request.user }}, <a href="{% url django.contrib.auth.views.logout %}?next={{ request.path|urlencode }}">logout</a>
 		{% else %}
-			You are not logged in, Please login by clicking the link above
+			You are not logged in, Please login by clicking the button above
 		{% endif %}
 		</div>
         <div style="float: right;">

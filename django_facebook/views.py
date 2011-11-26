@@ -16,8 +16,9 @@ from django_facebook.api import get_facebook_graph, get_persistent_graph,\
     FacebookUserConverter
 from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
-from django_facebook.utils import next_redirect
+from django_facebook.utils import next_redirect, get_oauth_url
 from django_facebook.decorators import facebook_required
+
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +49,7 @@ def image_upload(request):
 
     return next_redirect(request)
 
+
 @csrf_exempt
 def connect(request):
     '''
@@ -63,7 +65,16 @@ def connect(request):
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
 
     if facebook_login:
-        graph = get_facebook_graph(request)
+        #code to redirect if we don't have adequate permissions
+        from django_facebook.utils import test_permissions
+        scope_list = ['email','user_about_me','user_birthday','user_website']
+        #standardizing the url to prevent things like attempt from being included
+        redirect_uri = request.build_absolute_uri(request.path) + '?facebook_login=1'
+        oauth_url, redirect_uri = get_oauth_url(request, scope_list, redirect_uri=redirect_uri)
+        if not test_permissions(request, scope_list, redirect_uri):
+            return HttpResponseRedirect(oauth_url)
+        
+        graph = get_persistent_graph(request)
         if graph:
             facebook = FacebookUserConverter(graph)
             if facebook.is_authenticated():

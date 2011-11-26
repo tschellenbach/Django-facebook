@@ -5,9 +5,39 @@ from django.db import models
 import logging
 import re
 
+
 logger = logging.getLogger(__name__)
 
+def test_permissions(request, scope_list, redirect_uri=None):
+    '''
+    Call Facebook me/permissions to see if we are allowed to do this
+    '''
+    from django_facebook.api import get_persistent_graph
+    from open_facebook import exceptions as facebook_exceptions
+    fb = get_persistent_graph(request, redirect_uri=redirect_uri)
+    permissions_dict = {}
+    
+    if fb:
+        try:
+            permissions_response = fb.get('me/permissions')
+            permissions = permissions_response['data'][0]
+        except facebook_exceptions.OAuthException, e:
+            #this happens when someone revokes their permissions while the session
+            #is still stored
+            permissions = {}
+        permissions_dict = dict([(k,bool(int(v))) for k,v in permissions.items() if v == '1' or v == 1])
+        
+    #see if we have all permissions
+    scope_allowed = True
+    for permission in scope_list:
+        if permission not in permissions_dict:
+            scope_allowed = False
+            
+    #raise if this happens after a redirect though
+    if not scope_allowed and request.GET.get('attempt'):
+        raise ValueError, 'Somehow facebook is not giving us the permissions needed, lets break instead of endless redirects. Fb was %s and permissions %s' % (fb, permissions_dict)
 
+    return scope_allowed
 
 
 def get_oauth_url(request, scope, redirect_uri=None):
@@ -22,7 +52,7 @@ def get_oauth_url(request, scope, redirect_uri=None):
     query_dict['scope'] = ','.join(scope)
     query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
     redirect_uri = redirect_uri or request.build_absolute_uri()
-    
+
     #set attempt=1 to prevent endless redirect loops
     if 'attempt=1' not in redirect_uri:
         if '?' not in redirect_uri:
@@ -188,13 +218,13 @@ def cleanup_oauth_url(redirect_uri):
     TODO: Very hacky will subclass QueryDict to SortedQueryDict at some point
     And use a decent sort function
     '''
-    if redirect_uri:
-        if '?' in redirect_uri:
-            redirect_base, redirect_query = redirect_uri.split('?', 1)
-            query_dict_items = QueryDict(redirect_query).items()
-        else:
-            redirect_base = redirect_uri
-            query_dict_items = QueryDict('', True)
+    
+    if '?' in redirect_uri:
+        redirect_base, redirect_query = redirect_uri.split('?', 1)
+        query_dict_items = QueryDict(redirect_query).items()
+    else:
+        redirect_base = redirect_uri
+        query_dict_items = QueryDict('', True)
 
     filtered_query_items = [(k, v) for k, v in query_dict_items if k.lower() not in DROP_QUERY_PARAMS]
     #new_query_dict = QueryDict('', True)
