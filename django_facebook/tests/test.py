@@ -1,11 +1,15 @@
 from __future__ import with_statement
 from django.contrib.auth.models import AnonymousUser
+from django_facebook import settings as facebook_settings
 from django_facebook import exceptions as facebook_exceptions
 from django_facebook.auth_backends import FacebookBackend
-from django_facebook.connect import connect_user, CONNECT_ACTIONS
+from django_facebook.connect import _register_user, connect_user, CONNECT_ACTIONS
 from django_facebook.tests.base import FacebookTest
+from django_facebook.utils import get_profile_class
 from open_facebook.exceptions import *
 from django_facebook.api import get_facebook_graph, FacebookUserConverter, get_persistent_graph
+from django_facebook.tests.forms import SignupForm
+from django_facebook import signals
 import logging
 import unittest
 from open_facebook.api import FacebookConnection
@@ -96,7 +100,17 @@ class UserConnectTest(FacebookTest):
         facebook = get_facebook_graph(access_token='same_username')
         action, new_user = connect_user(self.request, facebook_graph=facebook)
         assert user.username != new_user.username and user.id != new_user.id
-    
+
+    def test_registration_form(self):
+        '''
+        Django_facebook should use user supplied registration form if given
+        '''        
+        facebook_settings.FACEBOOK_REGISTRATION_FORM = SignupForm
+        facebook = get_facebook_graph(access_token='short_username')
+        action, user = connect_user(self.request, facebook_graph=facebook)
+        # The test form always sets username to test form
+        self.assertEqual(user.username, 'Test form')
+
     
 class AuthBackend(FacebookTest):
     def test_auth_backend(self):
@@ -143,6 +157,35 @@ class OAuthUrlTest(FacebookTest):
         output = 'http://www.google.com/?b=c&d=c'
         self._test_equal(url, output)
 
+
+class SignalTest(FacebookTest):
+    '''
+    Tests that signals fire properly
+    '''
+
+    def test_user_registered_signal(self):
+        # Ensure user registered, pre update and post update signals fire
+        
+        def user_registered(sender, user, facebook_data, **kwargs):
+            user.registered_signal = True
+        
+        def pre_update(sender, profile, facebook_data, **kwargs):
+            profile.pre_update_signal = True
+
+        def post_update(sender, profile, facebook_data, **kwargs):
+            profile.post_update_signal = True
+        
+        Profile = get_profile_class()
+        signals.facebook_user_registered.connect(user_registered, sender=Profile)
+        signals.facebook_pre_update.connect(pre_update, sender=Profile)
+        signals.facebook_post_update.connect(post_update, sender=Profile)
+
+        graph = get_facebook_graph(access_token='short_username')
+        facebook = FacebookUserConverter(graph)
+        user = _register_user(self.request, facebook)
+        self.assertEqual(hasattr(user, 'registered_signal'), True)
+        self.assertEqual(hasattr(user.get_profile(), 'pre_update_signal'), True)
+        self.assertEqual(hasattr(user.get_profile(), 'post_update_signal'), True)
 
 
 
