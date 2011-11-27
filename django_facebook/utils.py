@@ -136,7 +136,13 @@ def get_form_class(backend, request):
     3. RegistrationFormUniqueEmail from django-registration < 0.8
     '''
     from django_facebook import settings as facebook_settings
-    form_class = facebook_settings.FACEBOOK_REGISTRATION_FORM
+    form_class = None
+    
+    #try the setting
+    form_class_string = facebook_settings.FACEBOOK_REGISTRATION_FORM
+    if form_class_string:
+        form_class = get_class_from_string(form_class_string, None)
+        
     if not form_class:
         from registration.forms import RegistrationFormUniqueEmail
         form_class = RegistrationFormUniqueEmail
@@ -256,3 +262,32 @@ def cleanup_oauth_url(redirect_uri):
     
     return redirect_uri
     
+def get_class_from_string(path, default='raise'):
+    """
+    Return the class specified by the string.
+    
+    IE: django.contrib.auth.models.User
+    Will return the user class
+
+    If no default is provided and the class cannot be located (e.g., because no such module
+    exists, or because the module does not contain a class of the
+    appropriate name), ``django.core.exceptions.ImproperlyConfigured``
+    is raised.
+    """
+    from django.core.exceptions import ImproperlyConfigured
+    try:
+        from importlib import import_module
+    except ImportError:
+        from django.utils.importlib import import_module
+    i = path.rfind('.')
+    module, attr = path[:i], path[i + 1:]
+    try:
+        mod = import_module(module)
+    except ImportError, e:
+        raise ImproperlyConfigured('Error loading registration backend %s: "%s"' % (module, e))
+    try:
+        backend_class = getattr(mod, attr)
+    except AttributeError:
+        if default == 'raise':
+            raise ImproperlyConfigured('Module "%s" does not define a registration backend named "%s"' % (module, attr))
+    return backend_class

@@ -105,7 +105,7 @@ class UserConnectTest(FacebookTest):
         '''
         Django_facebook should use user supplied registration form if given
         '''        
-        facebook_settings.FACEBOOK_REGISTRATION_FORM = SignupForm
+        facebook_settings.FACEBOOK_REGISTRATION_FORM = 'django_facebook.tests.forms.SignupForm'
         facebook = get_facebook_graph(access_token='short_username')
         action, user = connect_user(self.request, facebook_graph=facebook)
         # The test form always sets username to test form
