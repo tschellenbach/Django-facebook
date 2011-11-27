@@ -128,6 +128,23 @@ def mass_get_or_create(model_class, base_queryset, id_field, default_dict, globa
     return current_instances, inserted_model_instances
 
 
+def get_form_class(backend, request):
+    '''
+    Will use registration form in the following order:
+    1. User configured RegistrationForm
+    2. backend.get_form_class(request) from django-registration 0.8
+    3. RegistrationFormUniqueEmail from django-registration < 0.8
+    '''
+    from django_facebook import settings as facebook_settings
+    form_class = facebook_settings.FACEBOOK_REGISTRATION_FORM
+    if not form_class:
+        from registration.forms import RegistrationFormUniqueEmail
+        form_class = RegistrationFormUniqueEmail
+        if backend:
+            form_class = backend.get_form_class(request)
+    return form_class
+
+
 def get_registration_backend():
     '''
     Ensures compatability with the new and old version of django registration
