@@ -148,7 +148,6 @@ def _register_user(request, facebook, profile_callback=None):
     #gets the form class specified in FACEBOOK_REGISTRATION_FORM
     form_class = get_form_class(backend, request)
 
-        
     facebook_data = facebook.facebook_registration_data()
 
     data = request.POST.copy()
