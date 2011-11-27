@@ -129,7 +129,6 @@
         <h2>Album upload flow</h2>
         <div>
             <form action="{% url facebook_image_upload %}" method="get">
-                {% csrf_token %}
                 <input type="hidden" value="{{ request.path }}" name="next" />
                 
                 <img src="http://e.fashiocdn.com/images/entities/0/7/z/0/D/0.126x126.jpg" alt="image"/>
@@ -148,7 +147,6 @@
         <h2>Post to My Wall</h2>
         <div>
             <form action="{% url facebook_wall_post %}" method="get">
-                {% csrf_token %}
                 <input type="hidden" value="{{ request.path }}" name="next" />
 
                 <textarea name="message" rows="3" cols="35">Check out fashiolista.com, loving it :)</textarea>
@@ -162,7 +160,6 @@
         <h2>Post to My Wall - Javascript Popup version</h2>
         <div>
             <form action="{% url facebook_wall_post %}" method="post">
-                {% csrf_token %}
                 <input type="hidden" value="{{ request.path }}" name="next" />
 
                 <textarea name="message" rows="3" cols="35">Check out fashiolista.com, loving it :)</textarea>

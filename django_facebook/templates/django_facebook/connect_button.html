@@ -1,0 +1,5 @@
+<form action="{% url facebook_connect %}?facebook_login=1" method="post" class="connect-button">
+    <a href="javascript:void(0);" class="fb_button fb_button_medium" onclick="F.connect(this.parentNode);"><span 
+    class="fb_button_text">Sign in with Facebook</span></a>
+    <input type="hidden" value="{{ next|default:"/" }}" name="next" />
+</form>

@@ -2,12 +2,12 @@ import logging
 import sys
 
 from django.conf import settings
-from django.contrib import messages
+#from django.contrib import messages
 from django.http import Http404, HttpResponseRedirect, QueryDict
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib.csrf.middleware import csrf_exempt
 
 # NOTE: from inside the application, you can directly import the file
 from django_facebook import exceptions as facebook_exceptions, \
@@ -103,8 +103,9 @@ def connect(request):
                     )
 
                 if action is CONNECT_ACTIONS.CONNECT:
-                    messages.info(request, _("You have connected your account "
-                        "to %s's facebook profile") % facebook_data['name'])
+                    pass
+#                    messages.info(request, _("You have connected your account "
+#                        "to %s's facebook profile") % facebook_data['name'])
                 elif action is CONNECT_ACTIONS.REGISTER:
                     return user.get_profile().post_facebook_registration(request)
         else:
@@ -117,12 +118,6 @@ def connect(request):
         raise Http404
 
     return render_to_response('django_facebook/connect.html', context)
-
-
-
-
-
-
 
 
 @csrf_exempt
