@@ -98,7 +98,7 @@ def connect(request):
                     context['facebook_mode'] = True
                     context['form'] = e.form
                     return render_to_response(
-                        'registration/registration_form.html',
+                        facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE,
                         context_instance=context,
                     )
 

@@ -147,6 +147,15 @@ Note that you can control which page to go to after connect using the next input
 
 On a final note the Facebook javascript SDK requires you to place a ``'fb-root'`` div somewhere on your page. (See the example).
 
+
+Optional Settings
+-----------------
+
+If you want to use a different registration form template for Facebook connect:
+
+    FACEBOOK_REGISTRATION_TEMPLATE = 'django_facebook/facebook_registration_form.html'
+
+
 Django Jobs
 -----------
 Do you also see the beauty in clean code? Are you experienced with high scalability web apps?
