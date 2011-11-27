@@ -27,3 +27,11 @@ required_settings = ['FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET']
 locals_dict = locals()
 for setting_name in required_settings:
     assert locals_dict.get(setting_name) is not None, 'Please provide setting %s' % setting_name
+
+# Allow custom registration template
+FACEBOOK_REGISTRATION_TEMPLATE = getattr(settings,
+    'FACEBOOK_REGISTRATION_TEMPLATE', 'registration/registration_form.html')
+
+# Allow custom signup form
+FACEBOOK_REGISTRATION_FORM = getattr(settings,
+    'FACEBOOK_REGISTRATION_FORM', None)

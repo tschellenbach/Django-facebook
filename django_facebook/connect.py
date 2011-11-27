@@ -13,6 +13,7 @@ from utils import get_profile_class
 
 from django_facebook import settings as facebook_settings
 from django_facebook import exceptions as facebook_exceptions
+from django_facebook import signals
 from django_facebook.api import get_facebook_graph, FacebookUserConverter
 from django_facebook.utils import get_registration_backend
 
@@ -144,10 +145,15 @@ def _register_user(request, facebook, profile_callback=None):
     #get the backend on new registration systems, or none if we are on an older version
     backend = get_registration_backend()
 
-    #get the form used for registration and fall back to uniqueemail version
-    form_class = RegistrationFormUniqueEmail
-    if backend:
-        form_class = backend.get_form_class(request)
+    # Will use registration form in the following order:
+    # 1. User configured RegistrationForm
+    # 2. backend.get_form_class(request) from django-registration 0.8
+    # 3. RegistrationFormUniqueEmail from django-registration < 0.8
+    form_class = facebook_settings.FACEBOOK_REGISTRATION_FORM
+    if not form_class:
+        form_class = RegistrationFormUniqueEmail
+        if backend:
+            form_class = backend.get_form_class(request)
         
     facebook_data = facebook.facebook_registration_data()
 
@@ -172,8 +178,15 @@ def _register_user(request, facebook, profile_callback=None):
     if backend:
         new_user = backend.register(request, **form.cleaned_data)
     else:
-        new_user = form.save(profile_callback=profile_callback)
-
+        # For backward compatibility, if django-registration form is used
+        try:
+            new_user = form.save(profile_callback=profile_callback)
+        except TypeError:
+            new_user = form.save()
+    
+    signals.facebook_user_registered.send(sender=get_profile_class(),
+        user=new_user, facebook_data=facebook_data)
+    
     #update some extra data not yet done by the form
     new_user = _update_user(new_user, facebook)
 
@@ -196,6 +209,10 @@ def _update_user(user, facebook):
         'date_of_birth', 'about_me', 'website_url', 'first_name', 'last_name']
     user_dirty = profile_dirty = False
     profile = user.get_profile()
+    
+    signals.facebook_pre_update.send(sender=get_profile_class(),
+        profile=profile, facebook_data=facebook_data)
+    
     profile_field_names = [f.name for f in profile._meta.fields]
     user_field_names = [f.name for f in user._meta.fields]
 
@@ -231,5 +248,8 @@ def _update_user(user, facebook):
         user.save()
     if profile_dirty:
         profile.save()
+
+    signals.facebook_post_update.send(sender=get_profile_class(),
+        profile=profile, facebook_data=facebook_data)
 
     return user
