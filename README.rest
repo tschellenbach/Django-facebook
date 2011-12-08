@@ -78,10 +78,6 @@ add django facebook to your installed apps::
 
     'django_facebook',
 
-add this line to your url config::
-
-    (r'^facebook/', include('django_facebook.urls')),
-
 add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS``
 setting)::
 
@@ -90,6 +86,10 @@ setting)::
 add this to your ``AUTHENTICATION_BACKENDS`` setting::
 
     'django_facebook.auth_backends.FacebookBackend',
+    
+add this line to your url config::
+
+    (r'^facebook/', include('django_facebook.urls')),
 
 **Update your models**
 
@@ -124,7 +124,7 @@ I recommend that you insert this code at the bottom of your page.
 
 ::
 
-    <script src="{{ MEDIA_URL }}js/facebook.js" type="text/javascript"></script>
+    <script src="{{ STATIC_URL }}js/facebook.js" type="text/javascript"></script>
     <script>
     facebookAppId = '{{ FACEBOOK_APP_ID }}';
     function facebookJSLoaded(){
