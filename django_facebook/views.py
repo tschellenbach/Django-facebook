@@ -82,6 +82,7 @@ def connect(request):
                 #either, login register or connect the user
                 try:
                     action, user = connect_user(request)
+                    logger.info('Django facebook, action was %s', action)
                 except facebook_exceptions.IncompleteProfileError, e:
                     warn_message = u'Incomplete profile data encountered '\
                         'with error %s' % e
