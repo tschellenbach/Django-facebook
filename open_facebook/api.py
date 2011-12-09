@@ -34,7 +34,7 @@ Currently that would be a bad idea though because of maintenance
 from django.http import QueryDict
 from django_facebook import settings as facebook_settings
 from open_facebook import exceptions as facebook_exceptions
-from open_facebook.utils import json, encode_params
+from open_facebook.utils import json, encode_params, send_warning
 import logging
 import urllib
 import urllib2
@@ -242,13 +242,16 @@ class FacebookAuthorization(FacebookConnection):
         import hashlib
         data = json.loads(base64_url_decode_php_style(payload))
     
-        if data.get('algorithm').upper() != 'HMAC-SHA256':
+        algo = data.get('algorithm').upper()
+        if  algo != 'HMAC-SHA256':
+            send_warning('Unknown algorithm we only support HMAC-SHA256 user asked for %s', algo)
             logger.error('Unknown algorithm')
             return None
         else:
             expected_sig = hmac.new(secret, msg=payload, digestmod=hashlib.sha256).digest()
     
         if sig != expected_sig:
+            send_warning('Signature %s didnt match the expected signature %s', sig, expected_sig)
             return None
         else:
             logger.debug('valid signed request received..')
