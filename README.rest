@@ -105,7 +105,7 @@ FACEBOOK_REGISTRATION_TEMPLATE = 'userena/signup_form.html'
 
 Supporting any other registration system is quite easy.
 Adjust the above settings to point to your own code.
-Note that the form needs to handle the creation of the user.
+Note that the form's save method needs to return the new user object.
 
 
 **Common bugs**
