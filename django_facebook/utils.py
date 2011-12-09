@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 import logging
 import re
+import sys
 
 
 logger = logging.getLogger(__name__)
@@ -294,3 +295,27 @@ def get_class_from_string(path, default='raise'):
         if default == 'raise':
             raise ImproperlyConfigured('Module "%s" does not define a registration backend named "%s"' % (module, attr))
     return backend_class
+
+
+def send_warning(message, request=None, e=None, **extra_data):
+    '''
+    Uses the logging system to send a message to logging and sentry
+    '''
+    username = None
+    if request and request.user.is_authenticated():
+        username = request.user.username
+        
+    error_message = None
+    if e:
+        error_message = unicode(e)
+    
+    data = {
+         'username': username,
+         'body': error_message,
+    }
+    data.update(extra_data)
+    logger.warn(message,
+        exc_info=sys.exc_info(), extra={
+        'request': request,
+        'data': data
+    })
