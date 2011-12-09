@@ -297,25 +297,4 @@ def get_class_from_string(path, default='raise'):
     return backend_class
 
 
-def send_warning(message, request=None, e=None, **extra_data):
-    '''
-    Uses the logging system to send a message to logging and sentry
-    '''
-    username = None
-    if request and request.user.is_authenticated():
-        username = request.user.username
-        
-    error_message = None
-    if e:
-        error_message = unicode(e)
-    
-    data = {
-         'username': username,
-         'body': error_message,
-    }
-    data.update(extra_data)
-    logger.warn(message,
-        exc_info=sys.exc_info(), extra={
-        'request': request,
-        'data': data
-    })
+
