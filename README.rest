@@ -6,13 +6,9 @@ First
 -----
 Please contribute code :)
 
-This project is actively maintained and I appreciate improvements to the code.
-
 Contact me here or `@tschellenbach <http://www.twitter.com/tschellenbach>`_
+Check my blog for updates `mellowmorning <http://www.mellowmorning.com/>`_
 
-New in Version 3.2
-------------------------
-* Facebook_required Decorator (see http://www.mellowmorning.com/)
 
 About Django Facebook
 ---------------------
@@ -29,17 +25,13 @@ Integrated with Django it becomes easy to setup a login/register via Facebook fl
 * Use Facebook data to register a user with your Django app. Facebook connect using the open graph API.
 * Facebook FQL access
 * OAuth 2.0 compliant
+* Includes Open Facebook (stable and tested python client to the graph API)
+
 
 Requirements
 ------------------------------
-* Django registration (required for the connect flow)
+* Django registration or Django Userena (contact me if you use something else for registration.) 
 * Django 1.3
-* Django static files (alternatively copy and paste the javascript if you need it)
-
-TODO (again help is appreciated!)
----------------------------------
-* Implement the connect flow as a more extensible object
-* Write a facebook_connect_required decorator
 
 
 Running tests
@@ -93,15 +85,28 @@ add this line to your url config::
 
 **Update your models**
 
-An abstract model is specified for convenience django_facebook/models.py
-FacebookProfileModel. You'll need to copy these fields into your UserProfile
-model, together with the post_facebook_registration function included in the
-model
+An abstract model is specified here django_facebook/models.py
+Add these fields to your profile model or subclass the abstract class.
+See the django docs for settings up a Profile model or understanding abstract classes.
 
 **Check the example**
 
 Right now you should have a working registration/connect/login in flow available at /facebook/connect/
 Test if everything is working and ensure you didn't miss a step somewhere.
+If you encounter any difficulties please open an issue.
+
+** Django Userena **
+
+A few settings changes are needed to play nicely with Django Userena.
+In your settings point Django Facebook to the right registration form and template:
+
+FACEBOOK_REGISTRATION_FORM = 'userena.forms.SignupForm'
+FACEBOOK_REGISTRATION_TEMPLATE = 'userena/signup_form.html'
+
+Supporting any other registration system is quite easy.
+Adjust the above settings to point to your own code.
+Note that the form needs to handle the creation of the user.
+
 
 **Common bugs**
 
