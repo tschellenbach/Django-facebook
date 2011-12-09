@@ -44,6 +44,11 @@ logger = logging.getLogger(__name__)
 REQUEST_TIMEOUT = 8
 REQUEST_ATTEMPTS = 2
 
+
+try:
+    import django_statsd
+except ImportError:
+    django_statsd = None
     
 class FacebookConnection(object):
     '''
@@ -77,11 +82,16 @@ class FacebookConnection(object):
         opener = urllib2.build_opener()
         opener.addheaders = [('User-agent', 'Open Facebook Python')]
         #give it a few shots, connection is buggy at times
+
+        path = url.split('?', 1)[0].rsplit('/', 1)[-1]
         while attempts:
             response_file = None
             encoded_params = encode_params(post_data) if post_data else None
             post_string = urllib.urlencode(encoded_params) if post_data else None
             try:
+                if django_statsd:
+                    django_statsd.start('facebook.%s' % path)
+
                 try:
                     #For older python versions you could leave out the timeout
                     #response_file = opener.open(url, post_string)
@@ -102,6 +112,8 @@ class FacebookConnection(object):
             finally:
                 if response_file:
                     response_file.close()        
+                if django_statsd:
+                    django_statsd.stop('facebook.%s' % path)
         
         try:
             parsed_response = json.loads(response)
