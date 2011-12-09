@@ -18,6 +18,7 @@ from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
 from django_facebook.utils import next_redirect, get_oauth_url
 from django_facebook.decorators import facebook_required
+from open_facebook.utils import send_warning
 
 
 logger = logging.getLogger(__name__)
@@ -86,15 +87,7 @@ def connect(request):
                 except facebook_exceptions.IncompleteProfileError, e:
                     warn_message = u'Incomplete profile data encountered '\
                         'with error %s' % e
-                    logger.warn(warn_message,
-                        exc_info=sys.exc_info(), extra={
-                        'request': request,
-                        'data': {
-                             'username': request.user.username,
-                             'facebook_data': facebook.facebook_profile_data(),
-                             'body': unicode(e),
-                         }
-                    })
+                    send_warning(warn_message, e=e, facebook_data=facebook.facebook_profile_data())
 
                     context['facebook_mode'] = True
                     context['form'] = e.form

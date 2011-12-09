@@ -7,6 +7,7 @@ import datetime
 import logging
 import sys
 from open_facebook import exceptions as open_facebook_exceptions
+from open_facebook.utils import send_warning
 
 logger = logging.getLogger(__name__)
 
@@ -87,12 +88,14 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 redirect_uri = ''
             if signed_data:
                 parsed_data = FacebookAuthorization.parse_signed_data(signed_data)
-                if 'oauth_token' in parsed_data:
-                    # we already have an active access token in the data
-                    access_token = parsed_data['oauth_token']
-                else:
-                    # no access token, need to use this code to get one
-                    code = parsed_data.get('code', None)
+                if parsed_data:
+                    #parsed data can fail because of signing issues
+                    if 'oauth_token' in parsed_data:
+                        # we already have an active access token in the data
+                        access_token = parsed_data['oauth_token']
+                    else:
+                        # no access token, need to use this code to get one
+                        code = parsed_data.get('code', None)
 
         if not access_token:
             if code:
@@ -305,16 +308,13 @@ class FacebookUserConverter(object):
         data_dump_python = pformat(original_facebook_data)
         message_format = 'The following facebook data failed with error %s\n\n json %s \n\n python %s \n'
         data_tuple = (unicode(e), data_dump, data_dump_python)
-        
-        logger.error(message_format % data_tuple,
-            exc_info=sys.exc_info(), extra={
-            'data': {
-                 'data_dump': data_dump,
-                 'data_dump_python': data_dump_python,
-                 'facebook_data': facebook_data,
-                 'body': message_format % data_tuple,
-             }
-        })
+        message = message_format % data_tuple
+        extra_data = {
+             'data_dump': data_dump,
+             'data_dump_python': data_dump_python,
+             'facebook_data': facebook_data,            
+        }
+        send_warning(message, **extra_data)
 
     @classmethod
     def _create_unique_username(cls, base_username):
