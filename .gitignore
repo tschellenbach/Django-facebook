@@ -18,6 +18,7 @@ bulkloader-*
 # Ignore all hidden files
 .*
 .settings/
+.settings
 
 #app specific
 facebook_example/django_fb_test
