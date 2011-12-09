@@ -180,6 +180,7 @@
 
 <script>
 	facebookAppId = '{{ FACEBOOK_APP_ID }}';
+	facebookDefaultScope = {{ FACEBOOK_DEFAULT_SCOPE_JS }};
 	function facebookJSLoaded(){
 		FB.init({appId: facebookAppId, status: false, cookie: true, xfbml: true, oauth: true});
 	}

@@ -16,6 +16,16 @@ facebookClass.prototype = {
         var ithing = iphone || ipod || ipad;
         this.ithing = ithing;
     },
+    
+    getDefaultScope : function() {
+        var defaultScope;
+       if (typeof(facebookDefaultScope) != 'undefined') {
+            defaultScope = facebookDefaultScope;  
+       } else {
+           defaultScope = ['email', 'user_about_me', 'user_birthday', 'user_website'];
+       }
+       return defaultScope;
+    },
 
     requirePermissions : function(requiredPerms, callback) {
         /*
@@ -58,8 +68,7 @@ facebookClass.prototype = {
             formElement.submit();
             return false;
         }
-        requiredPerms = requiredPerms
-                || [ 'email', 'user_about_me', 'user_birthday', 'user_website' ];
+        requiredPerms = requiredPerms || this.getDefaultScope();
         FB.login(function(response) {
             var accessToken = response.authResponse.accessToken;
             formElement.submit();
