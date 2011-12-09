@@ -3,7 +3,7 @@ import sys
 
 from django.conf import settings
 from django.contrib import messages
-from django.http import Http404, HttpResponseRedirect, QueryDict
+from django.http import Http404, HttpResponseRedirect, QueryDict, HttpResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _

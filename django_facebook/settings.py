@@ -22,6 +22,8 @@ FACEBOOK_STORE_FRIENDS = getattr(settings, 'FACEBOOK_STORE_FRIENDS', False)
 #if we should be using celery to do the above two, recommended if you want to store friends or likes
 FACEBOOK_CELERY_STORE = getattr(settings, 'FACEBOOK_CELERY_STORE', False)
 
+FACEBOOK_DEBUG_REDIRECTS = getattr(settings, 'FACEBOOK_DEBUG_REDIRECTS', False)
+
 #check for required settings
 required_settings = ['FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET']
 locals_dict = locals()

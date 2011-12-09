@@ -83,7 +83,7 @@ class FacebookConnection(object):
         opener.addheaders = [('User-agent', 'Open Facebook Python')]
         #give it a few shots, connection is buggy at times
 
-        path = url.split('?', 1)[0].rsplit('/', 1)[-1]
+        path = url.split('?', 1)[0].rsplit('/', 1)[-1].replace('.', '_')
         while attempts:
             response_file = None
             encoded_params = encode_params(post_data) if post_data else None
@@ -297,7 +297,7 @@ class FacebookAuthorization(FacebookConnection):
     @classmethod
     def get_or_create_test_user(cls, app_access_token, permissions=None):
         if not permissions:
-            permissions = ['read_stream','publish_stream', 'user_photos', 'offline_access']
+            permissions = ['read_stream', 'publish_stream', 'user_photos', 'offline_access']
         
         kwargs = {
             'access_token': app_access_token,

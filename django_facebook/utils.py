@@ -1,5 +1,5 @@
 
-from django.http import QueryDict
+from django.http import QueryDict, HttpResponse
 from django.conf import settings
 from django.db import models
 import logging
@@ -68,6 +68,9 @@ def get_oauth_url(request, scope, redirect_uri=None):
     return url, redirect_uri
 
 def next_redirect(request, default='/', additional_params=None, next_key='next'):
+    from django_facebook import settings as facebook_settings
+    if facebook_settings.FACEBOOK_DEBUG_REDIRECTS:
+        return HttpResponse('<html><head></head><body><div>Debugging</div></body></html>')
     from django.http import HttpResponseRedirect
     if not isinstance(next_key, (list, tuple)):
         next_key = [next_key]
