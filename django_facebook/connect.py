@@ -78,11 +78,9 @@ def connect_user(request, access_token=None, facebook_graph=None):
     sid = transaction.savepoint()
     try:
         if facebook_settings.FACEBOOK_STORE_LIKES:
-            likes = facebook.get_likes()
-            facebook.store_likes(user, likes)
+            facebook.get_and_store_likes(user)
         if facebook_settings.FACEBOOK_STORE_FRIENDS:
-            friends = facebook.get_friends()
-            facebook.store_friends(user, friends)
+            facebook.get_and_store_friends(user)
         transaction.savepoint_commit(sid)
     except IntegrityError, e:
         logger.warn(u'Integrity error encountered during registration, '

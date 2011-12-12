@@ -362,6 +362,23 @@ class FacebookUserConverter(object):
         from django.template.defaultfilters import slugify
         return slugify(username).replace('-', '_')
     
+    def get_and_store_likes(self, user):
+        '''
+        Gets and stores your facebook likes to DB
+        Both the get and the store run in a async task when
+        FACEBOOK_CELERY_STORE = True
+        '''
+        if facebook_settings.FACEBOOK_CELERY_STORE:
+            from django_facebook.tasks import get_and_store_likes
+            get_and_store_likes.delay(user)
+        else:
+            self._get_and_store_likes(user)
+    
+    def _get_and_store_likes(self, user):
+        likes = self.get_likes()
+        stored_likes = self.store_likes(user, likes)
+        return stored_likes
+    
     def get_likes(self, limit=1000):
         '''
         Parses the facebook response and returns the likes
@@ -408,6 +425,26 @@ class FacebookUserConverter(object):
                
         return likes
     
+    def get_and_store_friends(self, user):
+        '''
+        Gets and stores your facebook friends to DB
+        Both the get and the store run in a async task when
+        FACEBOOK_CELERY_STORE = True
+        '''
+        if facebook_settings.FACEBOOK_CELERY_STORE:
+            from django_facebook.tasks import get_and_store_friends
+            get_and_store_friends.delay(user)
+        else:
+            self._get_and_store_friends(user)
+            
+    def _get_and_store_friends(self, user):
+        '''
+        Getting the friends via fb and storing them
+        '''
+        friends = self.get_friends()
+        stored_friends = self._store_friends(user, friends)
+        return stored_friends
+        
     def get_friends(self, limit=1000):
         '''
         Connects to the facebook api and gets the users friends
