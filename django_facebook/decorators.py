@@ -37,6 +37,37 @@ def facebook_required(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_S
         return actual_decorator(view_func)
     return actual_decorator
 
+def facebook_required_lazy(view_func=None, scope=facebook_settings.FACEBOOK_DEFAULT_SCOPE, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None, extra_params=None):
+    """
+    Decorator which makes the view require the given Facebook perms, redirecting
+    to the log-in page if necessary.
+    
+    Based on exceptions instead of a check up front
+    Faster, but more prone to bugs
+    """
+    from django_facebook.utils import test_permissions
+    from open_facebook import exceptions as open_facebook_exceptions
+    scope_list = parse_scope(scope)
+
+    def actual_decorator(view_func):
+        @wraps(view_func, assigned=available_attrs(view_func))
+        def _wrapped_view(request, *args, **kwargs):
+            oauth_url, redirect_uri = get_oauth_url(request, scope_list, extra_params=extra_params)
+            try:
+                return view_func(request, *args, **kwargs)
+            except open_facebook_exceptions.OpenFacebookException, e:
+                if not test_permissions(request, scope_list, redirect_uri):
+                    raise
+                else:
+                    logger.info('requesting access with redirect uri: %s', redirect_uri)
+                    response = HttpResponseRedirect(oauth_url)
+                    return response
+        return _wrapped_view
+    
+    if view_func:
+        return actual_decorator(view_func)
+    return actual_decorator
+
 
 
 

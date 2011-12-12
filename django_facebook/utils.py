@@ -41,7 +41,7 @@ def test_permissions(request, scope_list, redirect_uri=None):
     return scope_allowed
 
 
-def get_oauth_url(request, scope, redirect_uri=None):
+def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
     '''
     Returns the oauth url for the given request and scope
     Request maybe shouldnt be tied to this function, but for now it seems 
@@ -60,6 +60,17 @@ def get_oauth_url(request, scope, redirect_uri=None):
             redirect_uri += '?attempt=1'
         else:
             redirect_uri += '&attempt=1'
+           
+    #add the extra params if specified 
+    if extra_params:
+        params_query_dict = QueryDict('', True)
+        params_query_dict.update(extra_params)
+        query_string = params_query_dict.urlencode()
+        if '?' not in redirect_uri:
+            redirect_uri += '?'
+        else:
+            redirect_uri += '&'
+        redirect_uri += query_string
         
     if ('//localhost' in redirect_uri or '//127.0.0.1' in redirect_uri) and settings.DEBUG:
         raise ValueError, 'Facebook checks the domain name of your apps. Therefor you cannot run on localhost. Instead you should use something like local.fashiolista.com. Replace Fashiolista with your own domain name.'
