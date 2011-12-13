@@ -167,7 +167,7 @@ Signals
 
 Django-facebook ships with a few signals that you can use to easily accommodate Facebook related activities with your project.
 
-`facebook_user_registered` signal is sent whenever a new user is registered by Django-facebook, for example:
+``facebook_user_registered`` signal is sent whenever a new user is registered by Django-facebook, for example:
 
 ::
 
@@ -180,7 +180,7 @@ Django-facebook ships with a few signals that you can use to easily accommodate 
     signals.facebook_user_registered.connect(user_registered, sender=User)
 
 
-`facebook_pre_update` signal is sent just before Django-facebook updates the profile model with Facebook data. If you want to manipulate Facebook or profile information before it gets saved, this is where you should do it. For example:
+``facebook_pre_update`` signal is sent just before Django-facebook updates the profile model with Facebook data. If you want to manipulate Facebook or profile information before it gets saved, this is where you should do it. For example:
 
 ::
     
@@ -195,7 +195,7 @@ Django-facebook ships with a few signals that you can use to easily accommodate 
     signals.facebook_pre_update.connect(pre_facebook_update, sender=Profile)
 
 
-`facebook_post_update` signal is after Django-facebook finishes updating the profile model with Facebook data. You can perform other Facebook connect or registration related processing here. 
+``facebook_post_update`` signal is after Django-facebook finishes updating the profile model with Facebook data. You can perform other Facebook connect or registration related processing here. 
 
 ::
     
