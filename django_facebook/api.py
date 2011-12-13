@@ -168,7 +168,7 @@ class FacebookUserConverter(object):
     def is_authenticated(self):
         return self.open_facebook.is_authenticated()
 
-    def facebook_registration_data(self):
+    def facebook_registration_data(self, username=True):
         '''
         Gets all registration data
         and ensures its correct input for a django registration
@@ -176,7 +176,7 @@ class FacebookUserConverter(object):
         facebook_profile_data = self.facebook_profile_data()
         user_data = {}
         try:
-            user_data = self._convert_facebook_data(facebook_profile_data)
+            user_data = self._convert_facebook_data(facebook_profile_data, username=username)
         except OpenFacebookException, e:
             self._report_broken_facebook_data(user_data, facebook_profile_data, e)
             raise
@@ -195,7 +195,7 @@ class FacebookUserConverter(object):
         return self._profile
 
     @classmethod
-    def _convert_facebook_data(cls, facebook_profile_data):
+    def _convert_facebook_data(cls, facebook_profile_data, username=True):
         '''
         Takes facebook user data and converts it to a format for usage with Django
         '''
@@ -224,14 +224,15 @@ class FacebookUserConverter(object):
         facebook_map = dict(birthday='date_of_birth', about='about_me', id='facebook_id')
         for k, v in facebook_map.items():
             user_data[v] = user_data.get(k)
+        user_data['facebook_id'] = int(user_data['facebook_id'])
 
         if not user_data['about_me'] and user_data.get('quotes'):
             user_data['about_me'] = user_data.get('quotes')
             
         user_data['date_of_birth'] = cls._parse_data_of_birth(user_data['date_of_birth'])
         
-
-        user_data['username'] = cls._create_unique_username(user_data['username'])
+        if username:
+            user_data['username'] = cls._create_unique_username(user_data['username'])
 
         return user_data
 

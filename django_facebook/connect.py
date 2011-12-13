@@ -195,7 +195,7 @@ def _update_user(user, facebook):
     '''
     #if you want to add fields to ur user model instead of the profile thats fine
     #partial support (everything except raw_data and facebook_id is included)
-    facebook_data = facebook.facebook_registration_data()
+    facebook_data = facebook.facebook_registration_data(username=False)
     facebook_fields = ['facebook_name', 'facebook_profile_url',
         'date_of_birth', 'about_me', 'website_url', 'first_name', 'last_name']
     user_dirty = profile_dirty = False
@@ -209,6 +209,7 @@ def _update_user(user, facebook):
 
     #set the facebook id and make sure we are the only user with this id
     if facebook_data['facebook_id'] != profile.facebook_id:
+        logger.info('profile facebook id changed from %s to %s', repr(facebook_data['facebook_id']), repr(profile.facebook_id))
         profile.facebook_id = facebook_data['facebook_id']
         profile_dirty = True
         #like i said, me and only me
@@ -221,19 +222,24 @@ def _update_user(user, facebook):
     for f in facebook_fields:
         facebook_value = facebook_data.get(f, False)
         if facebook_value:
-            if f in profile_field_names and not getattr(profile, f, False):
+            if f in profile_field_names and hasattr(profile, f) and not getattr(profile, f, False):
+                logger.debug('profile field %s changed from %s to %s', f, getattr(profile, f), facebook_value)
                 setattr(profile, f, facebook_value)
                 profile_dirty = True
-            elif f in user_field_names and not getattr(user, f, False):
+            elif f in user_field_names and hasattr(user, f) and not getattr(user, f, False):
+                logger.debug('user field %s changed from %s to %s', f, getattr(profile, f), facebook_value)
                 setattr(user, f, facebook_value)
                 user_dirty = True
 
     #write the raw data in case we missed something
     if hasattr(profile, 'raw_data'):
         serialized_fb_data = json.dumps(facebook.facebook_profile_data())
-        profile.raw_data = serialized_fb_data
-        profile_dirty = True
+        if profile.raw_data != serialized_fb_data:
+            logger.debug('profile raw data changed from %s to %s', profile.raw_data, serialized_fb_data)
+            profile.raw_data = serialized_fb_data
+            profile_dirty = True
 
+    print user_dirty, profile_dirty
     #save both models if they changed
     if user_dirty:
         user.save()
