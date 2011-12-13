@@ -80,7 +80,7 @@ def connect(request):
                 except facebook_exceptions.IncompleteProfileError, e:
                     warn_message = u'Incomplete profile data encountered '\
                         u'with error %s' % e
-                    send_warning(warn_message, e=e, facebook_data=facebook.facebook_profile_data())
+                    send_warning(warn_message, e=e, facebook_data=facebook_data)
 
                     context['facebook_mode'] = True
                     context['form'] = e.form
@@ -108,6 +108,11 @@ def connect(request):
 
 
 def connect_async_ajax(request):
+    '''
+    Not yet implemented:
+    The idea is to run the entire connect flow on the background using celery
+    Freeing up webserver resources, when facebook has issues
+    '''
     from django_facebook import tasks as facebook_tasks
     graph = get_persistent_graph(request)
     output = {}
@@ -121,6 +126,9 @@ def connect_async_ajax(request):
 
 
 def poll_connect_task(request, task_id):
+    '''
+    Not yet implemented
+    '''
     pass
     
 
