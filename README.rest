@@ -162,6 +162,52 @@ If you want to use a different registration form template for Facebook connect:
     FACEBOOK_REGISTRATION_TEMPLATE = 'django_facebook/facebook_registration_form.html'
 
 
+Signals
+-------
+
+Django-facebook ships with a few signals that you can use to easily accommodate Facebook related activities with your project.
+
+`facebook_user_registered` signal is sent whenever a new user is registered by Django-facebook, for example:
+
+::
+
+    from django.contrib.auth.models import User
+    from django_facebook import signals
+
+    def fb_user_registered_handler(sender, user, facebook_data, \*\*kwargs):
+        # Do something involving user here
+
+    signals.facebook_user_registered.connect(user_registered, sender=User)
+
+
+`facebook_pre_update` signal is sent just before Django-facebook updates the profile model with Facebook data. If you want to manipulate Facebook or profile information before it gets saved, this is where you should do it. For example:
+
+::
+    
+    from django_facebook import signals
+    from django_facebook.utils import get_profile_class
+
+    def pre_facebook_update(sender, profile, facebook_data, \*\*kwargs):
+        profile.facebook_information_updated = datetime.datetime.now()
+        # Manipulate facebook_data here
+    
+    Profile = get_profile_class()
+    signals.facebook_pre_update.connect(pre_facebook_update, sender=Profile)
+
+
+`facebook_post_update` signal is after Django-facebook finishes updating the profile model with Facebook data. You can perform other Facebook connect or registration related processing here. 
+
+::
+    
+    from django_facebook import signals
+    from django_facebook.utils import get_profile_class
+
+    def post_facebook_update(sender, profile, facebook_data, \*\*kwargs):
+        # Do other stuff
+    
+    Profile = get_profile_class()
+    signals.facebook_post_update.connect(post_facebook_update, sender=Profile)
+
 Django Jobs
 -----------
 Do you also see the beauty in clean code? Are you experienced with high scalability web apps?
