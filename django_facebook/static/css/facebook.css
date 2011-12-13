@@ -30,3 +30,7 @@
     width               : 100%; 
     z-index             : 100000;
 }
+
+#facebook_loading {
+    margin-top          : 15px;
+}
