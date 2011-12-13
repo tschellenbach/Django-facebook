@@ -177,7 +177,7 @@ def _register_user(request, facebook, profile_callback=None):
         except TypeError:
             new_user = form.save()
     
-    signals.facebook_user_registered.send(sender=get_profile_class(),
+    signals.facebook_user_registered.send(sender=auth.models.User,
         user=new_user, facebook_data=facebook_data)
     
     #update some extra data not yet done by the form
