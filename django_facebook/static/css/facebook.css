@@ -1,0 +1,32 @@
+#facebook_shade {
+    position            : absolute;
+    height              : 100%;
+    width               : 100%;
+    top                 : 0px;
+    left                : 0px;
+    background-color    : #222;
+    opacity             : 0.8;
+    filter              : alpha(opacity=80);
+    -moz-opacity        : 0.8;
+    z-index             : 1000;
+}
+
+#facebook_lightbox {
+    width               : 300px; 
+    background-color    : #fff; 
+    margin              : 200px auto; 
+    text-align          : center; 
+    padding             : 20px;        
+    -moz-box-shadow     : 2px 2px 14px #000;
+    -webkit-box-shadow  : 2px 2px 14px #000;
+    box-shadow          : 2px 2px 14px #000;    
+    moz-border-radius   : 2px;
+    border-radius       : 2px;
+}
+
+#facebook_wrapper {
+    position            : absolute; 
+    top                 : 0px; 
+    width               : 100%; 
+    z-index             : 100000;
+}

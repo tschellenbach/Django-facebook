@@ -107,7 +107,22 @@ def connect(request):
 
 
 
+def connect_async_ajax(request):
+    from django_facebook import tasks as facebook_tasks
+    graph = get_persistent_graph(request)
+    output = {}
+    if graph:
+        facebook = FacebookUserConverter(graph)
+        task = facebook_tasks.async_connect_user(request, graph)
+        output['task_id'] = task.id
+    from open_facebook.utils import json
+    json_dump = json.dumps(output)
+    return HttpResponse(json_dump)
 
+
+def poll_connect_task(request, task_id):
+    pass
+    
 
 
 

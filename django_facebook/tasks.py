@@ -37,3 +37,10 @@ def get_and_store_friends(user, facebook):
     return stored_friends
 
 
+@task.task()
+def async_connect_user(request, graph):
+    '''
+    Runs the whole connect flow in the background.
+    Saving your webservers from facebook fluctuations
+    '''
+    pass
