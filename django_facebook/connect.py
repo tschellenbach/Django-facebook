@@ -239,7 +239,6 @@ def _update_user(user, facebook):
             profile.raw_data = serialized_fb_data
             profile_dirty = True
 
-    print user_dirty, profile_dirty
     #save both models if they changed
     if user_dirty:
         user.save()
