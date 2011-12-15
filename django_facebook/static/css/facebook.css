@@ -1,3 +1,4 @@
+
 #facebook_shade {
     position            : absolute;
     height              : 100%;
@@ -12,23 +13,25 @@
 }
 
 #facebook_lightbox {
+    position            : relative;
     width               : 300px; 
     background-color    : #fff; 
     margin              : 200px auto; 
     text-align          : center; 
-    padding             : 20px;        
-    -moz-box-shadow     : 2px 2px 14px #000;
-    -webkit-box-shadow  : 2px 2px 14px #000;
-    box-shadow          : 2px 2px 14px #000;    
+    padding             : 30px 20px;        
+    -moz-box-shadow     : 0px 0px 8px #000;
+    -webkit-box-shadow  : 0px 0px 8px #000;
+    box-shadow          : 0px 0px 8px #000;    
     moz-border-radius   : 2px;
     border-radius       : 2px;
+    z-index             : 1001;
 }
 
 #facebook_wrapper {
-    position            : absolute; 
-    top                 : 0px; 
-    width               : 100%; 
-    z-index             : 100000;
+    position            : absolute;
+    top                 : 0px;
+    width               : 100%;
+    z-index             : 1001;
 }
 
 #facebook_loading {
@@ -41,6 +44,6 @@
     top                 : 10px;
     width               : 16px;
     height              : 16px;
-    background          : url('../../images/facebook_close.png');
+    background          : url('../../static/images/facebook_close.png');
     cursor              : pointer;
 }
