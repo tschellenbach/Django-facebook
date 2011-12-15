@@ -111,6 +111,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 
                 #create a default for the redirect_uri
                 #when using the javascript sdk the default should be '' an empty string
+                #for other pages it should be the url
                 if not redirect_uri:
                     redirect_uri = ''
                 

@@ -62,7 +62,10 @@ def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
             redirect_uri += '&attempt=1'
            
     #add the extra params if specified 
-    if extra_params:
+    #TODO: renable this and fix the url merging!!
+    if extra_params and False:
+        from open_facebook.utils import merge_urls
+        #TODO: Properly merge the url params
         params_query_dict = QueryDict('', True)
         params_query_dict.update(extra_params)
         query_string = params_query_dict.urlencode()
