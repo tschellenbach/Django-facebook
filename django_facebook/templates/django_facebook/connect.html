@@ -94,9 +94,9 @@
 				-->
 				
 				<iframe src="http://www.facebook.com/plugins/facepile.php?app_id={{ FACEBOOK_APP_ID }}&amp;width=500&amp;max_rows=1" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:500px; height:80px;" allowTransparency="true"></iframe>
-				<input type="image" src="http://e.fashiocdn.com/images/b_signin_facebook_small.png" />
+				<input onclick="F.connect(this.parentNode); return false;" type="image" src="http://e.fashiocdn.com/images/b_signin_facebook_small.png" /> (javascript popup)
 				<br /><br />
-				<a href="javascript:void(0);" onclick="F.connect(this.parentNode); return false;"type="image">Popup version</a>
+				<input type="image" src="http://e.fashiocdn.com/images/b_signin_facebook_small.png" /> (redirect version)
 	        </form>
 			
 			
@@ -108,7 +108,7 @@
 		{% if request.user.is_authenticated %}
 			Hello {{ request.user }}, <a href="{% url django.contrib.auth.views.logout %}?next={{ request.path|urlencode }}">logout</a>
 		{% else %}
-			You are not logged in, Please login by clicking the button above
+			You are not logged in, Please login by clicking one of the buttons above
 		{% endif %}
 		</div>
         <div style="float: right;">

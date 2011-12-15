@@ -36,5 +36,11 @@
 }
 
 #facebook_close {
-    padding:            : 3px;
+    position            : absolute;
+    right               : 10px;
+    top                 : 10px;
+    width               : 16px;
+    height              : 16px;
+    background          : url('../../images/facebook_close.png');
+    cursor              : pointer;
 }
