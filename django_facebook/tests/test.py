@@ -1,5 +1,5 @@
 from __future__ import with_statement
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
 from django_facebook import settings as facebook_settings
 from django_facebook import exceptions as facebook_exceptions
 from django_facebook.auth_backends import FacebookBackend
@@ -176,7 +176,7 @@ class SignalTest(FacebookTest):
             profile.post_update_signal = True
         
         Profile = get_profile_class()
-        signals.facebook_user_registered.connect(user_registered, sender=Profile)
+        signals.facebook_user_registered.connect(user_registered, sender=User)
         signals.facebook_pre_update.connect(pre_update, sender=Profile)
         signals.facebook_post_update.connect(post_update, sender=Profile)
 
