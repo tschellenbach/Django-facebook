@@ -79,7 +79,8 @@ def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
     url += query_dict.urlencode()
     return url, redirect_uri
 
-def next_redirect(request, default='/', additional_params=None, next_key='next'):
+
+def next_redirect(request, default='/', additional_params=None, next_key='next', redirect_url=None):
     from django_facebook import settings as facebook_settings
     if facebook_settings.FACEBOOK_DEBUG_REDIRECTS:
         return HttpResponse('<html><head></head><body><div>Debugging</div></body></html>')
@@ -88,13 +89,13 @@ def next_redirect(request, default='/', additional_params=None, next_key='next')
         next_key = [next_key]
     
     #get the redirect url
-    redirect_url = None
-    for key in next_key:
-        redirect_url = request.REQUEST.get(key)
-        if redirect_url:
-            break
     if not redirect_url:
-        redirect_url = default
+        for key in next_key:
+            redirect_url = request.REQUEST.get(key)
+            if redirect_url:
+                break
+        if not redirect_url:
+            redirect_url = default
         
     if additional_params:
         query_params = QueryDict('', True)

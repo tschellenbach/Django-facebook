@@ -72,7 +72,8 @@ def connect_user(request, access_token=None, facebook_graph=None):
             user = _login_user(request, facebook, auth_user, update=update)
         else:
             action = CONNECT_ACTIONS.REGISTER
-            user = _register_user(request, facebook)
+            #when force registration is active we should clearout the old profile
+            user = _register_user(request, facebook, remove_old_connections=force_registration)
 
     #store likes and friends if configured
     sid = transaction.savepoint()
@@ -129,17 +130,20 @@ def _connect_user(request, facebook):
     return user
 
 
-def _register_user(request, facebook, profile_callback=None):
+def _register_user(request, facebook, profile_callback=None, remove_old_connections=False):
     '''
     Creates a new user and authenticates
     The registration form handles the registration and validation
     Other data on the user profile is updates afterwards
+    
+    if remove_old_connections = True we will disconnect old profiles from their 
+    facebook flow
     '''
     if not facebook.is_authenticated():
         raise ValueError('Facebook needs to be authenticated for connect flows')
     
-    
-    
+
+
     #get the backend on new registration systems, or none if we are on an older version
     backend = get_registration_backend()
 
@@ -152,6 +156,9 @@ def _register_user(request, facebook, profile_callback=None):
     for k, v in facebook_data.items():
         if not data.get(k):
             data[k] = v
+            
+    if remove_old_connections:
+        _remove_old_connections(facebook_data['facebook_id'])
 
     if request.REQUEST.get('force_registration_hard'):
         data['email'] = data['email'].replace('@', '+%s@' % randint(0, 100000))
@@ -189,6 +196,18 @@ def _register_user(request, facebook, profile_callback=None):
     return new_user
 
 
+def _remove_old_connections(facebook_id, current_user_id=None):
+    '''
+    Removes the facebook id for profiles with the specified facebook id
+    which arent the current user id
+    '''
+    profile_class = get_profile_class()
+    other_facebook_accounts = profile_class.objects.filter(facebook_id=facebook_id)
+    if current_user_id:
+        other_facebook_accounts = other_facebook_accounts.exclude(user__id=current_user_id)
+    updated = other_facebook_accounts.update(facebook_id=None)
+    
+
 def _update_user(user, facebook):
     '''
     Updates the user and his/her profile with the data from facebook
@@ -212,11 +231,7 @@ def _update_user(user, facebook):
         logger.info('profile facebook id changed from %s to %s', repr(facebook_data['facebook_id']), repr(profile.facebook_id))
         profile.facebook_id = facebook_data['facebook_id']
         profile_dirty = True
-        #like i said, me and only me
-        profile_class = get_profile_class()
-        profile_class.objects.filter(facebook_id=profile.facebook_id)\
-                             .exclude(user__id=user.id)\
-                             .update(facebook_id=None)
+        _remove_old_connections(profile.facebook_id, user.id)
 
     #update all fields on both user and profile
     for f in facebook_fields:
