@@ -161,7 +161,7 @@ def _register_user(request, facebook, profile_callback=None, remove_old_connecti
         _remove_old_connections(facebook_data['facebook_id'])
 
     if request.REQUEST.get('force_registration_hard'):
-        data['email'] = data['email'].replace('@', '+%s@' % randint(0, 100000))
+        data['email'] = data['email'].replace('@', '+test%s@' % randint(0, 1000000000))
 
     form = form_class(data=data, files=request.FILES,
         initial={'ip': request.META['REMOTE_ADDR']})
