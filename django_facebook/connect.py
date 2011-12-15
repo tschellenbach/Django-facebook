@@ -242,7 +242,7 @@ def _update_user(user, facebook):
                 setattr(profile, f, facebook_value)
                 profile_dirty = True
             elif f in user_field_names and hasattr(user, f) and not getattr(user, f, False):
-                logger.debug('user field %s changed from %s to %s', f, getattr(profile, f), facebook_value)
+                logger.debug('user field %s changed from %s to %s', f, getattr(user, f), facebook_value)
                 setattr(user, f, facebook_value)
                 user_dirty = True
 
