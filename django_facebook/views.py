@@ -19,6 +19,7 @@ from django_facebook.connect import CONNECT_ACTIONS, connect_user
 from django_facebook.utils import next_redirect, get_oauth_url
 from django_facebook.decorators import facebook_required, facebook_required_lazy
 from open_facebook.utils import send_warning
+from open_facebook.exceptions import OpenFacebookException
 
 
 logger = logging.getLogger(__name__)
@@ -68,10 +69,13 @@ def connect(request):
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
 
     if facebook_login:
+        logger.info('trying to connect using facebook')
         graph = get_persistent_graph(request)
         if graph:
+            logger.info('found a graph object')
             facebook = FacebookUserConverter(graph)
             if facebook.is_authenticated():
+                logger.info('facebook is authenticated')
                 facebook_data = facebook.facebook_profile_data()
                 #either, login register or connect the user
                 try:
@@ -95,8 +99,12 @@ def connect(request):
                 elif action is CONNECT_ACTIONS.REGISTER:
                     return user.get_profile().post_facebook_registration(request)
         else:
-            return next_redirect(request, next_key=['error_next', 'next'],
-                additional_params=dict(fb_error_or_cancel=1))
+            if 'attempt' in request.GET:
+                return next_redirect(request, next_key=['error_next', 'next'],
+                    additional_params=dict(fb_error_or_cancel=1))
+            else:
+                logger.info('Facebook authentication needed for connect, raising an error')
+                raise OpenFacebookException('please authenticate')
 
         return next_redirect(request)
 

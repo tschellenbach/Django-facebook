@@ -56,7 +56,9 @@ def facebook_required_lazy(view_func=None, scope=facebook_settings.FACEBOOK_DEFA
             try:
                 return view_func(request, *args, **kwargs)
             except open_facebook_exceptions.OpenFacebookException, e:
-                if not test_permissions(request, scope_list, redirect_uri):
+                if test_permissions(request, scope_list, redirect_uri):
+                    #an error if we already have permissions shouldn't have been caught
+                    #raise to prevent bugs with error mapping to cause issues
                     raise
                 else:
                     logger.info('requesting access with redirect uri: %s', redirect_uri)

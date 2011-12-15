@@ -76,6 +76,8 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     if not access_token:
         #easy case, code is in the get
         code = request.REQUEST.get('code')
+        if code:
+            logger.info('Got code from the request data')
         if not code:
             #signed request or cookie leading, base 64 decoding needed
             signed_data = request.REQUEST.get('signed_request')
@@ -87,13 +89,17 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 #the javascript api assumes a redirect uri of ''
                 redirect_uri = ''
             if signed_data:
+                logger.info('Got signed data from facebook')
                 parsed_data = FacebookAuthorization.parse_signed_data(signed_data)
                 if parsed_data:
+                    logger.info('Got parsed data from facebook')
                     #parsed data can fail because of signing issues
                     if 'oauth_token' in parsed_data:
+                        logger.info('Got access_token from parsed data')
                         # we already have an active access token in the data
                         access_token = parsed_data['oauth_token']
                     else:
+                        logger.info('Got code from parsed data')
                         # no access token, need to use this code to get one
                         code = parsed_data.get('code', None)
 
