@@ -384,7 +384,7 @@ class FacebookUserConverter(object):
     
     def _get_and_store_likes(self, user):
         likes = self.get_likes()
-        stored_likes = self.store_likes(user, likes)
+        stored_likes = self._store_likes(user, likes)
         return stored_likes
     
     def get_likes(self, limit=1000):
