@@ -99,6 +99,10 @@ facebookClass.prototype = {
         facebookContainer.style.display = message ? 'block' : 'none';
         document.getElementById('facebook_close').style.display = closeable ? 'block' : 'none';
         document.getElementById('facebook_loading').style.display = hideLoading ? 'none' : 'inline';
+        
+        //set the correct top
+        var requiredTop = this.getViewportScrollY();
+        document.getElementById('facebook_lightbox').style.top = requiredTop + 'px';
     },
     
     
@@ -121,6 +125,23 @@ facebookClass.prototype = {
             e.id = 'facebook_js';
             document.getElementById('fb-root').appendChild(e);
         }
+    },
+    
+    getViewportScrollY: function() {
+        var scrollY = 0;
+        if( document.documentElement && document.documentElement.scrollTop ) {
+          scrollY = document.documentElement.scrollTop;
+        }
+        else if( document.body && document.body.scrollTop ) {
+          scrollY = document.body.scrollTop;
+        }
+        else if( window.pageYOffset ) {
+          scrollY = window.pageYOffset;
+        }
+        else if( window.scrollY ) {
+          scrollY = window.scrollY;
+        }
+        return scrollY;
     }
 };
 
