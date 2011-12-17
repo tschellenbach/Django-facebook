@@ -26,6 +26,17 @@ logger = logging.getLogger(__name__)
 
 
 
+@facebook_required(scope='publish_actions')
+def open_graph_beta(request):
+    '''
+    Simple example on how to do open graph postings
+    '''
+    fb = get_persistent_graph(request)
+    entity_url = 'http://www.fashiolista.com/item/2081202/'
+    result = fb.set('me/fashiolista:love', item=entity_url)
+    messages.info(request, 'Frictionless sharing to open graph beta action fashiolista:love with item_url %s, this url contains open graph data which Facebook scrapes' % entity_url)
+
+
 @facebook_required(scope='publish_stream')
 def wall_post(request):
     fb = get_persistent_graph(request)
@@ -50,6 +61,7 @@ def image_upload(request):
     messages.info(request, 'The images have been added to your profile!')
 
     return next_redirect(request)
+
 
 
 
@@ -156,9 +168,3 @@ def canvas(request):
     return render_to_response('django_facebook/canvas.html', context)
 
 
-@csrf_exempt
-def my_style(request):
-    context = RequestContext(request)
-    context['auth_url'] = generate_oauth_url()
-
-    return render_to_response('django_facebook/my_style.html', context)
