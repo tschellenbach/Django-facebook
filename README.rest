@@ -95,7 +95,7 @@ Right now you should have a working registration/connect/login in flow available
 Test if everything is working and ensure you didn't miss a step somewhere.
 If you encounter any difficulties please open an issue.
 
-** Django Userena **
+**Django Userena**
 
 A few settings changes are needed to play nicely with Django Userena.
 In your settings point Django Facebook to the right registration form and template:
