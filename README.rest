@@ -34,14 +34,6 @@ Requirements
 * Django 1.3
 
 
-Running tests
--------------
-Tests are run from within the example project. You
-can run them yourself as follows:
-
-install from git
-
-facebook_example/manage.py test django_facebook
 
 
 Installation
@@ -154,14 +146,6 @@ Note that you can control which page to go to after connect using the next input
 On a final note the Facebook javascript SDK requires you to place a ``'fb-root'`` div somewhere on your page. (See the example).
 
 
-Optional Settings
------------------
-
-If you want to use a different registration form template for Facebook connect:
-
-    FACEBOOK_REGISTRATION_TEMPLATE = 'django_facebook/facebook_registration_form.html'
-
-
 Signals
 -------
 
@@ -207,6 +191,18 @@ Django-facebook ships with a few signals that you can use to easily accommodate 
     
     Profile = get_profile_class()
     signals.facebook_post_update.connect(post_facebook_update, sender=Profile)
+
+
+
+Contributing and Running tests
+------------------------------
+Tests are run from within the example project. You
+can run them yourself as follows:
+
+install from git
+
+facebook_example/manage.py test django_facebook
+
 
 Django Jobs
 -----------
