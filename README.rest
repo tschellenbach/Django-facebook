@@ -1,19 +1,29 @@
 ######################################################################
-Django Facebook by Thierry Schellenbach (http://www.mellowmorning.com)
+Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmorning.com/>`_)
 ######################################################################
 
 First
 -----
-Please contribute code :)
 
+Django Facebook assumes you want users to register through Facebook.
+After registration it gives you access to the graph, allowing for such applications as:
+
+* Inviting friends
+* Finding friends
+* Posting to a users profile
+* Open graph beta functionality
+
+For a demo of the signup flow have a look at Fashiolista's landing page (`fashiolista.com <http://www.fashiolista.com/intro_wide_minimal/>`_)
+
+
+Contributions are welcome!!
 Contact me here or `@tschellenbach <http://www.twitter.com/tschellenbach>`_
-Check my blog for updates `mellowmorning <http://www.mellowmorning.com/>`_
+Updates and tutorials can be found on my blog `mellowmorning <http://www.mellowmorning.com/>`_
+
 
 
 About Django Facebook
 ---------------------
-Django Facebook allows you to connect to the Facebook Open Graph API.
-Integrated with Django it becomes easy to setup a login/register via Facebook flow for your users.
 
 **Features**
 
@@ -31,9 +41,6 @@ Integrated with Django it becomes easy to setup a login/register via Facebook fl
 Requirements
 ------------------------------
 * Django registration or Django Userena (contact me if you use something else for registration.) 
-* Django 1.3
-
-
 
 
 Installation
