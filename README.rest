@@ -99,8 +99,10 @@ If you encounter any difficulties please open an issue.
 A few settings changes are needed to play nicely with Django Userena.
 In your settings point Django Facebook to the right registration form and template:
 
-FACEBOOK_REGISTRATION_FORM = 'userena.forms.SignupForm'
-FACEBOOK_REGISTRATION_TEMPLATE = 'userena/signup_form.html'
+::
+
+    FACEBOOK_REGISTRATION_FORM = 'userena.forms.SignupForm'
+    FACEBOOK_REGISTRATION_TEMPLATE = 'userena/signup_form.html'
 
 Supporting any other registration system is quite easy.
 Adjust the above settings to point to your own code.
