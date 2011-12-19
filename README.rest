@@ -125,7 +125,13 @@ If you encounter any difficulties please open an issue.
 Not it's time to customize things a little.
 For an example you can look at connect.html in the templates directory.
 
-First load the javascript:
+First load the css:
+
+::
+
+    <link href="{{ STATIC_URL }}css/facebook.css" type="text/css" rel="stylesheet" media="all" />
+
+Secondly load the javascript:
 
 ::
 
