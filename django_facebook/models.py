@@ -3,6 +3,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 
 
+
 class FacebookProfileModel(models.Model):
     '''
     Abstract class to add to your profile model.
@@ -38,6 +39,18 @@ class FacebookProfileModel(models.Model):
         response.set_cookie('fresh_registration', self.user_id)
         
         return response
+    
+    def get_offline_graph(self):
+        '''
+        Returns a open facebook graph client based on the access token stored
+        in the user's profile
+        '''
+        from open_facebook.api import OpenFacebook
+        if self.access_token:
+            graph = OpenFacebook(access_token=self.access_token)
+            graph.current_user_id = self.facebook_id
+            return graph
+        
 
 class FacebookUser(models.Model):
     '''
