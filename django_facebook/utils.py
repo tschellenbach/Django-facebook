@@ -75,8 +75,6 @@ def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
             redirect_uri += '&'
         redirect_uri += query_string
         
-    if ('//localhost' in redirect_uri or '//127.0.0.1' in redirect_uri) and settings.DEBUG:
-        raise ValueError, 'Facebook checks the domain name of your apps. Therefor you cannot run on localhost. Instead you should use something like local.fashiolista.com. Replace Fashiolista with your own domain name.'
     query_dict['redirect_uri'] = redirect_uri
     url = 'https://www.facebook.com/dialog/oauth?'
     url += query_dict.urlencode()
