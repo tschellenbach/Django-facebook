@@ -24,5 +24,3 @@ http://www.pip-installer.org/en/latest/index.html
 pip install -e ./
 
 '''
-
-
