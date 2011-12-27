@@ -1,13 +1,12 @@
-
 from django.http import QueryDict, HttpResponse
 from django.conf import settings
 from django.db import models
 import logging
 import re
-import sys
 
 
 logger = logging.getLogger(__name__)
+
 
 def test_permissions(request, scope_list, redirect_uri=None):
     '''
@@ -17,26 +16,30 @@ def test_permissions(request, scope_list, redirect_uri=None):
     from open_facebook import exceptions as facebook_exceptions
     fb = get_persistent_graph(request, redirect_uri=redirect_uri)
     permissions_dict = {}
-    
     if fb:
         try:
             permissions_response = fb.get('me/permissions')
             permissions = permissions_response['data'][0]
-        except facebook_exceptions.OAuthException, e:
-            #this happens when someone revokes their permissions while the session
-            #is still stored
+        except facebook_exceptions.OAuthException:
+            # this happens when someone revokes their permissions
+            # while the session is still stored
             permissions = {}
-        permissions_dict = dict([(k,bool(int(v))) for k,v in permissions.items() if v == '1' or v == 1])
-        
-    #see if we have all permissions
+        permissions_dict = dict([(k, bool(int(v)))
+                                 for k, v in permissions.items()
+                                 if v == '1' or v == 1])
+
+    # see if we have all permissions
     scope_allowed = True
     for permission in scope_list:
         if permission not in permissions_dict:
             scope_allowed = False
-            
-    #raise if this happens after a redirect though
+
+    # raise if this happens after a redirect though
     if not scope_allowed and request.GET.get('attempt'):
-        raise ValueError, 'Somehow facebook is not giving us the permissions needed, lets break instead of endless redirects. Fb was %s and permissions %s' % (fb, permissions_dict)
+        raise(ValueError,
+              'Somehow facebook is not giving us the permissions needed, ' \
+              'lets break instead of endless redirects. Fb was %s and ' \
+              'permissions %s' % (fb, permissions_dict))
 
     return scope_allowed
 
@@ -44,7 +47,7 @@ def test_permissions(request, scope_list, redirect_uri=None):
 def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
     '''
     Returns the oauth url for the given request and scope
-    Request maybe shouldnt be tied to this function, but for now it seems 
+    Request maybe shouldnt be tied to this function, but for now it seems
     rather ocnvenient
     '''
     from django_facebook import settings as facebook_settings
@@ -54,18 +57,18 @@ def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
     query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
     redirect_uri = redirect_uri or request.build_absolute_uri()
 
-    #set attempt=1 to prevent endless redirect loops
+    # set attempt=1 to prevent endless redirect loops
     if 'attempt=1' not in redirect_uri:
         if '?' not in redirect_uri:
             redirect_uri += '?attempt=1'
         else:
             redirect_uri += '&attempt=1'
-           
-    #add the extra params if specified 
-    #TODO: renable this and fix the url merging!!
+
+    # add the extra params if specified
+    # TODO: renable this and fix the url merging!!
     if extra_params and False:
-        from open_facebook.utils import merge_urls
-        #TODO: Properly merge the url params
+        # from open_facebook.utils import merge_urls
+        # TODO: Properly merge the url params
         params_query_dict = QueryDict('', True)
         params_query_dict.update(extra_params)
         query_string = params_query_dict.urlencode()
@@ -74,22 +77,24 @@ def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
         else:
             redirect_uri += '&'
         redirect_uri += query_string
-        
+
     query_dict['redirect_uri'] = redirect_uri
     url = 'https://www.facebook.com/dialog/oauth?'
     url += query_dict.urlencode()
     return url, redirect_uri
 
 
-def next_redirect(request, default='/', additional_params=None, next_key='next', redirect_url=None):
+def next_redirect(request, default='/', additional_params=None,
+                  next_key='next', redirect_url=None):
     from django_facebook import settings as facebook_settings
     if facebook_settings.FACEBOOK_DEBUG_REDIRECTS:
-        return HttpResponse('<html><head></head><body><div>Debugging</div></body></html>')
+        return HttpResponse(
+            '<html><head></head><body><div>Debugging</div></body></html>')
     from django.http import HttpResponseRedirect
     if not isinstance(next_key, (list, tuple)):
         next_key = [next_key]
-    
-    #get the redirect url
+
+    # get the redirect url
     if not redirect_url:
         for key in next_key:
             redirect_url = request.REQUEST.get(key)
@@ -97,13 +102,13 @@ def next_redirect(request, default='/', additional_params=None, next_key='next',
                 break
         if not redirect_url:
             redirect_url = default
-        
+
     if additional_params:
         query_params = QueryDict('', True)
         query_params.update(additional_params)
         seperator = '&' if '?' in redirect_url else '?'
         redirect_url += seperator + query_params.urlencode()
-        
+
     return HttpResponseRedirect(redirect_url)
 
 
@@ -112,12 +117,12 @@ def get_profile_class():
     app_label, model = profile_string.split('.')
 
     return models.get_model(app_label, model)
-    
-    
-def mass_get_or_create(model_class, base_queryset, id_field, default_dict, global_defaults):
+
+
+def mass_get_or_create(model_class, base_queryset, id_field, default_dict,
+                       global_defaults):
     '''
     Updates the data by inserting all not found records
-    
     Doesnt delete records if not in the new data
 
     example usage
@@ -140,8 +145,7 @@ def mass_get_or_create(model_class, base_queryset, id_field, default_dict, globa
             **defaults
         )
         inserted_model_instances.append(model_instance)
-        
-    #returns a list of existing and new items
+    # returns a list of existing and new items
     return current_instances, inserted_model_instances
 
 
@@ -154,12 +158,12 @@ def get_form_class(backend, request):
     '''
     from django_facebook import settings as facebook_settings
     form_class = None
-    
-    #try the setting
+
+    # try the setting
     form_class_string = facebook_settings.FACEBOOK_REGISTRATION_FORM
     if form_class_string:
         form_class = get_class_from_string(form_class_string, None)
-        
+
     if not form_class:
         from registration.forms import RegistrationFormUniqueEmail
         form_class = RegistrationFormUniqueEmail
@@ -173,17 +177,18 @@ def get_registration_backend():
     Ensures compatability with the new and old version of django registration
     '''
     backend = None
-    try:        
-        #support for the newer implementation
+    try:
+        # support for the newer implementation
         from registration.backends import get_backend
         try:
             backend = get_backend(settings.REGISTRATION_BACKEND)
         except:
-            raise ValueError, 'Cannot get django-registration backend from settings.REGISTRATION_BACKEND'
-    except ImportError, e:
+            raise(ValueError,
+                  'Cannot get django-registration backend from ' \
+                  'settings.REGISTRATION_BACKEND')
+    except ImportError:
         backend = None
     return backend
-
 
 
 def parse_scope(scope):
@@ -200,8 +205,8 @@ def parse_scope(scope):
         scope_list = scope.split(',')
     elif isinstance(scope, (list, tuple)):
         scope_list = list(scope)
-        
-    return scope_list 
+
+    return scope_list
 
 
 def to_int(input, default=0, exception=(ValueError, TypeError), regexp=None):
@@ -218,7 +223,6 @@ def to_int(input, default=0, exception=(ValueError, TypeError), regexp=None):
 
     The last group of the regexp will be used as value
     '''
-    import re
     if regexp is True:
         regexp = re.compile('(\d+)')
     elif isinstance(regexp, basestring):
@@ -226,7 +230,7 @@ def to_int(input, default=0, exception=(ValueError, TypeError), regexp=None):
     elif hasattr(regexp, 'search'):
         pass
     elif regexp is not None:
-        raise TypeError, 'unknown argument for regexp parameter'
+        raise(TypeError, 'unknown argument for regexp parameter')
 
     try:
         if regexp:
@@ -236,13 +240,15 @@ def to_int(input, default=0, exception=(ValueError, TypeError), regexp=None):
         return int(input)
     except exception:
         return default
-    
+
+
 def remove_query_param(url, key):
     p = re.compile('%s=[^=&]*&' % key, re.VERBOSE)
     url = p.sub('', url)
     p = re.compile('%s=[^=&]*' % key, re.VERBOSE)
     url = p.sub('', url)
     return url
+
 
 def replace_query_param(url, key, value):
     p = re.compile('%s=[^=&]*' % key, re.VERBOSE)
@@ -251,45 +257,47 @@ def replace_query_param(url, key, value):
 
 DROP_QUERY_PARAMS = ['code', 'signed_request', 'state']
 
+
 def cleanup_oauth_url(redirect_uri):
     '''
-    We have to maintain order with respect to the queryparams which is a bit of a pain
-    
+    We have to maintain order with respect to the
+    queryparams which is a bit of a pain
     TODO: Very hacky will subclass QueryDict to SortedQueryDict at some point
     And use a decent sort function
     '''
-    
     if '?' in redirect_uri:
         redirect_base, redirect_query = redirect_uri.split('?', 1)
         query_dict_items = QueryDict(redirect_query).items()
     else:
-        redirect_base = redirect_uri
         query_dict_items = QueryDict('', True)
 
-    filtered_query_items = [(k, v) for k, v in query_dict_items if k.lower() not in DROP_QUERY_PARAMS]
-    #new_query_dict = QueryDict('', True)
-    #new_query_dict.update(dict(filtered_query_items))
-    
-    excluded_query_items = [(k, v) for k, v in query_dict_items if k.lower() in DROP_QUERY_PARAMS]
+    # filtered_query_items = [(k, v) for k, v in query_dict_items
+    #                         if k.lower() not in DROP_QUERY_PARAMS]
+    # new_query_dict = QueryDict('', True)
+    # new_query_dict.update(dict(filtered_query_items))
+
+    excluded_query_items = [(k, v) for k, v in query_dict_items
+                            if k.lower() in DROP_QUERY_PARAMS]
     for k, v in excluded_query_items:
         redirect_uri = remove_query_param(redirect_uri, k)
-    
+
     redirect_uri = redirect_uri.strip('?')
     redirect_uri = redirect_uri.strip('&')
-    
+
     return redirect_uri
-    
+
+
 def get_class_from_string(path, default='raise'):
     """
     Return the class specified by the string.
-    
+
     IE: django.contrib.auth.models.User
     Will return the user class
 
-    If no default is provided and the class cannot be located (e.g., because no such module
-    exists, or because the module does not contain a class of the
-    appropriate name), ``django.core.exceptions.ImproperlyConfigured``
-    is raised.
+    If no default is provided and the class cannot be located
+    (e.g., because no such module exists, or because the module does
+    not contain a class of the appropriate name),
+    ``django.core.exceptions.ImproperlyConfigured`` is raised.
     """
     from django.core.exceptions import ImproperlyConfigured
     try:
@@ -301,13 +309,13 @@ def get_class_from_string(path, default='raise'):
     try:
         mod = import_module(module)
     except ImportError, e:
-        raise ImproperlyConfigured('Error loading registration backend %s: "%s"' % (module, e))
+        raise ImproperlyConfigured(
+            'Error loading registration backend %s: "%s"' % (module, e))
     try:
         backend_class = getattr(mod, attr)
     except AttributeError:
         if default == 'raise':
-            raise ImproperlyConfigured('Module "%s" does not define a registration backend named "%s"' % (module, attr))
+            raise ImproperlyConfigured(
+                'Module "%s" does not define a registration ' \
+                'backend named "%s"' % (module, attr))
     return backend_class
-
-
-

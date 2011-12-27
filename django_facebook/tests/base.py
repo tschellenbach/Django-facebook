@@ -28,6 +28,6 @@ class FacebookTest(TestCase):
         import open_facebook
         api.OpenFacebook = MockFacebookAPI
         open_facebook.OpenFacebook = MockFacebookAPI
-        
+
         rf = RequestMock()
-        self.request = request = rf.get('/')
+        self.request = rf.get('/')

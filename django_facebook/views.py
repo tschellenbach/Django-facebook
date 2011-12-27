@@ -1,9 +1,8 @@
 import logging
-import sys
 
 from django.conf import settings
 from django.contrib import messages
-from django.http import Http404, HttpResponseRedirect, QueryDict, HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
@@ -12,18 +11,17 @@ from django.views.decorators.csrf import csrf_exempt
 # NOTE: from inside the application, you can directly import the file
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings
-from django_facebook.api import get_facebook_graph, get_persistent_graph,\
-    FacebookUserConverter
+from django_facebook.api import get_persistent_graph, FacebookUserConverter
 from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
-from django_facebook.utils import next_redirect, get_oauth_url
-from django_facebook.decorators import facebook_required, facebook_required_lazy
+from django_facebook.utils import next_redirect
+from django_facebook.decorators import (facebook_required,
+                                        facebook_required_lazy)
 from open_facebook.utils import send_warning
 from open_facebook.exceptions import OpenFacebookException
 
 
 logger = logging.getLogger(__name__)
-
 
 
 @facebook_required(scope='publish_actions')
@@ -33,8 +31,11 @@ def open_graph_beta(request):
     '''
     fb = get_persistent_graph(request)
     entity_url = 'http://www.fashiolista.com/item/2081202/'
-    result = fb.set('me/fashiolista:love', item=entity_url)
-    messages.info(request, 'Frictionless sharing to open graph beta action fashiolista:love with item_url %s, this url contains open graph data which Facebook scrapes' % entity_url)
+    fb.set('me/fashiolista:love', item=entity_url)
+    messages.info(request,
+                  'Frictionless sharing to open graph beta action ' \
+                  'fashiolista:love with item_url %s, this url contains ' \
+                  'open graph data which Facebook scrapes' % entity_url)
 
 
 @facebook_required(scope='publish_stream')
@@ -61,8 +62,6 @@ def image_upload(request):
     messages.info(request, 'The images have been added to your profile!')
 
     return next_redirect(request)
-
-
 
 
 @csrf_exempt
@@ -96,7 +95,8 @@ def connect(request):
                 except facebook_exceptions.IncompleteProfileError, e:
                     warn_message = u'Incomplete profile data encountered '\
                         u'with error %s' % e
-                    send_warning(warn_message, e=e, facebook_data=facebook_data)
+                    send_warning(warn_message, e=e,
+                                 facebook_data=facebook_data)
 
                     context['facebook_mode'] = True
                     context['form'] = e.form
@@ -109,13 +109,15 @@ def connect(request):
                     messages.info(request, _("You have connected your account "
                         "to %s's facebook profile") % facebook_data['name'])
                 elif action is CONNECT_ACTIONS.REGISTER:
-                    return user.get_profile().post_facebook_registration(request)
+                    return user.get_profile().post_facebook_registration(
+                        request)
         else:
             if 'attempt' in request.GET:
                 return next_redirect(request, next_key=['error_next', 'next'],
                     additional_params=dict(fb_error_or_cancel=1))
             else:
-                logger.info('Facebook authentication needed for connect, raising an error')
+                logger.info('Facebook authentication needed for connect, ' \
+                            'raising an error')
                 raise OpenFacebookException('please authenticate')
 
         return next_redirect(request)
@@ -124,7 +126,6 @@ def connect(request):
         raise Http404
 
     return render_to_response('django_facebook/connect.html', context)
-
 
 
 def connect_async_ajax(request):
@@ -137,7 +138,7 @@ def connect_async_ajax(request):
     graph = get_persistent_graph(request)
     output = {}
     if graph:
-        facebook = FacebookUserConverter(graph)
+        FacebookUserConverter(graph)
         task = facebook_tasks.async_connect_user(request, graph)
         output['task_id'] = task.id
     from open_facebook.utils import json
@@ -150,9 +151,6 @@ def poll_connect_task(request, task_id):
     Not yet implemented
     '''
     pass
-    
-
-
 
 
 @csrf_exempt
@@ -166,5 +164,3 @@ def canvas(request):
         logger.info('found these likes %s', likes)
 
     return render_to_response('django_facebook/canvas.html', context)
-
-

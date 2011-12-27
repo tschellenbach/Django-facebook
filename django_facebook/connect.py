@@ -7,15 +7,13 @@ from django.contrib.auth import authenticate, login
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.utils import simplejson as json
-from django.conf import settings
-
-from utils import get_profile_class
 
 from django_facebook import settings as facebook_settings
 from django_facebook import exceptions as facebook_exceptions
 from django_facebook import signals
 from django_facebook.api import get_facebook_graph, FacebookUserConverter
-from django_facebook.utils import get_registration_backend, get_form_class
+from django_facebook.utils import (get_registration_backend, get_form_class,
+                                   get_profile_class)
 
 logger = logging.getLogger(__name__)
 
@@ -72,8 +70,10 @@ def connect_user(request, access_token=None, facebook_graph=None):
             user = _login_user(request, facebook, auth_user, update=update)
         else:
             action = CONNECT_ACTIONS.REGISTER
-            #when force registration is active we should clearout the old profile
-            user = _register_user(request, facebook, remove_old_connections=force_registration)
+            # when force registration is active we should clearout
+            # the old profile
+            user = _register_user(request, facebook,
+                                  remove_old_connections=force_registration)
 
     #store likes and friends if configured
     sid = transaction.savepoint()
@@ -97,9 +97,10 @@ def connect_user(request, access_token=None, facebook_graph=None):
     profile = user.get_profile()
     #store the access token for later usage if the profile model supports it
     if hasattr(profile, 'access_token'):
-        #only update the access token if it is long lived and not equal to the current token
+        # only update the access token if it is long lived and
+        # not equal to the current token
         if not graph.expires and graph.access_token != profile.access_token:
-            #TODO, maybe we should just always do this.
+            # TODO, maybe we should just always do this.
             profile.access_token = graph.access_token
             profile.save()
 
@@ -121,33 +122,36 @@ def _connect_user(request, facebook):
 
     '''
     if not request.user.is_authenticated():
-        raise ValueError('Connect user can only be used on authenticated users')
+        raise ValueError(
+            'Connect user can only be used on authenticated users')
     if not facebook.is_authenticated():
-        raise ValueError('Facebook needs to be authenticated for connect flows')
+        raise ValueError(
+            'Facebook needs to be authenticated for connect flows')
 
     user = _update_user(request.user, facebook)
 
     return user
 
 
-def _register_user(request, facebook, profile_callback=None, remove_old_connections=False):
+def _register_user(request, facebook, profile_callback=None,
+                   remove_old_connections=False):
     '''
     Creates a new user and authenticates
     The registration form handles the registration and validation
     Other data on the user profile is updates afterwards
-    
-    if remove_old_connections = True we will disconnect old profiles from their 
-    facebook flow
+
+    if remove_old_connections = True we will disconnect old
+    profiles from their facebook flow
     '''
     if not facebook.is_authenticated():
-        raise ValueError('Facebook needs to be authenticated for connect flows')
-    
+        raise ValueError(
+            'Facebook needs to be authenticated for connect flows')
 
-
-    #get the backend on new registration systems, or none if we are on an older version
+    # get the backend on new registration systems, or none
+    # if we are on an older version
     backend = get_registration_backend()
 
-    #gets the form class specified in FACEBOOK_REGISTRATION_FORM
+    # gets the form class specified in FACEBOOK_REGISTRATION_FORM
     form_class = get_form_class(backend, request)
 
     facebook_data = facebook.facebook_registration_data()
@@ -156,12 +160,12 @@ def _register_user(request, facebook, profile_callback=None, remove_old_connecti
     for k, v in facebook_data.items():
         if not data.get(k):
             data[k] = v
-            
     if remove_old_connections:
         _remove_old_connections(facebook_data['facebook_id'])
 
     if request.REQUEST.get('force_registration_hard'):
-        data['email'] = data['email'].replace('@', '+test%s@' % randint(0, 1000000000))
+        data['email'] = data['email'].replace(
+            '@', '+test%s@' % randint(0, 1000000000))
 
     form = form_class(data=data, files=request.FILES,
         initial={'ip': request.META['REMOTE_ADDR']})
@@ -181,10 +185,10 @@ def _register_user(request, facebook, profile_callback=None, remove_old_connecti
             new_user = form.save(profile_callback=profile_callback)
         except TypeError:
             new_user = form.save()
-    
+
     signals.facebook_user_registered.send(sender=auth.models.User,
         user=new_user, facebook_data=facebook_data)
-    
+
     #update some extra data not yet done by the form
     new_user = _update_user(new_user, facebook)
 
@@ -202,33 +206,38 @@ def _remove_old_connections(facebook_id, current_user_id=None):
     which arent the current user id
     '''
     profile_class = get_profile_class()
-    other_facebook_accounts = profile_class.objects.filter(facebook_id=facebook_id)
+    other_facebook_accounts = profile_class.objects.filter(
+        facebook_id=facebook_id)
     if current_user_id:
-        other_facebook_accounts = other_facebook_accounts.exclude(user__id=current_user_id)
-    updated = other_facebook_accounts.update(facebook_id=None)
-    
+        other_facebook_accounts = other_facebook_accounts.exclude(
+            user__id=current_user_id)
+    other_facebook_accounts.update(facebook_id=None)
+
 
 def _update_user(user, facebook):
     '''
     Updates the user and his/her profile with the data from facebook
     '''
-    #if you want to add fields to ur user model instead of the profile thats fine
-    #partial support (everything except raw_data and facebook_id is included)
+    # if you want to add fields to ur user model instead of the
+    # profile thats fine
+    # partial support (everything except raw_data and facebook_id is included)
     facebook_data = facebook.facebook_registration_data(username=False)
     facebook_fields = ['facebook_name', 'facebook_profile_url',
         'date_of_birth', 'about_me', 'website_url', 'first_name', 'last_name']
     user_dirty = profile_dirty = False
     profile = user.get_profile()
-    
+
     signals.facebook_pre_update.send(sender=get_profile_class(),
         profile=profile, facebook_data=facebook_data)
-    
+
     profile_field_names = [f.name for f in profile._meta.fields]
     user_field_names = [f.name for f in user._meta.fields]
 
     #set the facebook id and make sure we are the only user with this id
     if facebook_data['facebook_id'] != profile.facebook_id:
-        logger.info('profile facebook id changed from %s to %s', repr(facebook_data['facebook_id']), repr(profile.facebook_id))
+        logger.info('profile facebook id changed from %s to %s',
+                    repr(facebook_data['facebook_id']),
+                    repr(profile.facebook_id))
         profile.facebook_id = facebook_data['facebook_id']
         profile_dirty = True
         _remove_old_connections(profile.facebook_id, user.id)
@@ -237,12 +246,16 @@ def _update_user(user, facebook):
     for f in facebook_fields:
         facebook_value = facebook_data.get(f, False)
         if facebook_value:
-            if f in profile_field_names and hasattr(profile, f) and not getattr(profile, f, False):
-                logger.debug('profile field %s changed from %s to %s', f, getattr(profile, f), facebook_value)
+            if (f in profile_field_names and hasattr(profile, f) and
+                not getattr(profile, f, False)):
+                logger.debug('profile field %s changed from %s to %s', f,
+                             getattr(profile, f), facebook_value)
                 setattr(profile, f, facebook_value)
                 profile_dirty = True
-            elif f in user_field_names and hasattr(user, f) and not getattr(user, f, False):
-                logger.debug('user field %s changed from %s to %s', f, getattr(user, f), facebook_value)
+            elif (f in user_field_names and hasattr(user, f) and
+                  not getattr(user, f, False)):
+                logger.debug('user field %s changed from %s to %s', f,
+                             getattr(user, f), facebook_value)
                 setattr(user, f, facebook_value)
                 user_dirty = True
 
@@ -250,7 +263,8 @@ def _update_user(user, facebook):
     if hasattr(profile, 'raw_data'):
         serialized_fb_data = json.dumps(facebook.facebook_profile_data())
         if profile.raw_data != serialized_fb_data:
-            logger.debug('profile raw data changed from %s to %s', profile.raw_data, serialized_fb_data)
+            logger.debug('profile raw data changed from %s to %s',
+                         profile.raw_data, serialized_fb_data)
             profile.raw_data = serialized_fb_data
             profile_dirty = True
 
