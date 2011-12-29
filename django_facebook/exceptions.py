@@ -1,6 +1,3 @@
-
-
-
 class FacebookException(Exception):
     pass
 

@@ -23,11 +23,11 @@ class RequestMock(RequestFactory):
 
 class FacebookTest(TestCase):
     def setUp(self):
-        from django_facebook.tests.mock_official_sdk import MockFacebookAPI
+        from django_facebook.tests_utils.mock_official_sdk import MockFacebookAPI
         from open_facebook import api
         import open_facebook
         api.OpenFacebook = MockFacebookAPI
         open_facebook.OpenFacebook = MockFacebookAPI
-        
+
         rf = RequestMock()
-        self.request = request = rf.get('/')
+        self.request = rf.get('/')
