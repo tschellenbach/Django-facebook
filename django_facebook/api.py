@@ -1,12 +1,14 @@
 from django.forms.util import ValidationError
 from django.utils import simplejson as json
 from django_facebook import settings as facebook_settings
-from django_facebook.utils import mass_get_or_create, cleanup_oauth_url
+from django_facebook.utils import mass_get_or_create, cleanup_oauth_url,\
+    get_profile_class
 from open_facebook.exceptions import OpenFacebookException
 import datetime
 import logging
 from open_facebook import exceptions as open_facebook_exceptions
 from open_facebook.utils import send_warning
+from django_facebook import signals
 
 logger = logging.getLogger(__name__)
 
@@ -437,6 +439,8 @@ class FacebookUserConverter(object):
 
     @classmethod
     def _store_likes(self, user, likes):
+        current_likes = inserted_likes = None
+        
         if likes:
             from django_facebook.models import FacebookLike
             base_queryset = FacebookLike.objects.filter(user_id=user.id)
@@ -461,6 +465,13 @@ class FacebookUserConverter(object):
             logger.debug('found %s likes and inserted %s new likes',
                          len(current_likes), len(inserted_likes))
 
+        #fire an event, so u can do things like personalizing the users' account
+        #based on the likes
+        signals.facebook_post_store_likes.send(sender=get_profile_class(),
+            user=user, likes=likes, current_likes=current_likes,
+            inserted_likes=inserted_likes,
+        )
+        
         return likes
 
     def get_and_store_friends(self, user):
@@ -518,6 +529,8 @@ class FacebookUserConverter(object):
     @classmethod
     def _store_friends(self, user, friends):
         from django_facebook.models import FacebookUser
+        current_friends = inserted_friends = None
+        
         #store the users for later retrieval
         if friends:
             #see which ids this user already stored
@@ -534,6 +547,13 @@ class FacebookUserConverter(object):
                 global_defaults)
             logger.debug('found %s friends and inserted %s new ones',
                          len(current_friends), len(inserted_friends))
+            
+        #fire an event, so u can do things like personalizing suggested users
+        #to follow
+        signals.facebook_post_store_friends.send(sender=get_profile_class(),
+            user=user, friends=friends, current_friends=current_friends,
+            inserted_friends=inserted_friends,
+        )
 
         return friends
 

@@ -182,11 +182,11 @@ Django-facebook ships with a few signals that you can use to easily accommodate 
         profile.facebook_information_updated = datetime.datetime.now()
         # Manipulate facebook_data here
     
-    Profile = get_profile_class()
-    signals.facebook_pre_update.connect(pre_facebook_update, sender=Profile)
+    profile_class = get_profile_class()
+    signals.facebook_pre_update.connect(pre_facebook_update, sender=profile_class)
 
 
-``facebook_post_update`` signal is after Django-facebook finishes updating the profile model with Facebook data. You can perform other Facebook connect or registration related processing here. 
+``facebook_post_update`` signal is sent after Django-facebook finishes updating the profile model with Facebook data. You can perform other Facebook connect or registration related processing here. 
 
 ::
     
@@ -196,8 +196,36 @@ Django-facebook ships with a few signals that you can use to easily accommodate 
     def post_facebook_update(sender, profile, facebook_data, \*\*kwargs):
         # Do other stuff
     
-    Profile = get_profile_class()
-    signals.facebook_post_update.connect(post_facebook_update, sender=Profile)
+    profile_class = get_profile_class()
+    signals.facebook_post_update.connect(post_facebook_update, sender=profile_class)
+
+``facebook_post_store_friends`` signal is sent after Django-facebook finishes storing the user's friends.   
+
+::
+    
+    from django_facebook import signals
+    from django_facebook.utils import get_profile_class
+
+    def post_facebook_update(sender, user, friends, current_friends, inserted_friends, \*\*kwargs):
+        # Do other stuff
+    
+    profile_class = get_profile_class()
+    facebook_post_store_friends.connect(post_facebook_update, sender=profile_class)
+
+``facebook_post_store_likes`` signal is sent after Django-facebook finishes storing the user's likes. This is usefull if you want to customize what topics etc to follow.   
+
+::
+    
+    from django_facebook import signals
+    from django_facebook.utils import get_profile_class
+
+    def post_facebook_update(sender, user, likes, current_likes, inserted_likes, \*\*kwargs):
+        # Do other stuff
+    
+    profile_class = get_profile_class()
+    facebook_post_store_likes.connect(post_facebook_update, sender=profile_class)
+
+
 
 
 
