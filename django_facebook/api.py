@@ -414,7 +414,7 @@ class FacebookUserConverter(object):
         stored_likes = self._store_likes(user, likes)
         return stored_likes
 
-    def get_likes(self, limit=1000):
+    def get_likes(self, limit=5000):
         '''
         Parses the facebook response and returns the likes
         '''
@@ -483,7 +483,7 @@ class FacebookUserConverter(object):
         stored_friends = self._store_friends(user, friends)
         return stored_friends
 
-    def get_friends(self, limit=1000):
+    def get_friends(self, limit=5000):
         '''
         Connects to the facebook api and gets the users friends
         '''
