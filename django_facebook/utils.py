@@ -1,8 +1,10 @@
-from django.http import QueryDict, HttpResponse
+from django.http import QueryDict, HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django.db import models
 import logging
 import re
+from django.utils.encoding import iri_to_uri
+from django.template.loader import render_to_string
 
 
 logger = logging.getLogger(__name__)
@@ -36,7 +38,7 @@ def test_permissions(request, scope_list, redirect_uri=None):
 
     # raise if this happens after a redirect though
     if not scope_allowed and request.GET.get('attempt'):
-        raise(ValueError,
+        raise ValueError(
               'Somehow facebook is not giving us the permissions needed, ' \
               'lets break instead of endless redirects. Fb was %s and ' \
               'permissions %s' % (fb, permissions_dict))
@@ -84,8 +86,30 @@ def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
     return url, redirect_uri
 
 
+class CanvasRedirect(HttpResponse):
+    '''
+    Redirect for Facebook Canvas pages
+    '''
+    def __init__(self, redirect_to):
+        self.redirect_to = redirect_to
+        self.location = iri_to_uri(redirect_to)
+        
+        context = dict(location=self.location)
+        js_redirect = render_to_string('django_facebook/canvas_redirect.html', context)
+        
+        super(CanvasRedirect, self).__init__(js_redirect)
+        
+def response_redirect(redirect_url, canvas=False):
+    '''
+    Abstract away canvas redirects
+    '''
+    if canvas:
+        return CanvasRedirect(redirect_url)
+    
+    return HttpResponseRedirect(redirect_url)
+
 def next_redirect(request, default='/', additional_params=None,
-                  next_key='next', redirect_url=None):
+                  next_key='next', redirect_url=None, canvas=False):
     from django_facebook import settings as facebook_settings
     if facebook_settings.FACEBOOK_DEBUG_REDIRECTS:
         return HttpResponse(
@@ -109,6 +133,9 @@ def next_redirect(request, default='/', additional_params=None,
         seperator = '&' if '?' in redirect_url else '?'
         redirect_url += seperator + query_params.urlencode()
 
+    if canvas:
+        return CanvasRedirect(redirect_url)
+    
     return HttpResponseRedirect(redirect_url)
 
 

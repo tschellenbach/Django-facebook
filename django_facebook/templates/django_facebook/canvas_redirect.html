@@ -1,0 +1,11 @@
+<html>
+    <head>
+        <script>
+            var authUrl = '{{ location|safe }}';
+            top.location.href=authUrl;
+        </script>
+    </head>
+    <body>
+        Redirecting you to <a href="{{ location }}">{{ location }}</a>
+    </body>
+</html>

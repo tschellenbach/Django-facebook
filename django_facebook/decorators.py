@@ -1,7 +1,7 @@
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django_facebook import settings as fb_settings
 from django.http import HttpResponseRedirect
-from django_facebook.utils import get_oauth_url, parse_scope
+from django_facebook.utils import get_oauth_url, parse_scope, response_redirect
 from django.utils.decorators import available_attrs
 from django.utils.functional import wraps
 
@@ -32,7 +32,7 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
             else:
                 logger.info('requesting access with redirect uri: %s',
                             redirect_uri)
-                response = HttpResponseRedirect(oauth_url)
+                response = response_redirect(oauth_url, canvas=canvas)
                 return response
         return _wrapped_view
 
@@ -74,7 +74,7 @@ def facebook_required_lazy(view_func=None,
                 else:
                     logger.info(u'requesting access with redirect uri: %s, error was %s',
                                 redirect_uri, e)
-                    response = HttpResponseRedirect(oauth_url)
+                    response = response_redirect(oauth_url, canvas=canvas)
                     return response
         return _wrapped_view
 

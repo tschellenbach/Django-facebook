@@ -1,14 +1,5 @@
 <html>
 	<head>
-	    {% comment %} 
-		{% if not facebook.is_authenticated and not request.GET.code %}
-			{{ auth_url }}
-			<script>
-				var authUrl = '{{ auth_url|safe }}';
-				top.location.href=authUrl;
-			</script>
-		{% endif %}
-		{% endcomment %}
 	</head>
 	<body>
 		
