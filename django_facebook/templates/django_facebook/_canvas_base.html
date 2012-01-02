@@ -1,5 +1,6 @@
 <html>
 	<head>
+	    {% comment %} 
 		{% if not facebook.is_authenticated and not request.GET.code %}
 			{{ auth_url }}
 			<script>
@@ -7,6 +8,7 @@
 				top.location.href=authUrl;
 			</script>
 		{% endif %}
+		{% endcomment %}
 	</head>
 	<body>
 		
@@ -15,15 +17,7 @@
 		{% endblock %}
 	
 	
-	<script src="{{ MEDIA_URL }}/js/original/facebook.js"></script>
-	<script>
-		facebookAppId = '{{ FACEBOOK_APP_ID }}';
-		function facebookJSLoaded(){
-			FB.init({appId: facebookAppId, status: false, cookie: true, xfbml: true, oauth: true});
-		}
-		window.fbAsyncInit = facebookJSLoaded;
-		F = new facebookClass(facebookAppId);
-	    F.load();
-	</script>
+	{% include 'django_facebook/_facebook_js.html' %}
+	
 	</body>
 </html>

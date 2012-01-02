@@ -162,6 +162,11 @@ LOGGING = {
         },
     },
     'loggers': {
+        'open_facebook':{
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
         'django_facebook':{
             'handlers': ['console'],
             'level': 'DEBUG',

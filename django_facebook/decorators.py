@@ -65,15 +65,15 @@ def facebook_required_lazy(view_func=None,
                 # token with correct redirect uri
                 get_persistent_graph(request, redirect_uri=redirect_uri)
                 return view_func(request, *args, **kwargs)
-            except open_facebook_exceptions.OpenFacebookException:
+            except open_facebook_exceptions.OpenFacebookException, e:
                 if test_permissions(request, scope_list, redirect_uri):
                     # an error if we already have permissions
                     # shouldn't have been caught
                     # raise to prevent bugs with error mapping to cause issues
                     raise
                 else:
-                    logger.info('requesting access with redirect uri: %s',
-                                redirect_uri)
+                    logger.info(u'requesting access with redirect uri: %s, error was %s',
+                                redirect_uri, e)
                     response = HttpResponseRedirect(oauth_url)
                     return response
         return _wrapped_view
