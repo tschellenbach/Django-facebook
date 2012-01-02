@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
-                      redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):
+                      redirect_field_name=REDIRECT_FIELD_NAME, login_url=None, canvas=False):
     """
     Decorator which makes the view require the given Facebook perms,
     redirecting to the log-in page if necessary.
@@ -44,7 +44,7 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
 def facebook_required_lazy(view_func=None,
                            scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
                            redirect_field_name=REDIRECT_FIELD_NAME,
-                           login_url=None, extra_params=None):
+                           login_url=None, extra_params=None, canvas=False):
     """
     Decorator which makes the view require the given Facebook perms,
     redirecting to the log-in page if necessary.

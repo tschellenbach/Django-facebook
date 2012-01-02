@@ -154,7 +154,7 @@ def poll_connect_task(request, task_id):
     pass
 
 
-@facebook_required_lazy()
+@facebook_required_lazy(canvas=True)
 def canvas(request):
     '''
     Example of a canvas page.
