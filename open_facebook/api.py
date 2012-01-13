@@ -102,7 +102,7 @@ class FacebookConnection(object):
                                                 timeout=timeout)
                 except (urllib2.HTTPError,), e:
                     # catch the silly status code errors
-                    if 'HTTP Error' in unicode(e):
+                    if 'http error' in str(e).lower():
                         response_file = e
                     else:
                         raise
