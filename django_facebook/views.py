@@ -168,6 +168,20 @@ def canvas(request):
 
     return render_to_response('django_facebook/canvas.html', context)
 
+@facebook_required_lazy(canvas=True)
+def page_tab(request):
+    '''
+    Example of a canvas page.
+    Canvas pages require redirects to work using javascript instead of http headers
+    The facebook required and facebook required lazy decorator abstract this away
+    '''
+    context = RequestContext(request)
+    fb = require_persistent_graph(request)
+    likes = fb.get('me/likes')['data']
+    context['likes'] = likes
+
+    return render_to_response('django_facebook/canvas.html', context)
+
 
 
 
