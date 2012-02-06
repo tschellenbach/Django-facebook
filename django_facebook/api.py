@@ -36,23 +36,24 @@ def get_persistent_graph(request, *args, **kwargs):
         raise(ValidationError,
             'Request is required if you want to use persistent tokens')
 
-    if hasattr(request, 'facebook'):
-        graph = request.facebook
-        _add_current_user_id(graph, request.user)
-        return graph
-
-    #get the new graph
-    graph = get_facebook_graph(request, *args, **kwargs)
-
-    #if it's valid replace the old cache
-    if graph is not None and graph.access_token:
-        request.session['graph'] = graph
+    session_graph = getattr(request, 'facebook', None)
+    if session_graph:
+        #gets the graph from the local memory if available
+        graph = session_graph
     else:
-        facebook_open_graph_cached = request.session.get('graph')
-        if facebook_open_graph_cached:
-            facebook_open_graph_cached._me = None
-        graph = facebook_open_graph_cached
+        #search for the graph in the session
+        cached_graph = request.session.get('graph')
+        if cached_graph:
+            cached_graph._me = None
+            graph = cached_graph
+        else:
+            #gets the new graph, note this might do token conversions (slow) 
+            graph = get_facebook_graph(request, *args, **kwargs)
+            #if it's valid replace the old cache
+            if graph is not None and graph.access_token:
+                request.session['graph'] = graph
 
+    #add the current user id and cache the graph at the request level
     _add_current_user_id(graph, request.user)
     request.facebook = graph
 
@@ -138,6 +139,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                     logger.info(
                         'trying to convert the code with redirect uri: %s',
                         redirect_uri)
+                    #TODO: we should cache this somehow, lookup is slowwwww
                     token_response = FacebookAuthorization.convert_code(
                         code, redirect_uri=redirect_uri)
                     expires = token_response.get('expires')

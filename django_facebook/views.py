@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 # NOTE: from inside the application, you can directly import the file
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings
-from django_facebook.api import get_persistent_graph, FacebookUserConverter,\
+from django_facebook.api import get_persistent_graph, FacebookUserConverter, \
     require_persistent_graph
 from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
@@ -167,6 +167,31 @@ def canvas(request):
     context['likes'] = likes
 
     return render_to_response('django_facebook/canvas.html', context)
+
+@facebook_required_lazy(canvas=True)
+def page_tab(request):
+    '''
+    Example of a canvas page.
+    Canvas pages require redirects to work using javascript instead of http headers
+    The facebook required and facebook required lazy decorator abstract this away
+    '''
+    context = RequestContext(request)
+    facebook = require_persistent_graph(request)
+    likes = facebook.get('me/likes')['data']
+    context['likes'] = likes
+    from user.models import FacebookPageTab
+    
+    signed_request = request.REQUEST.get('signed_request')
+    
+    data = facebook.prefetched_data
+    page_id = data['page']['id']
+    defaults = dict(created_by_user=data['user_id'])
+    tab, created = FacebookPageTab.objects.get_or_create(page_id=page_id, defaults=defaults)
+    context['facebook'] = facebook
+    
+    raise Exception, tab
+
+    return render_to_response('django_facebook/page_tab.html', context)
 
 
 
