@@ -81,6 +81,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
     # should drop query params be included in the open facebook api,
     # maybe, weird this...
     from open_facebook import OpenFacebook, FacebookAuthorization
+    from django.core.cache import cache
     parsed_data = None
     expires = None
 
@@ -122,35 +123,41 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
 
         if not access_token:
             if code:
-                # exchange the code for an access token
-                # based on the php api
-                # https://github.com/facebook/php-sdk/blob/master/src/base_facebook.php
-                # create a default for the redirect_uri
-                # when using the javascript sdk the default
-                # should be '' an empty string
-                # for other pages it should be the url
-                if not redirect_uri:
-                    redirect_uri = ''
-
-                # we need to drop signed_request, code and state
-                redirect_uri = cleanup_oauth_url(redirect_uri)
-
-                try:
-                    logger.info(
-                        'trying to convert the code with redirect uri: %s',
-                        redirect_uri)
-                    #TODO: we should cache this somehow, lookup is slowwwww
-                    token_response = FacebookAuthorization.convert_code(
-                        code, redirect_uri=redirect_uri)
-                    expires = token_response.get('expires')
-                    access_token = token_response['access_token']
-                except open_facebook_exceptions.OAuthException, e:
-                    # this sometimes fails, but it shouldnt raise because
-                    # it happens when users remove your
-                    # permissions and then try to reauthenticate
-                    logger.warn('Error when trying to convert code %s',
-                                unicode(e))
-                    return None
+                cache_key = 'convert_code_%s' % code
+                access_token = cache.get(cache_key)
+                if not access_token:
+                    # exchange the code for an access token
+                    # based on the php api
+                    # https://github.com/facebook/php-sdk/blob/master/src/base_facebook.php
+                    # create a default for the redirect_uri
+                    # when using the javascript sdk the default
+                    # should be '' an empty string
+                    # for other pages it should be the url
+                    if not redirect_uri:
+                        redirect_uri = ''
+    
+                    # we need to drop signed_request, code and state
+                    redirect_uri = cleanup_oauth_url(redirect_uri)
+    
+                    try:
+                        logger.info(
+                            'trying to convert the code with redirect uri: %s',
+                            redirect_uri)
+                        #TODO: we should cache this somehow, lookup is slowwwww
+                        token_response = FacebookAuthorization.convert_code(
+                            code, redirect_uri=redirect_uri)
+                        expires = token_response.get('expires')
+                        access_token = token_response['access_token']
+                        #would use cookies instead, but django's cookie setting
+                        #is a bit of a mess
+                        cache.set(cache_key, access_token, 60*60*2)
+                    except open_facebook_exceptions.OAuthException, e:
+                        # this sometimes fails, but it shouldnt raise because
+                        # it happens when users remove your
+                        # permissions and then try to reauthenticate
+                        logger.warn('Error when trying to convert code %s',
+                                    unicode(e))
+                        return None
             elif request.user.is_authenticated():
                 #support for offline access tokens stored in the users profile
                 profile = request.user.get_profile()
@@ -163,6 +170,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
                 #     'Cant find code or access token')
 
     graph = OpenFacebook(access_token, parsed_data, expires=expires)
+    #add user specific identifiers
     if request:
         _add_current_user_id(graph, request.user)
 
