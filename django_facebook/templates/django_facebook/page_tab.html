@@ -1,0 +1,22 @@
+{% extends "django_facebook/_canvas_base.html" %}
+
+
+
+{% block content %}
+
+
+<h4>Things you like!</h4>
+<ul>
+    {% for like in likes %}
+        <li>{{ like.name }}</li>
+    {% endfor %}
+</ul>
+
+
+
+
+<iframe src="http://www.facebook.com/plugins/facepile.php?app_id={{ FACEBOOK_APP_ID }}&amp;width=500&amp;max_rows=1" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:500px;" allowTransparency="true"></iframe>
+
+{% endblock %} 
+				 
+				 
