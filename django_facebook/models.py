@@ -19,6 +19,7 @@ class FacebookProfileModel(models.Model):
     image = models.ImageField(blank=True, null=True,
         upload_to='profile_images', max_length=255)
     date_of_birth = models.DateField(blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=(('m', 'Male'), ('f', 'Female')), blank=True, null=True)
     raw_data = models.TextField(blank=True)
 
     def __unicode__(self):

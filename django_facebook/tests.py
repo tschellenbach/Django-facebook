@@ -41,6 +41,20 @@ class UserConnectTest(FacebookTest):
         request.session = {}
         request.user = AnonymousUser()
         get_persistent_graph(request, access_token='short_username')
+        
+    def test_gender_matching(self):
+        from django.test import RequestFactory
+        request = RequestFactory()
+        request.session = {}
+        request.user = AnonymousUser()
+        graph = get_persistent_graph(request, access_token='paul')
+        converter = FacebookUserConverter(graph)
+        base_data = converter.facebook_profile_data()
+        self.assertEqual(base_data['gender'], 'male')
+        data = converter.facebook_registration_data()
+        self.assertEqual(data['gender'], 'm')
+        action, user = connect_user(self.request, facebook_graph=graph)
+        self.assertEqual(user.get_profile().gender, 'm')
 
     def test_full_connect(self):
         #going for a register, connect and login
