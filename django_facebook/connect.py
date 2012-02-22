@@ -98,11 +98,14 @@ def connect_user(request, access_token=None, facebook_graph=None):
     #store the access token for later usage if the profile model supports it
     if hasattr(profile, 'access_token'):
         # only update the access token if it is long lived and
-        # not equal to the current token
-        if not graph.expires and graph.access_token != profile.access_token:
-            # TODO, maybe we should just always do this.
-            profile.access_token = graph.access_token
-            profile.save()
+        if graph.expires:
+            logger.warn('we shouldnt be finding a graph expiration, its set to %s', graph.expires)
+            #TODO: maybe we should still save these
+        else:
+            # and not equal to the current token
+            if graph.access_token != profile.access_token:
+                profile.access_token = graph.access_token
+                profile.save()
 
     return action, user
 
