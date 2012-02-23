@@ -25,6 +25,7 @@ FACEBOOK_STORE_FRIENDS = getattr(settings, 'FACEBOOK_STORE_FRIENDS', False)
 FACEBOOK_CELERY_STORE = getattr(settings, 'FACEBOOK_CELERY_STORE', False)
 
 FACEBOOK_DEBUG_REDIRECTS = getattr(settings, 'FACEBOOK_DEBUG_REDIRECTS', False)
+FACEBOOK_STORE_ALL_ACCESS_TOKENS = getattr(settings, 'FACEBOOK_STORE_ALL_ACCESS_TOKENS', False) 
 
 # check for required settings
 required_settings = ['FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET']

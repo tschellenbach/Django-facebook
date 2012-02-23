@@ -97,15 +97,16 @@ def connect_user(request, access_token=None, facebook_graph=None):
     profile = user.get_profile()
     #store the access token for later usage if the profile model supports it
     if hasattr(profile, 'access_token'):
-        # only update the access token if it is long lived and
-        if graph.expires:
-            logger.warn('we shouldnt be finding a graph expiration, its set to %s', graph.expires)
-            #TODO: maybe we should still save these
-        else:
+        # only update the access token if it is long lived or we are set to store all
+        if not graph.expires or facebook_settings.FACEBOOK_STORE_ALL_ACCESS_TOKENS:
             # and not equal to the current token
             if graph.access_token != profile.access_token:
                 profile.access_token = graph.access_token
                 profile.save()
+        
+        #warn if we didn't get offline access
+        if graph.expires:
+            logger.warn('we shouldnt be finding a graph expiration, its set to %s', graph.expires)
 
     return action, user
 
