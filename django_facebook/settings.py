@@ -31,8 +31,8 @@ FACEBOOK_STORE_ALL_ACCESS_TOKENS = getattr(settings, 'FACEBOOK_STORE_ALL_ACCESS_
 required_settings = ['FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET']
 locals_dict = locals()
 for setting_name in required_settings:
-    assert(locals_dict.get(setting_name) is not None,
-           'Please provide setting %s' % setting_name)
+    setting_available = locals_dict.get(setting_name) is not None
+    assert setting_available, 'Please provide setting %s' % setting_name
 
 # Allow custom registration template
 FACEBOOK_REGISTRATION_TEMPLATE = getattr(settings,

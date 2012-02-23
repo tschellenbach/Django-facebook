@@ -51,8 +51,8 @@ class TestOpenFacebook(unittest.TestCase):
     def test_app_access_token(self):
         token = FacebookAuthorization.get_app_access_token()
         test_user = FacebookAuthorization.create_test_user(token)
-        assert('access_token' in test_user,
-               'App authentication failed %s' % test_user)
+        token_available = 'access_token' in test_user
+        assert token_available, 'App authentication failed %s' % test_user
 
     def test_cookie_parsing(self):
         cookie = 'F7cndfQuSIkcVHWIgg_SHQ4LIDJXeeHhiXUNjesOw5g.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImNvZGUiOiJVMTZuMFNoWVUxSTJ5VEFJMVZ0RmlvZTdhRVRaaEZ4cGV5d1hwYnZvOUprLmV5SnBkaUk2SW1OcmFGVXlWR053ZDA1VlMwSTRlUzFzZDA1WmFtY2lmUS5rZl9RTUhCMnVFTVh5YW83UU5UcnFGMlJzOGxxQUxrM1AxYm8zazBLMm5YUXpOZW5LSVlfczBVV3ZNbE1jTXAzcE04TXNLNVVDQUpjWlQ1N1ZaZXFkS3ZPeXRFbmdoODFxTmczTXVDeTBHNjB6WjFBOWZGZlpHenVDejdKSEVSSCIsImlzc3VlZF9hdCI6MTMxMTYwMDEyNywidXNlcl9pZCI6Nzg0Nzg1NDMwfQ'
