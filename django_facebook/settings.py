@@ -27,6 +27,9 @@ FACEBOOK_CELERY_STORE = getattr(settings, 'FACEBOOK_CELERY_STORE', False)
 FACEBOOK_DEBUG_REDIRECTS = getattr(settings, 'FACEBOOK_DEBUG_REDIRECTS', False)
 FACEBOOK_STORE_ALL_ACCESS_TOKENS = getattr(settings, 'FACEBOOK_STORE_ALL_ACCESS_TOKENS', False) 
 
+#READ only mode, convenient when doing load testing etc.
+FACEBOOK_READ_ONLY = getattr(settings, 'FACEBOOK_READ_ONLY', False) 
+
 # check for required settings
 required_settings = ['FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET']
 locals_dict = locals()
