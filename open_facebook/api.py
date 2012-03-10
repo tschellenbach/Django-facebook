@@ -81,11 +81,11 @@ class FacebookConnection(object):
         urllib2 raises errors on different status codes so use a try except
         '''
         logger.info('requesting url %s with post data %s', url, post_data)
+        post_request = (post_data is not None or 'method=post' in url)
         
-        if post_data is not None and facebook_settings.FACEBOOK_READ_ONLY:
-            response = dict(id=12345)
+        if post_request and facebook_settings.FACEBOOK_READ_ONLY:
+            response = dict(id=123456789)
             return response
-            
         
         opener = urllib2.build_opener()
         opener.addheaders = [('User-agent', 'Open Facebook Python')]
