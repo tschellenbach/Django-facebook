@@ -263,8 +263,9 @@ class FacebookAuthorization(FacebookConnection):
 
         algo = data.get('algorithm').upper()
         if  algo != 'HMAC-SHA256':
-            send_warning('Unknown algorithm we only support HMAC-SHA256 ' \
-                         'user asked for %s', algo)
+            error_format = 'Unknown algorithm we only support HMAC-SHA256 user asked for %s'
+            error_message = error_format % algo
+            send_warning(error_message)
             logger.error('Unknown algorithm')
             return None
         else:
@@ -272,8 +273,9 @@ class FacebookAuthorization(FacebookConnection):
                                     digestmod=hashlib.sha256).digest()
 
         if sig != expected_sig:
-            send_warning('Signature %s didnt match the expected ' \
-                         'signature %s', sig, expected_sig)
+            error_format = 'Signature %s didnt match the expected signature %s'
+            error_message = error_format % (sig, expected_sig)
+            send_warning(error_message)
             return None
         else:
             logger.debug('valid signed request received..')
