@@ -175,8 +175,9 @@ def _register_user(request, facebook, profile_callback=None,
         initial={'ip': request.META['REMOTE_ADDR']})
 
     if not form.is_valid():
-        error = facebook_exceptions.IncompleteProfileError('Facebook data %s '
-            'gave error %s' % (facebook_data, form.errors))
+        error_message_format = u'Facebook data %s gave error %s'
+        error_message = error_message_format % (facebook_data, form.errors)
+        error = facebook_exceptions.IncompleteProfileError(error_message)
         error.form = form
         raise error
 
