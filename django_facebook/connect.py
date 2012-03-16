@@ -243,7 +243,11 @@ def _update_user(user, facebook, overwrite=True):
     user_field_names = [f.name for f in user._meta.fields]
 
     #set the facebook id and make sure we are the only user with this id
-    if facebook_data['facebook_id'] != profile.facebook_id and overwrite:
+    facebook_id_changed = facebook_data['facebook_id'] != profile.facebook_id
+    overwrite_allowed = overwrite or not profile.facebook_id
+    
+    if facebook_id_changed and overwrite_allowed:
+        #when not overwriting we only update if there is no profile.facebook_id
         logger.info('profile facebook id changed from %s to %s',
                     repr(facebook_data['facebook_id']),
                     repr(profile.facebook_id))
