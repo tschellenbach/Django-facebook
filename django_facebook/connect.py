@@ -74,25 +74,8 @@ def connect_user(request, access_token=None, facebook_graph=None):
             # the old profile
             user = _register_user(request, facebook,
                                   remove_old_connections=force_registration)
-
-    #store likes and friends if configured
-    sid = transaction.savepoint()
-    try:
-        if facebook_settings.FACEBOOK_STORE_LIKES:
-            facebook.get_and_store_likes(user)
-        if facebook_settings.FACEBOOK_STORE_FRIENDS:
-            facebook.get_and_store_friends(user)
-        transaction.savepoint_commit(sid)
-    except IntegrityError, e:
-        logger.warn(u'Integrity error encountered during registration, '
-                'probably a double submission %s' % e,
-            exc_info=sys.exc_info(), extra={
-            'request': request,
-            'data': {
-                 'body': unicode(e),
-             }
-        })
-        transaction.savepoint_rollback(sid)
+            
+    _update_likes_and_friends(request, user, facebook)
 
     profile = user.get_profile()
     #store the access token for later usage if the profile model supports it
@@ -120,7 +103,7 @@ def _login_user(request, facebook, authenticated_user, update=False):
     return authenticated_user
 
 
-def _connect_user(request, facebook):
+def _connect_user(request, facebook, overwrite=True):
     '''
     Update the fields on the user model and connects it to the facebook account
 
@@ -132,10 +115,31 @@ def _connect_user(request, facebook):
         raise ValueError(
             'Facebook needs to be authenticated for connect flows')
 
-    user = _update_user(request.user, facebook)
+    user = _update_user(request.user, facebook, overwrite=overwrite)
 
     return user
 
+
+def _update_likes_and_friends(request, user, facebook):
+    #store likes and friends if configured
+    sid = transaction.savepoint()
+    try:
+        if facebook_settings.FACEBOOK_STORE_LIKES:
+            facebook.get_and_store_likes(user)
+        if facebook_settings.FACEBOOK_STORE_FRIENDS:
+            facebook.get_and_store_friends(user)
+        transaction.savepoint_commit(sid)
+    except IntegrityError, e:
+        logger.warn(u'Integrity error encountered during registration, '
+                'probably a double submission %s' % e,
+            exc_info=sys.exc_info(), extra={
+            'request': request,
+            'data': {
+                 'body': unicode(e),
+             }
+        })
+        transaction.savepoint_rollback(sid)
+        
 
 def _register_user(request, facebook, profile_callback=None,
                    remove_old_connections=False):
@@ -219,7 +223,7 @@ def _remove_old_connections(facebook_id, current_user_id=None):
     other_facebook_accounts.update(facebook_id=None)
 
 
-def _update_user(user, facebook):
+def _update_user(user, facebook, overwrite=True):
     '''
     Updates the user and his/her profile with the data from facebook
     '''
@@ -239,7 +243,7 @@ def _update_user(user, facebook):
     user_field_names = [f.name for f in user._meta.fields]
 
     #set the facebook id and make sure we are the only user with this id
-    if facebook_data['facebook_id'] != profile.facebook_id:
+    if facebook_data['facebook_id'] != profile.facebook_id and overwrite:
         logger.info('profile facebook id changed from %s to %s',
                     repr(facebook_data['facebook_id']),
                     repr(profile.facebook_id))
@@ -283,3 +287,21 @@ def _update_user(user, facebook):
         profile=profile, facebook_data=facebook_data)
 
     return user
+
+
+
+def update_connection(request, facebook):
+    '''
+    A special purpose view for updating the connection with an existing user
+    - updates the access token (already done in get_graph)
+    - sets the facebook_id if nothing is specified
+    - stores friends and likes if possible
+    '''
+    user = _connect_user(request, facebook, overwrite=False)
+    _update_likes_and_friends(request, user, facebook)
+    return user
+
+
+
+
+
