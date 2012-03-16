@@ -290,13 +290,14 @@ def _update_user(user, facebook, overwrite=True):
 
 
 
-def update_connection(request, facebook):
+def update_connection(request, user, graph):
     '''
     A special purpose view for updating the connection with an existing user
     - updates the access token (already done in get_graph)
     - sets the facebook_id if nothing is specified
     - stores friends and likes if possible
     '''
+    facebook = FacebookUserConverter(graph)
     user = _connect_user(request, facebook, overwrite=False)
     _update_likes_and_friends(request, user, facebook)
     return user
