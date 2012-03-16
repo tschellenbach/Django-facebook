@@ -290,7 +290,7 @@ def _update_user(user, facebook, overwrite=True):
 
 
 
-def update_connection(request, user, graph):
+def update_connection(request, graph):
     '''
     A special purpose view for updating the connection with an existing user
     - updates the access token (already done in get_graph)
