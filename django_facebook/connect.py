@@ -77,20 +77,8 @@ def connect_user(request, access_token=None, facebook_graph=None):
             
     _update_likes_and_friends(request, user, facebook)
 
-    profile = user.get_profile()
-    #store the access token for later usage if the profile model supports it
-    if hasattr(profile, 'access_token'):
-        # only update the access token if it is long lived or we are set to store all
-        if not graph.expires or facebook_settings.FACEBOOK_STORE_ALL_ACCESS_TOKENS:
-            # and not equal to the current token
-            if graph.access_token != profile.access_token:
-                profile.access_token = graph.access_token
-                profile.save()
-        
-        #warn if we didn't get offline access
-        if graph.expires:
-            logger.warn('we shouldnt be finding a graph expiration, its set to %s', graph.expires)
-
+    _update_access_token(user, graph)
+    
     return action, user
 
 
@@ -139,6 +127,24 @@ def _update_likes_and_friends(request, user, facebook):
              }
         })
         transaction.savepoint_rollback(sid)
+       
+def _update_access_token(user, graph):
+    '''
+    Conditionally updates the access token in the database
+    '''
+    profile = user.get_profile()
+    #store the access token for later usage if the profile model supports it
+    if hasattr(profile, 'access_token'):
+        # only update the access token if it is long lived or we are set to store all
+        if not graph.expires or facebook_settings.FACEBOOK_STORE_ALL_ACCESS_TOKENS:
+            # and not equal to the current token
+            if graph.access_token != profile.access_token:
+                profile.access_token = graph.access_token
+                profile.save()
+        
+        #warn if we didn't get offline access
+        if graph.expires:
+            logger.warn('we shouldnt be finding a graph expiration, its set to %s', graph.expires)
         
 
 def _register_user(request, facebook, profile_callback=None,
@@ -245,7 +251,8 @@ def _update_user(user, facebook, overwrite=True):
     #set the facebook id and make sure we are the only user with this id
     facebook_id_changed = facebook_data['facebook_id'] != profile.facebook_id
     overwrite_allowed = overwrite or not profile.facebook_id
-    
+
+    #update the facebook id and access token
     if facebook_id_changed and overwrite_allowed:
         #when not overwriting we only update if there is no profile.facebook_id
         logger.info('profile facebook id changed from %s to %s',
@@ -254,6 +261,7 @@ def _update_user(user, facebook, overwrite=True):
         profile.facebook_id = facebook_data['facebook_id']
         profile_dirty = True
         _remove_old_connections(profile.facebook_id, user.id)
+
 
     #update all fields on both user and profile
     for f in facebook_fields:
@@ -304,6 +312,7 @@ def update_connection(request, graph):
     facebook = FacebookUserConverter(graph)
     user = _connect_user(request, facebook, overwrite=False)
     _update_likes_and_friends(request, user, facebook)
+    _update_access_token(user, graph)
     return user
 
 
