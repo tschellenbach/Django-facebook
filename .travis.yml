@@ -2,6 +2,8 @@ language: python
 python:
   - 2.6
   - 2.7
+env:
+  - REQUIREMENTS=facebook_example/requirements.txt SETTINGS=facebook_example.settings
 postgres:
   adapter: sqlite3
   database: django_fb_test
