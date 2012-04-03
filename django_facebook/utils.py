@@ -1,6 +1,6 @@
 from django.http import QueryDict, HttpResponse, HttpResponseRedirect
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 import logging
 import re
 from django.utils.encoding import iri_to_uri
@@ -146,6 +146,7 @@ def get_profile_class():
     return models.get_model(app_label, model)
 
 
+@transaction.commit_on_succes
 def mass_get_or_create(model_class, base_queryset, id_field, default_dict,
                        global_defaults):
     '''
@@ -160,8 +161,9 @@ def mass_get_or_create(model_class, base_queryset, id_field, default_dict,
     >>> global_defaults = dict(user=request.user, list_id=1) #global defaults
     '''
     current_instances = list(base_queryset)
-    current_ids = [unicode(getattr(c, id_field)) for c in current_instances]
+    current_ids = set([unicode(getattr(c, id_field)) for c in current_instances])
     given_ids = map(unicode, default_dict.keys())
+    #both ends of the comparison are in unicode ensuring the not in works
     new_ids = [g for g in given_ids if g not in current_ids]
     inserted_model_instances = []
     for new_id in new_ids:
