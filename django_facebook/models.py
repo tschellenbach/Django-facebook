@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.urlresolvers import reverse
+from django_facebook import model_managers
 
 
 class FacebookProfileModel(models.Model):
@@ -61,6 +62,8 @@ class FacebookUser(models.Model):
     user_id = models.IntegerField()
     facebook_id = models.BigIntegerField()
     name = models.TextField(blank=True, null=True)
+
+    objects = model_managers.FacebookUserManager()
 
     class Meta:
         unique_together = ['user_id', 'facebook_id']
