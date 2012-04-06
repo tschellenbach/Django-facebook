@@ -62,6 +62,7 @@ class FacebookUser(models.Model):
     user_id = models.IntegerField()
     facebook_id = models.BigIntegerField()
     name = models.TextField(blank=True, null=True)
+    gender = models.CharField(choices=(('F', 'female'),('M', 'male')), blank=True, null=True, max_length=1)
 
     objects = model_managers.FacebookUserManager()
 

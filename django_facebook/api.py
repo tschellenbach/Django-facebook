@@ -557,9 +557,13 @@ class FacebookUserConverter(object):
             base_queryset = FacebookUser.objects.filter(user_id=user.id)
             global_defaults = dict(user_id=user.id)
             default_dict = {}
+            gender_map = dict(female='F', male='M')
             for f in friends:
                 name = f.get('name')
-                default_dict[str(f['id'])] = dict(name=name)
+                gender = None
+                if f.get('sex'):
+                    gender = gender_map[f.get('sex')]
+                default_dict[str(f['id'])] = dict(name=name, gender=gender)
             id_field = 'facebook_id'
 
             current_friends, inserted_friends = mass_get_or_create(
