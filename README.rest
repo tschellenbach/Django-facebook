@@ -2,6 +2,8 @@
 Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmorning.com/>`_)
 ######################################################################
 
+**The docs can also be found at: http://django-facebook.rtfd.org/**
+
 First
 -----
 
