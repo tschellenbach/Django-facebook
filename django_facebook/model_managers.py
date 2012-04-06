@@ -43,7 +43,10 @@ class FacebookUserManager(models.Manager):
             new_facebook_users = list(profile_class.objects.filter(facebook_id__in=facebook_ids).select_related('user'))
             cache.set(facebook_cache_key, new_facebook_users, 60*60)
             
-        random_facebook_users = random.sample(new_facebook_users, limit)
+        random_limit = min(len(new_facebook_users), 3)
+        random_facebook_users = []
+        if random_limit:
+            random_facebook_users = random.sample(new_facebook_users, limit)
             
         return random_facebook_users
         
