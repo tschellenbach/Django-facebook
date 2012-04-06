@@ -34,19 +34,22 @@ class FacebookUserManager(models.Manager):
         assert gender in (None, 'M', 'F'), 'Gender %s wasnt recognized' % gender
         
         from django_facebook.utils import get_profile_class
-        facebook_cache_key = 'fusers_%s' % user.id
-        new_facebook_users = cache.get(facebook_cache_key)
+        facebook_cache_key = 'facebook_users_%s' % user.id
+        non_members = cache.get(facebook_cache_key)
         profile_class = get_profile_class()
-        if not new_facebook_users:
+        if not non_members:
             facebook_users = list(self.filter(user_id=user.id, gender=gender)[:50])
             facebook_ids = [u.facebook_id for u in facebook_users]
-            new_facebook_users = list(profile_class.objects.filter(facebook_id__in=facebook_ids).select_related('user'))
-            cache.set(facebook_cache_key, new_facebook_users, 60*60)
+            members = list(profile_class.objects.filter(facebook_id__in=facebook_ids).select_related('user'))
+            member_ids = [p.facebook_id for p in members]
+            non_members = [u for u in facebook_users if u.facebook_id not in member_ids]
             
-        random_limit = min(len(new_facebook_users), 3)
+            cache.set(facebook_cache_key, non_members, 60*60)
+            
+        random_limit = min(len(non_members), 3)
         random_facebook_users = []
         if random_limit:
-            random_facebook_users = random.sample(new_facebook_users, limit)
+            random_facebook_users = random.sample(non_members, limit)
             
         return random_facebook_users
         

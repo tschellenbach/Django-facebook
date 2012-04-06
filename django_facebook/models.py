@@ -68,6 +68,9 @@ class FacebookUser(models.Model):
 
     class Meta:
         unique_together = ['user_id', 'facebook_id']
+        
+    def __unicode__(self):
+        return u'Facebook user %s' % self.name
 
 
 class FacebookLike(models.Model):
