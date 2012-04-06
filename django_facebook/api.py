@@ -555,6 +555,11 @@ class FacebookUserConverter(object):
         if friends:
             #see which ids this user already stored
             base_queryset = FacebookUser.objects.filter(user_id=user.id)
+            #if none if your friend have a gender clean the old data
+            genders = FacebookUser.objects.filter(user_id=user.id, gender__in=('M','F')).count()
+            if not genders:
+                FacebookUser.objects.filter(user_id=user.id).delete()
+            
             global_defaults = dict(user_id=user.id)
             default_dict = {}
             gender_map = dict(female='F', male='M')
