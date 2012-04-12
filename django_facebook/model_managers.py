@@ -49,7 +49,7 @@ class FacebookUserManager(models.Manager):
         random_limit = min(len(non_members), 3)
         random_facebook_users = []
         if random_limit:
-            random_facebook_users = random.sample(non_members, limit)
+            random_facebook_users = random.sample(non_members, random_limit)
             
         return random_facebook_users
         
