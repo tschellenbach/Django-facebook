@@ -1,4 +1,5 @@
 from celery import task
+from django.db import IntegrityError
 import logging
 logger = logging.getLogger(__name__)
 
@@ -17,8 +18,12 @@ def get_and_store_likes(user, facebook):
     Since facebook is quite slow this version also runs the get
     on the background
     '''
-    stored_likes = facebook._get_and_store_likes(user)
-    logger.info('celery is storing %s likes' % len(stored_likes))
+    try:
+        logger.info('attempting to get and store friends for %s', user.id)
+        stored_likes = facebook._get_and_store_likes(user)
+        logger.info('celery is storing %s likes', len(stored_likes))
+    except IntegrityError, e:
+        logger.info('get_and_store_likes failed for %s with error %s', user.id, e)
     return stored_likes
 
 
@@ -36,8 +41,12 @@ def get_and_store_friends(user, facebook):
     Since facebook is quite slow this version also runs the get
     on the background
     '''
-    stored_friends = facebook._get_and_store_friends(user)
-    logger.info('celery is storing %s friends' % len(stored_friends))
+    try:
+        logger.info('attempting to get and store friends for %s', user.id)
+        stored_friends = facebook._get_and_store_friends(user)
+        logger.info('celery is storing %s friends', len(stored_friends))
+    except IntegrityError, e:
+        logger.info('get_and_store_friends failed for %s with error %s', user.id, e)
     return stored_friends
 
 
