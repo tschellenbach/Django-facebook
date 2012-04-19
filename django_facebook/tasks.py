@@ -22,9 +22,9 @@ def get_and_store_likes(user, facebook):
         logger.info('attempting to get and store friends for %s', user.id)
         stored_likes = facebook._get_and_store_likes(user)
         logger.info('celery is storing %s likes', len(stored_likes))
+        return stored_likes
     except IntegrityError, e:
-        logger.info('get_and_store_likes failed for %s with error %s', user.id, e)
-    return stored_likes
+        logger.warn('get_and_store_likes failed for %s with error %s', user.id, e)
 
 
 @task.task(ignore_result=True)
@@ -45,9 +45,9 @@ def get_and_store_friends(user, facebook):
         logger.info('attempting to get and store friends for %s', user.id)
         stored_friends = facebook._get_and_store_friends(user)
         logger.info('celery is storing %s friends', len(stored_friends))
+        return stored_friends
     except IntegrityError, e:
-        logger.info('get_and_store_friends failed for %s with error %s', user.id, e)
-    return stored_friends
+        logger.warn('get_and_store_friends failed for %s with error %s', user.id, e)
 
 
 @task.task()
