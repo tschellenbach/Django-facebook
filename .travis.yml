@@ -9,6 +9,8 @@ postgres:
   database: django_fb_test
 install:
   - python setup.py install
+  - pwd
+  - ls -l
   - pip install -r facebook_example/requirements/$REQUIREMENTS.txt --use-mirrors -I
 script:
   - cd tests
