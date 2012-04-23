@@ -1,5 +1,6 @@
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django_facebook import settings as fb_settings
+
 from django.http import HttpResponseRedirect
 from django_facebook.utils import get_oauth_url, parse_scope, response_redirect
 from django.utils.decorators import available_attrs
@@ -20,6 +21,7 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
     and upon a permission error redirect to login_url
     Querying the permissions would slow down things
     """
+    from open_facebook import exceptions as open_facebook_exceptions
     from django_facebook.utils import test_permissions
     scope_list = parse_scope(scope)
 
@@ -27,7 +29,15 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
             oauth_url, redirect_uri = get_oauth_url(request, scope_list)
-            if test_permissions(request, scope_list, redirect_uri):
+            
+            #Normal facebook errors should be raised
+            #OAuthException s should cause a redirect for authorization
+            try:
+                permission_granted = test_permissions(request, scope_list, redirect_uri)
+            except open_facebook_exceptions.OAuthException, e:
+                permission_granted = False
+            
+            if permission_granted:
                 return view_func(request, *args, **kwargs)
             else:
                 logger.info('requesting access with redirect uri: %s',
