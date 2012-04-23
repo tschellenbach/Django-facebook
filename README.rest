@@ -71,24 +71,54 @@ add django facebook to your installed apps::
 
     'django_facebook',
 
-add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS``
+Add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS``
 setting)::
 
     'django_facebook.context_processors.facebook',
 
-add this to your ``AUTHENTICATION_BACKENDS`` setting::
+If you would like to use automatic redirection, as well as static files includes (which django-facebook uses by default), make sure the following lines are present in ``TEMPLATE_CONTEXT_PROCESSORS`` as well::
+
+    'django.core.context_processors.request',
+    'django.core.context_processors.static',
+
+Add this to your ``AUTHENTICATION_BACKENDS`` setting::
 
     'django_facebook.auth_backends.FacebookBackend',
+
+Note that if you do not have an ``AUTHENTICATION_BACKENDS`` setting specified and would still like to use normal django authentication, you should also add the following default auth backend::
+
+    'django.contrib.auth.backends.ModelBackend',
+
+You should also add the following ``REGISTRATION_BACKEND`` if it does not exist already::
+
+    REGISTRATION_BACKEND = 'registration.backends.default.DefaultBackend'
+
+If you are using django-registration (the third party registration manager), you may need to add an admin email address::
+
+    DEFAULT_FROM_EMAIL = 'admin@example.com'
     
-add this line to your url config::
+Now, add this line to your url config::
 
     (r'^facebook/', include('django_facebook.urls')),
 
 **Update your models**
 
-An abstract model is specified here django_facebook/models.py
-Add these fields to your profile model or subclass the abstract class.
-See the django docs for settings up a Profile model or understanding abstract classes.
+An abstract model is specified here django_facebook/models.py and is named "FacebookProfileModel".  Add these fields to your profile model or subclass the abstract class.  Your subclassed model should have a field called "user" with a ForeignKey pointing to your User model (django.contrib.auth.models.User in most cases).
+
+If you get errors with your user profile not found, you will need to create a profile for the user at some point, since this is not done automatically.  One way to do this is via a post_save signal for your User.  Below is an example, with "FacebookProfile" as the name of the custom user profile.  Keep in mind that your project's requirements may differ::
+
+    from django.db.models import signals
+    from django.contrib.auth.models import User
+    
+    def create_userprofile(sender, **kwargs):
+        created = kwargs['created'] # object created or just saved?
+    
+        if created:
+            FacebookProfile.objects.create(user=kwargs['instance'])
+    
+    signals.post_save.connect(create_userprofile, sender=User)
+
+See the django docs for more information on setting up a Profile model or understanding abstract classes.
 
 **Check the example**
 
