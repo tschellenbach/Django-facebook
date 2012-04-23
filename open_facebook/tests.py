@@ -1,10 +1,65 @@
+
+# -*- coding: utf-8 -*-
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'facebook_example.settings'
 from open_facebook.api import *
 import unittest
 import logging
 logger = logging.getLogger()
+from open_facebook.utils import json
 
+
+class TestErrorMapping(unittest.TestCase):
+    
+    def test_oauth_errors(self):
+        expires_response = '''{
+          "error": {
+            "type": "OAuthException",
+            "message": "Session has expired at unix time SOME_TIME. The current unix time is SOME_TIME."
+          }
+        } '''
+        changed_password_response = '''
+        {
+          "error": {
+            "type": "OAuthException",
+            "message": "The session has been invalidated because the user has changed the password."
+          }
+        }
+        '''
+        deauthorized_response = '''
+        {
+          "error": {
+            "type": "OAuthException",
+            "message": "Error validating access token: USER_ID has not authorized application APP_ID"
+          }
+        }
+        '''
+        loggedout_response = '''
+        {
+          "error": {
+            "type": "OAuthException",
+            "message": "Error validating access token: The session is invalid because the user logged out."
+           }
+        }
+        '''
+        responses = [expires_response, changed_password_response,
+                      deauthorized_response, loggedout_response]
+        response_objects = []
+        for response_string in responses:
+            print response_string
+            response = json.loads(response_string)
+            
+            response_objects.append(response)
+            
+        from open_facebook import exceptions as open_facebook_exceptions
+        for response in response_objects:
+            oauth = False
+            try:
+                FacebookConnection.raise_error(response['error']['type'],
+                                    response['error']['message'])
+            except open_facebook_exceptions.OAuthException, e:
+                oauth = True
+            assert oauth, 'response %s didnt raise oauth error' % response
 
 class TestOpenFacebook(unittest.TestCase):
     def test_thijs_profile(self):

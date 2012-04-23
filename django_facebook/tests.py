@@ -209,3 +209,6 @@ class SignalTest(FacebookTest):
                                  'pre_update_signal'), True)
         self.assertEqual(hasattr(user.get_profile(),
                                  'post_update_signal'), True)
+
+
+from open_facebook.tests import *
