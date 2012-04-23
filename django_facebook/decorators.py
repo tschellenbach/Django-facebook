@@ -6,7 +6,7 @@ from django.utils.decorators import available_attrs
 from django.utils.functional import wraps
 
 import logging
-from django_facebook.api import get_persistent_graph
+from django_facebook.api import require_persistent_graph
 logger = logging.getLogger(__name__)
 
 
@@ -63,7 +63,7 @@ def facebook_required_lazy(view_func=None,
             try:
                 # call get persistent graph and convert the
                 # token with correct redirect uri
-                get_persistent_graph(request, redirect_uri=redirect_uri)
+                require_persistent_graph(request, redirect_uri=redirect_uri)
                 return view_func(request, *args, **kwargs)
             except open_facebook_exceptions.OpenFacebookException, e:
                 if test_permissions(request, scope_list, redirect_uri):
