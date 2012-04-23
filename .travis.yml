@@ -13,5 +13,5 @@ install:
   - ls -l
   - pip install -r facebook_example/requirements/$REQUIREMENTS.txt --use-mirrors -I
 script:
-  - cd tests
+  - cd facebook_example
   - python manage.py test $TESTS --settings=$SETTINGS
