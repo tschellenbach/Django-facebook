@@ -5,9 +5,44 @@ from django.contrib.auth.models import User
 
 from django_facebook import signals
 from django_facebook.forms import FacebookRegistrationFormUniqueEmail
+from django_facebook import settings as facebook_settings
 
 
-class FacebookRegistrationBackend(object):
+class NooptRegistrationBackend(object):
+    '''
+    Noopt backends forms the basis of support for backends
+    which handle the actual registration in the registration form
+    '''
+    def get_form_class(self, request):
+        return FacebookRegistrationFormUniqueEmail
+    
+    def get_registration_template(self):
+        template = facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE
+        return template
+
+    def register(self, request, **kwargs):
+        pass
+        
+    def activate(self, **kwargs):
+        raise NotImplementedError
+
+    def registration_allowed(self, request):
+        return getattr(settings, 'REGISTRATION_OPEN', True)
+
+    def post_registration_redirect(self, request, user):
+        '''
+        Handled by the Django Facebook app
+        '''
+        raise NotImplementedError
+
+    def post_activation_redirect(self, request, user):
+        '''
+        Handled by the Django Facebook app
+        '''
+        raise NotImplementedError
+    
+
+class FacebookRegistrationBackend(NooptRegistrationBackend):
     """
     A backend compatible with Django Registration
     It is extremly simple and doesn't handle things like redirects etc
@@ -29,24 +64,21 @@ class FacebookRegistrationBackend(object):
                                      user=new_user,
                                      request=request)
         return new_user
+    
 
-    def activate(self, **kwargs):
-        raise NotImplementedError
-
-    def registration_allowed(self, request):
-        return getattr(settings, 'REGISTRATION_OPEN', True)
-
+class UserenaBackend(NooptRegistrationBackend):
     def get_form_class(self, request):
-        return FacebookRegistrationFormUniqueEmail
+        from userena.forms import SignupForm
+        return SignupForm
+    
+    def get_registration_template(self):
+        template = 'userena/signup_form.html'
+        return template
+    
+    
+class OldDjangoRegistrationBackend(NooptRegistrationBackend):
+    def get_form_class(self, request):
+        from registration.forms import RegistrationFormUniqueEmail
+        return RegistrationFormUniqueEmail
 
-    def post_registration_redirect(self, request, user):
-        '''
-        Handled by the Django Facebook app
-        '''
-        raise NotImplementedError
 
-    def post_activation_redirect(self, request, user):
-        '''
-        Handled by the Django Facebook app
-        '''
-        raise NotImplementedError

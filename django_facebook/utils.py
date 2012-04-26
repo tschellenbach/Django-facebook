@@ -194,9 +194,8 @@ def get_form_class(backend, request):
     '''
     Will use registration form in the following order:
     1. User configured RegistrationForm
-    2. User configured RegistrationForm
-    3. backend.get_form_class(request) from django-registration 0.8
-    4. RegistrationFormUniqueEmail from django-registration < 0.8
+    2. backend.get_form_class(request) from django-registration 0.8
+    3. RegistrationFormUniqueEmail from django-registration < 0.8
     '''
     from django_facebook import settings as facebook_settings
     form_class = None
@@ -210,10 +209,8 @@ def get_form_class(backend, request):
         backend = backend or get_registration_backend()
         if backend:
             form_class = backend.get_form_class(request)
-        else:
-            #fall back to the old school django registration
-            from registration.forms import RegistrationFormUniqueEmail
-            form_class = RegistrationFormUniqueEmail
+            
+    assert form_class, 'we couldnt find a form class, so we cant go on like this'
             
     return form_class
 
@@ -226,13 +223,15 @@ def get_registration_backend():
     backend_class = None
     django_registration_version = get_django_registration_version()
     
-    registration_backend_string = getattr(settings, 'REGISTRATION_BACKEND', None)
+    registration_backend_string = getattr(settings, 'REGISTRATION_BACKEND', 0)
     if registration_backend_string:
         backend_class = get_class_from_string(registration_backend_string, default=None)
         
     #If we are running the old django registration default to not using backends
+    #If we manually set REGISTRATION_BACKEND to None we should also ignore it
+    #Or use a userena backend?
     default_backend_class = FacebookRegistrationBackend
-    if django_registration_version == 'old':
+    if django_registration_version == 'old' or registration_backend_string is None:
         default_backend_class = None
         
     #use the default if we don't have a class yet
