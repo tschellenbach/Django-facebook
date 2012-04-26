@@ -3,9 +3,10 @@ from django.conf import settings
 from django.db import models, transaction
 import logging
 import re
+from django_facebook import settings as facebook_settings
 from django.utils.encoding import iri_to_uri
 from django.template.loader import render_to_string
-from django_facebook.simple_registration import FacebookRegistrationBackend
+from django_facebook.registration_backends import FacebookRegistrationBackend
 
 
 logger = logging.getLogger(__name__)
@@ -221,27 +222,15 @@ def get_registration_backend():
     '''
     backend = None
     backend_class = None
-    django_registration_version = get_django_registration_version()
     
-    registration_backend_string = getattr(settings, 'REGISTRATION_BACKEND', 0)
+    registration_backend_string = getattr(facebook_settings, 'FACEBOOK_REGISTRATION_BACKEND', None)
     if registration_backend_string:
         backend_class = get_class_from_string(registration_backend_string, default=None)
-        
-    #If we are running the old django registration default to not using backends
-    #If we manually set REGISTRATION_BACKEND to None we should also ignore it
-    #Or use a userena backend?
-    default_backend_class = FacebookRegistrationBackend
-    if django_registration_version == 'old' or registration_backend_string is None:
-        default_backend_class = None
-        
-    #use the default if we don't have a class yet
-    if not backend_class and default_backend_class:
-        backend_class = default_backend_class
        
     #instantiate
     if backend_class:
         backend = backend_class()
-        
+    
     return backend
 
 

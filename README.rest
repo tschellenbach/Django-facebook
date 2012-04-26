@@ -126,15 +126,39 @@ Right now you should have a working registration/connect/login in flow available
 Test if everything is working and ensure you didn't miss a step somewhere.
 If you encounter any difficulties please open an issue.
 
-**Django Userena**
 
-A few settings changes are needed to play nicely with Django Userena.
-In your settings point Django Facebook to the right registration form and template:
+**Registration Backends**
+
+Django Facebook uses registration backends to integrate with various registration frameworks.
+No registration backend is required. However if you want to integrate with django registration,
+django userena or a custom backend you need to point us in the right direction.
+
+**Django Registration support**
+Simply set your facebook registration backend to your preferred backend.
 
 ::
 
-    FACEBOOK_REGISTRATION_FORM = 'userena.forms.SignupForm'
-    FACEBOOK_REGISTRATION_TEMPLATE = 'userena/signup_form.html'
+    FACEBOOK_REGISTRATION_BACKEND = 'registration.backends.default.DefaultBackend'
+
+**Django Userena support**
+
+We recommend using Django Userena. It seems easier to work with than Django Registration.
+Both are supported and good packages though.
+To use django userena simply point to the userena compatability layer.
+
+::
+
+    FACEBOOK_REGISTRATION_BACKEND = 'django_facebook.registration_backends.UserenaBackend'
+
+
+**Old Django Registration Support**
+
+Even older version of Django Registration are supported. Simply point to the old django registration
+compatability backend.
+
+::
+
+    FACEBOOK_REGISTRATION_BACKEND = 'django_facebook.registration_backends.OldDjangoRegistrationBackend'
 
 Supporting any other registration system is quite easy.
 Adjust the above settings to point to your own code.

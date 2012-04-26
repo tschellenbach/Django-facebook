@@ -75,7 +75,7 @@ class UserenaBackend(NooptRegistrationBackend):
         template = 'userena/signup_form.html'
         return template
     
-    
+
 class OldDjangoRegistrationBackend(NooptRegistrationBackend):
     def get_form_class(self, request):
         from registration.forms import RegistrationFormUniqueEmail
