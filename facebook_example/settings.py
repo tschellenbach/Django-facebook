@@ -111,7 +111,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'registration',
+    #'registration', The default is now not to use django registration
     'django_facebook',
     'member',
     'south',
@@ -122,7 +122,7 @@ INSTALLED_APPS = (
 )
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-REGISTRATION_BACKEND = 'registration.backends.default.DefaultBackend'
+
 FACEBOOK_APP_ID = '215464901804004'
 FACEBOOK_APP_SECRET = '0aceba27823a9dfefa955f76949fa4b4'
 FACEBOOK_STORE_LIKES = False

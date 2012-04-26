@@ -5,8 +5,11 @@ from django.conf.urls.defaults import *
 # admin.autodiscover()
 
 urlpatterns = patterns('',
-    (r'^accounts/', include('registration.backends.default.urls')),
+    #(r'^accounts/', include('registration.backends.default.urls')),
     (r'^facebook/', include('django_facebook.urls')),
+    
+    #what to do with these?
+    (r'', include('django_facebook.auth_urls')),
     # Example:
     # (r'^django_facebook_test/', include('django_facebook_test.foo.urls')),
 

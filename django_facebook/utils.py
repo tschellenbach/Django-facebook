@@ -5,6 +5,7 @@ import logging
 import re
 from django.utils.encoding import iri_to_uri
 from django.template.loader import render_to_string
+from django_facebook.simple_registration import FacebookRegistrationBackend
 
 
 logger = logging.getLogger(__name__)
@@ -193,8 +194,9 @@ def get_form_class(backend, request):
     '''
     Will use registration form in the following order:
     1. User configured RegistrationForm
-    2. backend.get_form_class(request) from django-registration 0.8
-    3. RegistrationFormUniqueEmail from django-registration < 0.8
+    2. User configured RegistrationForm
+    3. backend.get_form_class(request) from django-registration 0.8
+    4. RegistrationFormUniqueEmail from django-registration < 0.8
     '''
     from django_facebook import settings as facebook_settings
     form_class = None
@@ -205,10 +207,14 @@ def get_form_class(backend, request):
         form_class = get_class_from_string(form_class_string, None)
 
     if not form_class:
-        from registration.forms import RegistrationFormUniqueEmail
-        form_class = RegistrationFormUniqueEmail
+        backend = backend or get_registration_backend()
         if backend:
             form_class = backend.get_form_class(request)
+        else:
+            #fall back to the old school django registration
+            from registration.forms import RegistrationFormUniqueEmail
+            form_class = RegistrationFormUniqueEmail
+            
     return form_class
 
 
@@ -217,18 +223,49 @@ def get_registration_backend():
     Ensures compatability with the new and old version of django registration
     '''
     backend = None
+    backend_class = None
+    django_registration_version = get_django_registration_version()
+    
+    registration_backend_string = getattr(settings, 'REGISTRATION_BACKEND', None)
+    if registration_backend_string:
+        backend_class = get_class_from_string(registration_backend_string, default=None)
+        
+    #If we are running the old django registration default to not using backends
+    default_backend_class = FacebookRegistrationBackend
+    if django_registration_version == 'old':
+        default_backend_class = None
+        
+    #use the default if we don't have a class yet
+    if not backend_class and default_backend_class:
+        backend_class = default_backend_class
+       
+    #instantiate
+    if backend_class:
+        backend = backend_class()
+        
+    return backend
+
+
+
+def get_django_registration_version():
+    '''
+    Returns new, old or None depending on the version of django registration
+    Old works with forms
+    New works with backends
+    '''
     try:
         # support for the newer implementation
         from registration.backends import get_backend
-        try:
-            backend = get_backend(settings.REGISTRATION_BACKEND)
-        except:
-            raise(ValueError,
-                  'Cannot get django-registration backend from ' \
-                  'settings.REGISTRATION_BACKEND')
+        version = 'new'
     except ImportError:
-        backend = None
-    return backend
+        version = 'old'
+        
+    try:
+        import registration
+    except ImportError, e:
+        version = None
+    
+    return version
 
 
 def parse_scope(scope):
