@@ -64,6 +64,7 @@ def connect_user(request, access_token=None, facebook_graph=None):
         auth_user = authenticate(facebook_id=facebook_data['id'], **kwargs)
         if auth_user and not force_registration:
             action = CONNECT_ACTIONS.LOGIN
+            
 
             # Has the user registered without Facebook, using the verified FB
             # email address?
@@ -199,7 +200,8 @@ def _register_user(request, facebook, profile_callback=None,
     #for new registration systems use the backends methods of saving
     if backend:
         new_user = backend.register(request, **form.cleaned_data)
-    else:
+    #fall back to the form approach
+    if not new_user:
         # For backward compatibility, if django-registration form is used
         try:
             new_user = form.save(profile_callback=profile_callback)

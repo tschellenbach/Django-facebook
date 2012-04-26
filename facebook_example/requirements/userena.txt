@@ -1,2 +1,2 @@
 -r development.txt
-django_userena
+django-userena

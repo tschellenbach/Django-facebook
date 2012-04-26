@@ -10,6 +10,7 @@ urlpatterns = patterns('',
     
     #what to do with these?
     (r'', include('django_facebook.auth_urls')),
+    (r'^accounts/', include('userena.urls')),
     # Example:
     # (r'^django_facebook_test/', include('django_facebook_test.foo.urls')),
 

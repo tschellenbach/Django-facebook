@@ -151,6 +151,9 @@ To use django userena simply point to the userena compatability layer.
     FACEBOOK_REGISTRATION_BACKEND = 'django_facebook.registration_backends.UserenaBackend'
 
 
+Also have a look at the userena settings file in the facebook example project.
+It provides a clear example of how to configure Userena and Django Facebook to work together.
+
 **Old Django Registration Support**
 
 Even older version of Django Registration are supported. Simply point to the old django registration
