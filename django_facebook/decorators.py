@@ -76,7 +76,8 @@ def facebook_required_lazy(view_func=None,
                 require_persistent_graph(request, redirect_uri=redirect_uri)
                 return view_func(request, *args, **kwargs)
             except open_facebook_exceptions.OpenFacebookException, e:
-                if test_permissions(request, scope_list, redirect_uri):
+                permission_granted = test_permissions(request, scope_list, redirect_uri)
+                if permission_granted:
                     # an error if we already have permissions
                     # shouldn't have been caught
                     # raise to prevent bugs with error mapping to cause issues

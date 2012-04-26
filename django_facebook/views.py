@@ -79,6 +79,7 @@ def connect(request):
     assert context.get('FACEBOOK_APP_ID'), 'Please specify a facebook app id '\
         'and ensure the context processor is enabled'
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
+    
 
     if facebook_login:
         logger.info('trying to connect using facebook')
@@ -86,6 +87,7 @@ def connect(request):
         if graph:
             logger.info('found a graph object')
             facebook = FacebookUserConverter(graph)
+            
             if facebook.is_authenticated():
                 logger.info('facebook is authenticated')
                 facebook_data = facebook.facebook_profile_data()

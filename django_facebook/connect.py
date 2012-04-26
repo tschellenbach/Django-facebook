@@ -45,9 +45,14 @@ def connect_user(request, access_token=None, facebook_graph=None):
     facebook_data = facebook.facebook_profile_data()
     force_registration = request.REQUEST.get('force_registration') or\
         request.REQUEST.get('force_registration_hard')
+        
+    connect_facebook = bool(int(request.REQUEST.get('connect_facebook', 0)))
 
     logger.debug('force registration is set to %s', force_registration)
-    if request.user.is_authenticated() and not force_registration:
+    if connect_facebook and request.user.is_authenticated() and not force_registration:
+        #we should only allow connect if users indicate they really want to connect
+        #only when the request.CONNECT_FACEBOOK = 1
+        #if this isn't present we just do a login    
         action = CONNECT_ACTIONS.CONNECT
         user = _connect_user(request, facebook)
     else:

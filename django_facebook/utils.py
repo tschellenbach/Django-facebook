@@ -10,6 +10,17 @@ from django.template.loader import render_to_string
 logger = logging.getLogger(__name__)
 
 
+def clear_persistent_graph_cache(request):
+    '''
+    Clears the caches for the graph cache
+    '''
+    request.facebook = None
+    request.session.delete('graph')
+    if request.user.is_authenticated():
+        profile = request.user.get_profile()
+        profile.clear_access_token()
+
+
 def test_permissions(request, scope_list, redirect_uri=None):
     '''
     Call Facebook me/permissions to see if we are allowed to do this

@@ -3,6 +3,14 @@ from django.core.urlresolvers import reverse
 from django_facebook import model_managers
 
 
+
+
+
+
+
+
+
+
 class FacebookProfileModel(models.Model):
     '''
     Abstract class to add to your profile model.
@@ -40,6 +48,10 @@ class FacebookProfileModel(models.Model):
         response.set_cookie('fresh_registration', self.user_id)
 
         return response
+    
+    def clear_access_token(self):
+        self.access_token = None
+        self.save()
 
     def get_offline_graph(self):
         '''
