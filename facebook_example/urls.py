@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
-
+from django.conf import settings
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
@@ -10,7 +10,7 @@ urlpatterns = patterns('',
     
     #what to do with these?
     (r'', include('django_facebook.auth_urls')),
-    (r'^accounts/', include('userena.urls')),
+    
     # Example:
     # (r'^django_facebook_test/', include('django_facebook_test.foo.urls')),
 
@@ -20,3 +20,8 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     # (r'^admin/', include(admin.site.urls)),
 )
+
+if settings.MODE == 'userena':
+    urlpatterns += patterns('',
+        (r'^accounts/', include('userena.urls')),
+    )

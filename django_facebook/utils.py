@@ -230,7 +230,7 @@ def get_registration_backend():
     #instantiate
     if backend_class:
         backend = backend_class()
-    
+        
     return backend
 
 
@@ -365,6 +365,7 @@ def get_class_from_string(path, default='raise'):
     ``django.core.exceptions.ImproperlyConfigured`` is raised.
     """
     from django.core.exceptions import ImproperlyConfigured
+    backend_class = None
     try:
         from importlib import import_module
     except ImportError:
@@ -383,4 +384,6 @@ def get_class_from_string(path, default='raise'):
             raise ImproperlyConfigured(
                 'Module "%s" does not define a registration ' \
                 'backend named "%s"' % (module, attr))
+        else:
+            backend_class = default
     return backend_class

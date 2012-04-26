@@ -1,6 +1,6 @@
 from facebook_example.settings import *
 
-
+MODE = 'userena'
 
 FACEBOOK_REGISTRATION_BACKEND = 'django_facebook.registration_backends.UserenaBackend'
 
