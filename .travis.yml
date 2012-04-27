@@ -13,6 +13,6 @@ install:
   - python setup.py install
   - pip install -r facebook_example/requirements/$REQUIREMENTS.txt --use-mirrors -I
 script:
-	- pip install -e .
+  - pip install -e .
   - cd facebook_example
   - python manage.py test $TESTS --settings=$SETTINGS
