@@ -36,6 +36,14 @@ class FacebookProfileModel(models.Model):
 
     class Meta:
         abstract = True
+        
+    def likes(self):
+        likes = FacebookLike.objects.filter(user_id=self.user_id)
+        return likes
+    
+    def friends(self):
+        friends = FacebookUser.objects.filter(user_id=self.user_id)
+        return friends
 
     def post_facebook_registration(self, request):
         '''

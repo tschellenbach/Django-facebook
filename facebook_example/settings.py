@@ -128,8 +128,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 FACEBOOK_APP_ID = '215464901804004'
 FACEBOOK_APP_SECRET = '0aceba27823a9dfefa955f76949fa4b4'
-FACEBOOK_STORE_LIKES = False
-FACEBOOK_STORE_FRIENDS = False
+FACEBOOK_STORE_LIKES = True
+FACEBOOK_STORE_FRIENDS = True
 
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend', 'django_facebook.auth_backends.FacebookBackend',)
 AUTH_PROFILE_MODULE = 'member.UserProfile'
