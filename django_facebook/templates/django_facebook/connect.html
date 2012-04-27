@@ -159,7 +159,8 @@
 		{% if request.user.is_authenticated %}
 			Hello {{ request.user }}, <a href="{% url django.contrib.auth.views.logout %}?next={{ request.path|urlencode }}">logout</a>
 			<img src="http://graph.facebook.com/{{ request.user.get_profile.facebook_id }}/picture?type=large" title="facebook stored image" />
-			<img src="{{ request.user.get_profile.image }}" title="local copy" />
+			{{ request.user.get_profile.image.url }}
+			<img src="{{ request.user.get_profile.image.url }}" title="local copy" />
             <form action="{% url facebook_connect %}?facebook_login=1" method="post">
                 <a href="javascript:void(0);" onclick="F.connect(this.parentNode);">Connect this account to Facebook</a> (used to connect non facebook accounts)
                 <input type="hidden" value="{{ request.path }}" name="next" />

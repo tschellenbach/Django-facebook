@@ -1,14 +1,14 @@
 from django.db import models
 from django.core.urlresolvers import reverse
 from django_facebook import model_managers
+from django.conf import settings
+import os
 
 
 
 
 
-
-
-
+PROFILE_IMAGE_PATH = os.path.join('images','facebook_profiles/%Y/%m/%d')
 
 
 class FacebookProfileModel(models.Model):
@@ -26,7 +26,7 @@ class FacebookProfileModel(models.Model):
     website_url = models.TextField(blank=True)
     blog_url = models.TextField(blank=True)
     image = models.ImageField(blank=True, null=True,
-        upload_to='profile_images', max_length=255)
+        upload_to=PROFILE_IMAGE_PATH, max_length=255)
     date_of_birth = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=1, choices=(('m', 'Male'), ('f', 'Female')), blank=True, null=True)
     raw_data = models.TextField(blank=True)

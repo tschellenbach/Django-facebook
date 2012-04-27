@@ -104,14 +104,6 @@ Note that if you do not have an ``AUTHENTICATION_BACKENDS`` setting specified an
 
     'django.contrib.auth.backends.ModelBackend',
 
-You should also add the following ``REGISTRATION_BACKEND`` if it does not exist already::
-
-    REGISTRATION_BACKEND = 'registration.backends.default.DefaultBackend'
-
-If you are using django-registration (the third party registration manager), you may need to add an admin email address::
-
-    DEFAULT_FROM_EMAIL = 'admin@example.com'
-    
 Now, add this line to your url config::
 
     (r'^facebook/', include('django_facebook.urls')),

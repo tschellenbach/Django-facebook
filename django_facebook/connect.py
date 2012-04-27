@@ -14,6 +14,9 @@ from django_facebook import signals
 from django_facebook.api import get_facebook_graph, FacebookUserConverter
 from django_facebook.utils import (get_registration_backend, get_form_class,
                                    get_profile_class)
+import urllib2
+from django.core.files import File
+from django.core.files.temp import NamedTemporaryFile
 
 logger = logging.getLogger(__name__)
 
@@ -297,6 +300,19 @@ def _update_user(user, facebook, overwrite=True):
                          profile.raw_data, serialized_fb_data)
             profile.raw_data = serialized_fb_data
             profile_dirty = True
+
+
+    image_url = facebook_data['image']
+    if hasattr(profile, 'image') and not profile.image:
+        from urlparse import urlparse
+        image_name = 'fb_image_%s.jpg' % profile.facebook_id
+        image_temp = NamedTemporaryFile()
+        image_content = urllib2.urlopen(image_url).read()
+        image_temp.write(image_content)
+        image_file = File(image_temp)
+        profile.image.save(image_name, image_file)
+        image_temp.flush()
+        profile_dirty = True
 
     #save both models if they changed
     if user_dirty:

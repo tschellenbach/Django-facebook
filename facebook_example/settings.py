@@ -1,11 +1,14 @@
 # Django settings for django_facebook_test project.
-
+import os
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
+
+BASE_ROOT = os.path.abspath(
+    os.path.join(os.path.split(__file__)[0]))
 
 MANAGERS = ADMINS
 
@@ -45,18 +48,18 @@ USE_L10N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = ''
+MEDIA_ROOT = os.path.join(BASE_ROOT, 'media/')
 
 
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = ''
+MEDIA_URL = '/media/'
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/static/"
-STATICFILES_ROOT = ''
+STATICFILES_ROOT = os.path.join(BASE_ROOT, 'static/')
 
 # URL that handles the static files served from STATICFILES_ROOT.
 # Example: "http://static.lawrence.com/", "http://example.com/static/"

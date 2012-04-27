@@ -25,3 +25,11 @@ if settings.MODE == 'userena':
     urlpatterns += patterns('',
         (r'^accounts/', include('userena.urls')),
     )
+
+
+if settings.DEBUG:
+    urlpatterns += patterns('',
+        url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {
+            'document_root': settings.MEDIA_ROOT,
+        }),
+   )
