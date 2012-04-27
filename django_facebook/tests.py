@@ -30,13 +30,13 @@ class UserConnectTest(FacebookTest):
     fixtures = ['users.json']
 
     def test_persistent_graph(self):
-        request = RequestMock()
+        request = RequestMock().get('/')
         request.session = {}
         request.user = AnonymousUser()
         get_persistent_graph(request, access_token='short_username')
         
     def test_gender_matching(self):
-        request = RequestMock()
+        request = RequestMock().get('/')
         request.session = {}
         request.user = AnonymousUser()
         graph = get_persistent_graph(request, access_token='paul')
@@ -56,6 +56,7 @@ class UserConnectTest(FacebookTest):
         self.assertEqual(action, CONNECT_ACTIONS.REGISTER)
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
+        self.request.GET._mutable = True
         self.request.GET['connect_facebook'] = 1
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(action, CONNECT_ACTIONS.CONNECT)
@@ -74,6 +75,7 @@ class UserConnectTest(FacebookTest):
                           connect_user, self.request, access_token='invalid')
 
     def test_no_email_registration(self):
+        from django_facebook import exceptions as facebook_exceptions
         self.assertRaises(facebook_exceptions.IncompleteProfileError,
                           connect_user, self.request, access_token='no_email')
 

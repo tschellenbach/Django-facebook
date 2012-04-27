@@ -46,7 +46,6 @@ class TestErrorMapping(unittest.TestCase):
                       deauthorized_response, loggedout_response]
         response_objects = []
         for response_string in responses:
-            print response_string
             response = json.loads(response_string)
             
             response_objects.append(response)
