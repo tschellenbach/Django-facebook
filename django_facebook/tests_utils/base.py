@@ -12,6 +12,7 @@ class RequestMock(RequestFactory):
     def request(self, **request):
         "Construct a generic request object."
         request = RequestFactory.request(self, **request)
+        request.REQUEST = dict()
         handler = BaseHandler()
         handler.load_middleware()
         for middleware_method in handler._request_middleware:
