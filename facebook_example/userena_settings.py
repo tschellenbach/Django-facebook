@@ -17,7 +17,6 @@ AUTHENTICATION_BACKENDS = (
 )
 
 
-
 EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 
 LOGIN_REDIRECT_URL = '/accounts/%(username)s/'

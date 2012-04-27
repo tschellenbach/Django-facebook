@@ -170,6 +170,7 @@ def _register_user(request, facebook, profile_callback=None,
     # get the backend on new registration systems, or none
     # if we are on an older version
     backend = get_registration_backend()
+    logger.info('running backend %s for registration', backend)
 
     # gets the form class specified in FACEBOOK_REGISTRATION_FORM
     form_class = get_form_class(backend, request)
@@ -198,6 +199,7 @@ def _register_user(request, facebook, profile_callback=None,
         raise error
 
     #for new registration systems use the backends methods of saving
+    new_user = None
     if backend:
         new_user = backend.register(request, **form.cleaned_data)
     #fall back to the form approach
