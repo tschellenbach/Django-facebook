@@ -225,7 +225,7 @@ def get_registration_backend():
     
     registration_backend_string = getattr(facebook_settings, 'FACEBOOK_REGISTRATION_BACKEND', None)
     if registration_backend_string:
-        backend_class = get_class_from_string(registration_backend_string, default=None)
+        backend_class = get_class_from_string(registration_backend_string)
        
     #instantiate
     if backend_class:

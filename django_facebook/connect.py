@@ -17,6 +17,7 @@ from django_facebook.utils import (get_registration_backend, get_form_class,
 import urllib2
 from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 logger = logging.getLogger(__name__)
 
@@ -307,9 +308,16 @@ def _update_user(user, facebook, overwrite=True):
         from urlparse import urlparse
         image_name = 'fb_image_%s.jpg' % profile.facebook_id
         image_temp = NamedTemporaryFile()
-        image_content = urllib2.urlopen(image_url).read()
+        image_response = urllib2.urlopen(image_url)
+        image_content = image_response.read()
         image_temp.write(image_content)
-        image_file = File(image_temp)
+        http_message = image_response.info()
+        image_size = len(image_content)
+        content_type = http_message.type
+        image_file = InMemoryUploadedFile(
+            file=image_temp, name=image_name, field_name='image', 
+            content_type=content_type, size=image_size, charset=None
+        )
         profile.image.save(image_name, image_file)
         image_temp.flush()
         profile_dirty = True
