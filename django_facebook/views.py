@@ -15,7 +15,7 @@ from django_facebook.api import get_persistent_graph, FacebookUserConverter, \
     require_persistent_graph
 from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
-from django_facebook.utils import next_redirect
+from django_facebook.utils import next_redirect, get_registration_backend
 from django_facebook.decorators import (facebook_required,
                                         facebook_required_lazy)
 from open_facebook.utils import send_warning
@@ -74,6 +74,7 @@ def connect(request):
     - login
     - register
     '''
+    backend = get_registration_backend()
     context = RequestContext(request)
 
     assert context.get('FACEBOOK_APP_ID'), 'Please specify a facebook app id '\
@@ -112,8 +113,8 @@ def connect(request):
                     messages.info(request, _("You have connected your account "
                         "to %s's facebook profile") % facebook_data['name'])
                 elif action is CONNECT_ACTIONS.REGISTER:
-                    return user.get_profile().post_facebook_registration(
-                        request)
+                    response = backend.post_registration_redirect(request, user)
+                    return response
         else:
             if 'attempt' in request.GET:
                 return next_redirect(request, next_key=['error_next', 'next'],

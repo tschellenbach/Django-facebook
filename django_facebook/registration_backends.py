@@ -33,12 +33,10 @@ class NooptRegistrationBackend(object):
         '''
         Handled by the Django Facebook app
         '''
-        raise NotImplementedError
+        response = user.get_profile().post_facebook_registration(request)
+        return response
 
     def post_activation_redirect(self, request, user):
-        '''
-        Handled by the Django Facebook app
-        '''
         raise NotImplementedError
     
 

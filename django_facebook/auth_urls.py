@@ -26,7 +26,7 @@ consult a specific backend's documentation for details.
 from django.conf.urls.defaults import *
 
 from django.contrib.auth import views as auth_views
-
+from django_facebook import registration_views
 
 urlpatterns = patterns('',
                        url(r'^login/$',
@@ -55,4 +55,7 @@ urlpatterns = patterns('',
                        url(r'^password/reset/done/$',
                            auth_views.password_reset_done,
                            name='auth_password_reset_done'),
+                        url(r'^register/$',
+                            registration_views.register,
+                            name='registration_register'),
 )

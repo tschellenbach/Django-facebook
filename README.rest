@@ -52,12 +52,9 @@ About Django Facebook
 * Use Facebook data to register a user with your Django app. Facebook connect using the open graph API.
 * Facebook FQL access
 * OAuth 2.0 compliant
+* Automated reauthentication (For expired tokens)
 * Includes Open Facebook (stable and tested python client to the graph API)
 
-
-Requirements
-------------------------------
-* Django registration or Django Userena (contact me if you use something else for registration.) 
 
 
 Installation
@@ -107,6 +104,7 @@ Note that if you do not have an ``AUTHENTICATION_BACKENDS`` setting specified an
 Now, add this line to your url config::
 
     (r'^facebook/', include('django_facebook.urls')),
+    (r'^accounts/', include('django_facebook.auth_urls')), #Don't add this line if you use django registration or userena for registration and auth.
 
 **Update your models**
 
