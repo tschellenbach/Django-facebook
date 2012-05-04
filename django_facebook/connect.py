@@ -275,7 +275,6 @@ def _update_user(user, facebook, overwrite=True):
         profile_dirty = True
         _remove_old_connections(profile.facebook_id, user.id)
 
-
     #update all fields on both user and profile
     for f in facebook_fields:
         facebook_value = facebook_data.get(f, False)
@@ -305,22 +304,7 @@ def _update_user(user, facebook, overwrite=True):
 
     image_url = facebook_data['image']
     if hasattr(profile, 'image') and not profile.image:
-        from urlparse import urlparse
-        image_name = 'fb_image_%s.jpg' % profile.facebook_id
-        image_temp = NamedTemporaryFile()
-        image_response = urllib2.urlopen(image_url)
-        image_content = image_response.read()
-        image_temp.write(image_content)
-        http_message = image_response.info()
-        image_size = len(image_content)
-        content_type = http_message.type
-        image_file = InMemoryUploadedFile(
-            file=image_temp, name=image_name, field_name='image', 
-            content_type=content_type, size=image_size, charset=None
-        )
-        profile.image.save(image_name, image_file)
-        image_temp.flush()
-        profile_dirty = True
+        profile_dirty = _update_image(profile, image_url)
 
     #save both models if they changed
     if user_dirty:
@@ -333,7 +317,28 @@ def _update_user(user, facebook, overwrite=True):
 
     return user
 
-
+def _update_image(profile, image_url):
+    '''
+    Updates the user profile's image to the given image url
+    Unfortunately this is quite a pain to get right with Django
+    Suggestions to improve this are welcome
+    '''
+    image_name = 'fb_image_%s.jpg' % profile.facebook_id
+    image_temp = NamedTemporaryFile()
+    image_response = urllib2.urlopen(image_url)
+    image_content = image_response.read()
+    image_temp.write(image_content)
+    http_message = image_response.info()
+    image_size = len(image_content)
+    content_type = http_message.type
+    image_file = InMemoryUploadedFile(
+        file=image_temp, name=image_name, field_name='image', 
+        content_type=content_type, size=image_size, charset=None
+    )
+    profile.image.save(image_name, image_file)
+    image_temp.flush()
+    profile_dirty = True
+    return profile_dirty
 
 def update_connection(request, graph):
     '''

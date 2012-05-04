@@ -67,7 +67,6 @@ class UserConnectTest(FacebookTest):
     def test_utf8(self):
         graph = get_facebook_graph(access_token='unicode_string')
         facebook = FacebookUserConverter(graph)
-        facebook.facebook_profile_data()
         action, user = connect_user(self.request, facebook_graph=graph)
 
     def test_invalid_token(self):
