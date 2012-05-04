@@ -208,4 +208,3 @@ class SignalTest(FacebookTest):
                                  'post_update_signal'), True)
 
 
-from open_facebook.tests import *
