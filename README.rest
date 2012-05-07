@@ -83,23 +83,33 @@ add django facebook to your installed apps::
 
     'django_facebook',
 
-Add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS``
-setting)::
+Add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS`` setting)::
 
     'django_facebook.context_processors.facebook',
 
-If you would like to use automatic redirection, as well as static files includes (which django-facebook uses by default), make sure the following lines are present in ``TEMPLATE_CONTEXT_PROCESSORS`` as well::
+The full setting on a new django 1.4 app looks like this::
 
-    'django.core.context_processors.request',
-    'django.core.context_processors.static',
+    TEMPLATE_CONTEXT_PROCESSORS = (
+        'django_facebook.context_processors.facebook',
+        'django.contrib.auth.context_processors.auth',
+        'django.core.context_processors.debug',
+        'django.core.context_processors.i18n',
+        'django.core.context_processors.media',
+        'django.core.context_processors.static',
+        'django.core.context_processors.tz',
+        'django.contrib.messages.context_processors.messages',
+    )
 
 Add this to your ``AUTHENTICATION_BACKENDS`` setting::
 
     'django_facebook.auth_backends.FacebookBackend',
 
-Note that if you do not have an ``AUTHENTICATION_BACKENDS`` setting specified and would still like to use normal django authentication, you should also add the following default auth backend::
+The full setting on a new django 1.4 app looks like this::
 
-    'django.contrib.auth.backends.ModelBackend',
+    AUTHENTICATION_BACKENDS = (
+        'django_facebook.auth_backends.FacebookBackend',
+        'django.contrib.auth.backends.ModelBackend',
+    )
 
 Now, add this line to your url config::
 
@@ -114,7 +124,7 @@ Read more about this topic in the `Django Docs <https://docs.djangoproject.com/e
 
 If you don't already have a custom Profile model, simply uses the provided model by setting your AUTH_PROFILE_MODULE to FacebookProfile::
 
-    AUTH_PROFILE_MODULE == 'django_facebook.FacebookProfile'
+    AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile'
 
 Otherwise Django Facebook provides an abstract model which you can inherit like this::
 
