@@ -106,25 +106,37 @@ Now, add this line to your url config::
     (r'^facebook/', include('django_facebook.urls')),
     (r'^accounts/', include('django_facebook.auth_urls')), #Don't add this line if you use django registration or userena for registration and auth.
 
+
 **Update your models**
 
-An abstract model is specified here django_facebook/models.py and is named "FacebookProfileModel".  Add these fields to your profile model or subclass the abstract class.  Your subclassed model should have a field called "user" with a ForeignKey pointing to your User model (django.contrib.auth.models.User in most cases).
+Django uses a custom Profile model to store additional user information. Read more about this topic in the https://docs.djangoproject.com/en/dev/topics/auth/#storing-additional-information-about-users Django Docs.
+If you don't already have a custom Profile model, simply uses the provided model by setting your AUTH_PROFILE_MODULE to FacebookProfile:
 
-If you get errors with your user profile not found, you will need to create a profile for the user at some point, since this is not done automatically.  One way to do this is via a post_save signal for your User.  Below is an example, with "FacebookProfile" as the name of the custom user profile.  Keep in mind that your project's requirements may differ::
+::
+  
+    AUTH_PROFILE_MODULE == 'django_facebook.FacebookProfile'
 
-    from django.db.models import signals
+Otherwise Django Facebook provides an abstract model which you can inherit like this:
+
+::
+    from django_facebook.models import FacebookProfileModel
+
+
+    class MyCustomProfile(FacebookProfileModel):
+        user = models.OneToOneField('auth.User')
+        ....
+    
     from django.contrib.auth.models import User
+    from django.db.models.signals import post_save
     
-    def create_userprofile(sender, **kwargs):
-        created = kwargs['created'] # object created or just saved?
-    
+    #Make sure we create a MyCustomProfile when creating a User
+    def create_facebook_profile(sender, instance, created, **kwargs):
         if created:
-            FacebookProfile.objects.create(user=kwargs['instance'])
+            MyCustomProfile.objects.create(user=instance)
     
-    signals.post_save.connect(create_userprofile, sender=User)
-
-See the django docs for more information on setting up a Profile model or understanding abstract classes.
-
+    post_save.connect(create_facebook_profile, sender=User)
+    
+    
 **Check the example**
 
 Right now you should have a working registration/connect/login in flow available at /facebook/connect/
