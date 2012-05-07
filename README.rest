@@ -136,7 +136,8 @@ Otherwise Django Facebook provides an abstract model which you can inherit like 
     
     post_save.connect(create_facebook_profile, sender=User)
     
-    
+
+
 **Check the example**
 
 Right now you should have a working registration/connect/login in flow available at /facebook/connect/
