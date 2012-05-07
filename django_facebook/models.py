@@ -71,6 +71,8 @@ class FacebookProfileModel(models.Model):
             graph = OpenFacebook(access_token=self.access_token)
             graph.current_user_id = self.facebook_id
             return graph
+        
+
 
 
 class FacebookUser(models.Model):
@@ -107,3 +109,29 @@ class FacebookLike(models.Model):
 
     class Meta:
         unique_together = ['user_id', 'facebook_id']
+        
+        
+if settings.AUTH_PROFILE_MODULE == 'django_facebook.FacebookProfile':
+    '''
+    If we are using the django facebook profile model, create the model
+    and connect it to the user create signal
+    '''
+        
+    class FacebookProfile(FacebookProfileModel):
+        '''
+        Not abstract version of the facebook profile model
+        Use this by setting
+        AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile' 
+        '''
+        user = models.OneToOneField('auth.User')
+    
+    from django.contrib.auth.models import User
+    from django.db.models.signals import post_save
+    
+    #Make sure we create a FacebookProfile when creating a User
+    def create_facebook_profile(sender, instance, created, **kwargs):
+        if created:
+            FacebookProfile.objects.create(user=instance)
+    
+    post_save.connect(create_facebook_profile, sender=User)
+        
