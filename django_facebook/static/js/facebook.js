@@ -24,6 +24,13 @@ for (var i=0; i<fbLocales.length;i++){
     fbLocaleMapping[fbLocales[i]] = fbLocales[i];
 }
 
+/* Define dummy gettext if Django's javascrip_catalog is not being used */
+if (typeof gettext != 'function') {
+    window.gettext = function(text) {
+        return text;
+    };
+}
+
 facebookClass = function() { this.initialize.apply(this, arguments); };
 facebookClass.prototype = {
     initialize: function (appId) {
@@ -56,14 +63,14 @@ facebookClass.prototype = {
             return formElement.submit();
         }
         requiredPerms = requiredPerms || this.getDefaultScope();
-        this.connectLoading('A Facebook pop-up has opened, please follow the instructions to sign in.');
+        this.connectLoading(gettext('A Facebook pop-up has opened, please follow the instructions to sign in.'));
         var scope = this;
         FB.login(function(response) {
             if (response.status == 'unknown') {
-                scope.connectLoading('Sorry, we couldn\'t log you in. Please try again.', true, true);
+                scope.connectLoading(gettext('Sorry, we couldn\'t log you in. Please try again.', true, true));
             } else {
                 //showloading
-                scope.connectLoading('Now loading your profile...');
+                scope.connectLoading(gettext('Now loading your profile...'));
                 //submit the form
                 formElement.submit();
             }
