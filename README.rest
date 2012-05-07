@@ -109,16 +109,15 @@ Now, add this line to your url config::
 
 **Update your models**
 
-Django uses a custom Profile model to store additional user information. Read more about this topic in the https://docs.djangoproject.com/en/dev/topics/auth/#storing-additional-information-about-users Django Docs.
-If you don't already have a custom Profile model, simply uses the provided model by setting your AUTH_PROFILE_MODULE to FacebookProfile:
+Django uses a custom Profile model to store additional user information. 
+Read more about this topic in the `Django Docs <https://docs.djangoproject.com/en/dev/topics/auth/#storing-additional-information-about-users>`_.
 
-::
-  
+If you don't already have a custom Profile model, simply uses the provided model by setting your AUTH_PROFILE_MODULE to FacebookProfile::
+
     AUTH_PROFILE_MODULE == 'django_facebook.FacebookProfile'
 
-Otherwise Django Facebook provides an abstract model which you can inherit like this:
+Otherwise Django Facebook provides an abstract model which you can inherit like this::
 
-::
     from django_facebook.models import FacebookProfileModel
 
 
