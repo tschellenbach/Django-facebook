@@ -147,7 +147,8 @@ Otherwise Django Facebook provides an abstract model which you can inherit like 
     
 
 
-**Check the example**
+Check the example & Customize!
+------------------------------
 
 Right now you should have a working registration/connect/login in flow available at /facebook/connect/
 Test if everything is working and ensure you didn't miss a step somewhere.
