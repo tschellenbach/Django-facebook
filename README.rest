@@ -75,8 +75,8 @@ Be sure to configure the right app domain in your facebook application settings.
 
 An example::
 
-Your site is www.fashiolista.com, your app domain is set to fashiolista.com and you do your development at local.fashiolista.com.
-If you try to authenticate with Facebook from a different domain you will get an authentication error.
+    Your site is www.fashiolista.com, your app domain is set to fashiolista.com and you do your development at local.fashiolista.com.
+    If you try to authenticate with Facebook from a different domain you will get an authentication error.
 
 **Settings**
 
