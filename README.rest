@@ -3,21 +3,23 @@ Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmo
 ######################################################################
 
 **New in 4.0**
+
 4.0 introduces improved compatiblity for the offline access migration.
-I highly recommend upgrading, there are also a few awesome new features:
+I highly recommend upgrading. These are some of the awesome new features:
 
 * Standalone registration support (we no longer require django userena and django registration)
-* Local image storage is enabled by default
+* Local image storage is now easy to setup and enabled by default
 * Automatic reauthentication for expired tokens (Great for the offline access migration)
 * Travis - `CI tested <http://travis-ci.org/#!/tschellenbach/Django-facebook/>`  
 
-Backwards incompatible changes
+Backwards incompatible changes:
+
 * You need to explicitly send connect_facebook=1 to connect an existing account to your Facebook account
-* You need to specify a backend when using Django registration or Userena
-
-
+* You need to specify a custom backend when using Django registration or Userena. See the section on django userena and django registration support.
+* You should make sure your media settings are ok to support image upload
 
 **The docs can also be found at: http://django-facebook.rtfd.org/**
+
 
 First
 -----
@@ -28,7 +30,7 @@ After registration it gives you access to the graph, allowing for such applicati
 * Inviting friends
 * Finding friends
 * Posting to a users profile
-* Open graph beta functionality
+* Open graph/ Timeline functionality
 
 For a demo of the signup flow have a look at Fashiolista's landing page (`fashiolista.com <http://www.fashiolista.com/intro_wide_minimal/>`_)
 
@@ -49,12 +51,11 @@ About Django Facebook
    * Facebook canvas pages (For building facebook applications)
    * Mobile (Or any other flow giving you a valid access token)
 * Django User Registration (Convert Facebook user data into a user model)
-* Use Facebook data to register a user with your Django app. Facebook connect using the open graph API.
+* Store likes, friends and user data locally.
 * Facebook FQL access
 * OAuth 2.0 compliant
 * Automated reauthentication (For expired tokens)
 * Includes Open Facebook (stable and tested python client to the graph API)
-
 
 
 Installation
@@ -65,8 +66,17 @@ Download the source code or use ``pip install django_facebook``.
 
 **Create a Facebook App**
 
-In case you don't yet have a facebook app. You need an app to use the open graph api and make the login process work.
-You can create a facebook app at this url: http://www.facebook.com/developers/createapp.php
+You need a facebook app to use the open graph API and make the login process work.
+If you don't have a facebook app, now is the time to create one.
+You can create a facebook app at `this url<http://www.facebook.com/developers/createapp.php>`_. 
+
+Facebook authentication only works if the domain you are working on matches your app domain.
+Be sure to configure the right app domain in your facebook application settings.
+
+An example::
+
+Your site is www.fashiolista.com, your app domain is set to fashiolista.com and you do your development at local.fashiolista.com.
+If you try to authenticate with Facebook from a different domain you will get an authentication error.
 
 **Settings**
 
