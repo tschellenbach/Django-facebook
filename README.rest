@@ -68,7 +68,7 @@ Download the source code or use ``pip install django_facebook``.
 
 You need a facebook app to use the open graph API and make the login process work.
 If you don't have a facebook app, now is the time to create one.
-You can create a facebook app at `this url<http://www.facebook.com/developers/createapp.php>`_. 
+You can create a facebook app at `this url <http://www.facebook.com/developers/createapp.php>`_. 
 
 Facebook authentication only works if the domain you are working on matches your app domain.
 Be sure to configure the right app domain in your facebook application settings.
