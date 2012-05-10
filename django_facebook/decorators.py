@@ -7,7 +7,7 @@ from django.utils.decorators import available_attrs
 from django.utils.functional import wraps
 
 import logging
-from django_facebook.api import require_persistent_graph
+from django_facebook.api import require_persistent_graph, get_persistent_graph
 logger = logging.getLogger(__name__)
 
 
@@ -60,6 +60,8 @@ def facebook_required_lazy(view_func=None,
     redirecting to the log-in page if necessary.
     Based on exceptions instead of a check up front
     Faster, but more prone to bugs
+    
+    Use this in combination with require_persistent_graph
     """
     from django_facebook.utils import test_permissions
     from open_facebook import exceptions as open_facebook_exceptions
@@ -73,7 +75,9 @@ def facebook_required_lazy(view_func=None,
             try:
                 # call get persistent graph and convert the
                 # token with correct redirect uri
-                require_persistent_graph(request, redirect_uri=redirect_uri)
+                get_persistent_graph(request, redirect_uri=redirect_uri)
+                #Note we're not requiring a persistent graph here
+                #You should require a persistent graph in the url when you start using this
                 return view_func(request, *args, **kwargs)
             except open_facebook_exceptions.OpenFacebookException, e:
                 permission_granted = test_permissions(request, scope_list, redirect_uri)
