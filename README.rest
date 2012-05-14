@@ -21,8 +21,8 @@ Backwards incompatible changes:
 **The docs can also be found at: http://django-facebook.rtfd.org/**
 
 
-First
------
+Demo
+----
 
 Django Facebook assumes you want users to register through Facebook.
 After registration it gives you access to the graph, allowing for such applications as:
