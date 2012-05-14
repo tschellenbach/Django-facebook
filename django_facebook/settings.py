@@ -5,7 +5,7 @@ from django.conf import settings
 FACEBOOK_APP_ID = getattr(settings, 'FACEBOOK_APP_ID', None)
 FACEBOOK_APP_SECRET = getattr(settings, 'FACEBOOK_APP_SECRET', None)
 FACEBOOK_DEFAULT_SCOPE = getattr(settings, 'FACEBOOK_DEFAULT_SCOPE', [
-    'email', 'user_about_me', 'user_birthday'])
+    'email', 'user_about_me', 'user_birthday', 'user_website'])
 
 # Absolute canvas page url as per facebook standard
 FACEBOOK_CANVAS_PAGE = getattr(settings, 'FACEBOOK_CANVAS_PAGE',
@@ -44,3 +44,10 @@ FACEBOOK_REGISTRATION_TEMPLATE = getattr(settings,
 # Allow custom signup form
 FACEBOOK_REGISTRATION_FORM = getattr(settings,
     'FACEBOOK_REGISTRATION_FORM', None)
+
+
+default_registration_backend = 'django_facebook.registration_backends.FacebookRegistrationBackend'
+FACEBOOK_REGISTRATION_BACKEND = getattr(settings, 'FACEBOOK_REGISTRATION_BACKEND', default_registration_backend)
+
+
+

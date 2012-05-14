@@ -3,11 +3,24 @@ from django.conf import settings
 from django.db import models, transaction
 import logging
 import re
+from django_facebook import settings as facebook_settings
 from django.utils.encoding import iri_to_uri
 from django.template.loader import render_to_string
+from django_facebook.registration_backends import FacebookRegistrationBackend
 
 
 logger = logging.getLogger(__name__)
+
+
+def clear_persistent_graph_cache(request):
+    '''
+    Clears the caches for the graph cache
+    '''
+    request.facebook = None
+    request.session.delete('graph')
+    if request.user.is_authenticated():
+        profile = request.user.get_profile()
+        profile.clear_access_token()
 
 
 def test_permissions(request, scope_list, redirect_uri=None):
@@ -194,10 +207,12 @@ def get_form_class(backend, request):
         form_class = get_class_from_string(form_class_string, None)
 
     if not form_class:
-        from registration.forms import RegistrationFormUniqueEmail
-        form_class = RegistrationFormUniqueEmail
+        backend = backend or get_registration_backend()
         if backend:
             form_class = backend.get_form_class(request)
+            
+    assert form_class, 'we couldnt find a form class, so we cant go on like this'
+            
     return form_class
 
 
@@ -206,18 +221,39 @@ def get_registration_backend():
     Ensures compatability with the new and old version of django registration
     '''
     backend = None
+    backend_class = None
+    
+    registration_backend_string = getattr(facebook_settings, 'FACEBOOK_REGISTRATION_BACKEND', None)
+    if registration_backend_string:
+        backend_class = get_class_from_string(registration_backend_string)
+       
+    #instantiate
+    if backend_class:
+        backend = backend_class()
+        
+    return backend
+
+
+
+def get_django_registration_version():
+    '''
+    Returns new, old or None depending on the version of django registration
+    Old works with forms
+    New works with backends
+    '''
     try:
         # support for the newer implementation
         from registration.backends import get_backend
-        try:
-            backend = get_backend(settings.REGISTRATION_BACKEND)
-        except:
-            raise(ValueError,
-                  'Cannot get django-registration backend from ' \
-                  'settings.REGISTRATION_BACKEND')
+        version = 'new'
     except ImportError:
-        backend = None
-    return backend
+        version = 'old'
+        
+    try:
+        import registration
+    except ImportError, e:
+        version = None
+    
+    return version
 
 
 def parse_scope(scope):
@@ -329,6 +365,7 @@ def get_class_from_string(path, default='raise'):
     ``django.core.exceptions.ImproperlyConfigured`` is raised.
     """
     from django.core.exceptions import ImproperlyConfigured
+    backend_class = None
     try:
         from importlib import import_module
     except ImportError:
@@ -347,4 +384,6 @@ def get_class_from_string(path, default='raise'):
             raise ImproperlyConfigured(
                 'Module "%s" does not define a registration ' \
                 'backend named "%s"' % (module, attr))
+        else:
+            backend_class = default
     return backend_class

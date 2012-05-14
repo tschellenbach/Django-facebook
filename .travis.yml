@@ -3,13 +3,17 @@ python:
   - 2.6
   - 2.7
 env:
-  - REQUIREMENTS=facebook_example/requirements.txt SETTINGS=facebook_example.settings
+  - REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook
+  - REQUIREMENTS=userena SETTINGS=facebook_example.userena_settings TESTS=django_facebook
+  - REQUIREMENTS=django_registration SETTINGS=facebook_example.django_registration_settings TESTS=django_facebook
+  - REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=open_facebook
 postgres:
   adapter: sqlite3
   database: django_fb_test
 install:
   - python setup.py install
-  - pip install -r requirements/$REQUIREMENTS.txt --use-mirrors -I
+  - pip install -r facebook_example/requirements/$REQUIREMENTS.txt --use-mirrors -I
 script:
-  - cd tests
+  - pip install -e .
+  - cd facebook_example
   - python manage.py test $TESTS --settings=$SETTINGS

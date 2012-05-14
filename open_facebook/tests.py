@@ -1,10 +1,64 @@
+
+# -*- coding: utf-8 -*-
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'facebook_example.settings'
 from open_facebook.api import *
 import unittest
 import logging
 logger = logging.getLogger()
+from open_facebook.utils import json
 
+
+class TestErrorMapping(unittest.TestCase):
+    
+    def test_oauth_errors(self):
+        expires_response = '''{
+          "error": {
+            "type": "OAuthException",
+            "message": "Session has expired at unix time SOME_TIME. The current unix time is SOME_TIME."
+          }
+        } '''
+        changed_password_response = '''
+        {
+          "error": {
+            "type": "OAuthException",
+            "message": "The session has been invalidated because the user has changed the password."
+          }
+        }
+        '''
+        deauthorized_response = '''
+        {
+          "error": {
+            "type": "OAuthException",
+            "message": "Error validating access token: USER_ID has not authorized application APP_ID"
+          }
+        }
+        '''
+        loggedout_response = '''
+        {
+          "error": {
+            "type": "OAuthException",
+            "message": "Error validating access token: The session is invalid because the user logged out."
+           }
+        }
+        '''
+        responses = [expires_response, changed_password_response,
+                      deauthorized_response, loggedout_response]
+        response_objects = []
+        for response_string in responses:
+            response = json.loads(response_string)
+            
+            response_objects.append(response)
+            
+        from open_facebook import exceptions as open_facebook_exceptions
+        for response in response_objects:
+            oauth = False
+            try:
+                FacebookConnection.raise_error(response['error']['type'],
+                                    response['error']['message'])
+            except open_facebook_exceptions.OAuthException, e:
+                oauth = True
+            assert oauth, 'response %s didnt raise oauth error' % response
 
 class TestOpenFacebook(unittest.TestCase):
     def test_thijs_profile(self):
@@ -60,13 +114,17 @@ class TestOpenFacebook(unittest.TestCase):
         assert 'code' in parsed_cookie
 
     def test_code_conversion(self):
+        from open_facebook import exceptions as open_facebook_exceptions
         # before testing update this with a valid code, hope facebook comes with a way to automate this
         code = 'AQDByzD95HCaQLIY3PyQFvCJ67bkYx5f692TylEXARQ0p6_XK0mXGRVBU3G759qOIa_A966Wmm-kxxw1GbXkXQiJj0A3b_XNFewFhT8GSro4i9F8b_7q1RSnKzfq327XYno-Qw4NGxm0ordSl0gJ0YTjhwY8TwSMy2b2whD5ZhHvaYkEaC1J-GcBhkF7o4F2-W8'
         #the redirect uri needs to be connected
-        user_token = FacebookAuthorization.convert_code(
-            code, redirect_uri='http://local.mellowmorning.com:8080')
-        facebook = OpenFacebook(user_token['access_token'])
-        facebook.me()
+        try:
+            user_token = FacebookAuthorization.convert_code(
+                code, redirect_uri='http://local.mellowmorning.com:8080')
+            facebook = OpenFacebook(user_token['access_token'])
+            facebook.me()
+        except open_facebook_exceptions.OAuthException, e:
+            pass
 
     def test_fql(self):
         token = self.get_access_token()

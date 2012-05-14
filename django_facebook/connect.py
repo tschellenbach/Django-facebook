@@ -14,6 +14,10 @@ from django_facebook import signals
 from django_facebook.api import get_facebook_graph, FacebookUserConverter
 from django_facebook.utils import (get_registration_backend, get_form_class,
                                    get_profile_class)
+import urllib2
+from django.core.files import File
+from django.core.files.temp import NamedTemporaryFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +49,14 @@ def connect_user(request, access_token=None, facebook_graph=None):
     facebook_data = facebook.facebook_profile_data()
     force_registration = request.REQUEST.get('force_registration') or\
         request.REQUEST.get('force_registration_hard')
+        
+    connect_facebook = bool(int(request.REQUEST.get('connect_facebook', 0)))
 
     logger.debug('force registration is set to %s', force_registration)
-    if request.user.is_authenticated() and not force_registration:
+    if connect_facebook and request.user.is_authenticated() and not force_registration:
+        #we should only allow connect if users indicate they really want to connect
+        #only when the request.CONNECT_FACEBOOK = 1
+        #if this isn't present we just do a login   
         action = CONNECT_ACTIONS.CONNECT
         user = _connect_user(request, facebook)
     else:
@@ -59,6 +68,7 @@ def connect_user(request, access_token=None, facebook_graph=None):
         auth_user = authenticate(facebook_id=facebook_data['id'], **kwargs)
         if auth_user and not force_registration:
             action = CONNECT_ACTIONS.LOGIN
+            
 
             # Has the user registered without Facebook, using the verified FB
             # email address?
@@ -164,6 +174,7 @@ def _register_user(request, facebook, profile_callback=None,
     # get the backend on new registration systems, or none
     # if we are on an older version
     backend = get_registration_backend()
+    logger.info('running backend %s for registration', backend)
 
     # gets the form class specified in FACEBOOK_REGISTRATION_FORM
     form_class = get_form_class(backend, request)
@@ -192,9 +203,11 @@ def _register_user(request, facebook, profile_callback=None,
         raise error
 
     #for new registration systems use the backends methods of saving
+    new_user = None
     if backend:
         new_user = backend.register(request, **form.cleaned_data)
-    else:
+    #fall back to the form approach
+    if not new_user:
         # For backward compatibility, if django-registration form is used
         try:
             new_user = form.save(profile_callback=profile_callback)
@@ -262,7 +275,6 @@ def _update_user(user, facebook, overwrite=True):
         profile_dirty = True
         _remove_old_connections(profile.facebook_id, user.id)
 
-
     #update all fields on both user and profile
     for f in facebook_fields:
         facebook_value = facebook_data.get(f, False)
@@ -289,6 +301,11 @@ def _update_user(user, facebook, overwrite=True):
             profile.raw_data = serialized_fb_data
             profile_dirty = True
 
+
+    image_url = facebook_data['image']
+    if hasattr(profile, 'image') and not profile.image:
+        profile_dirty = _update_image(profile, image_url)
+
     #save both models if they changed
     if user_dirty:
         user.save()
@@ -300,7 +317,28 @@ def _update_user(user, facebook, overwrite=True):
 
     return user
 
-
+def _update_image(profile, image_url):
+    '''
+    Updates the user profile's image to the given image url
+    Unfortunately this is quite a pain to get right with Django
+    Suggestions to improve this are welcome
+    '''
+    image_name = 'fb_image_%s.jpg' % profile.facebook_id
+    image_temp = NamedTemporaryFile()
+    image_response = urllib2.urlopen(image_url)
+    image_content = image_response.read()
+    image_temp.write(image_content)
+    http_message = image_response.info()
+    image_size = len(image_content)
+    content_type = http_message.type
+    image_file = InMemoryUploadedFile(
+        file=image_temp, name=image_name, field_name='image', 
+        content_type=content_type, size=image_size, charset=None
+    )
+    profile.image.save(image_name, image_file)
+    image_temp.flush()
+    profile_dirty = True
+    return profile_dirty
 
 def update_connection(request, graph):
     '''

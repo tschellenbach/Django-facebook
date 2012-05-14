@@ -46,12 +46,104 @@
 		    background-color: #cdc;
 		    list-style: none;
 		}
+		
+		#github a {
+            -webkit-box-shadow: rgba(0, 0, 0, 0.496094) 1px 1px 10px 0px, rgba(0, 0, 0, 0.0664063) 0px 0px 3px 1px inset;
+            -webkit-transform: matrix(0.7071067811865475, 0.7071067811865476, -0.7071067811865476, 0.7071067811865475, 0, 0);
+            background-attachment: scroll;
+            background-clip: border-box;
+            background-color: #EF7600;
+            background-image: none;
+            background-origin: padding-box;
+            border-bottom-color: #EF9F4C;
+            border-bottom-style: solid;
+            border-bottom-width: 2px;
+            border-top-color: #EF9F4C;
+            border-top-style: solid;
+            border-top-width: 2px;
+            box-shadow: rgba(0, 0, 0, 0.496094) 1px 1px 10px 0px, rgba(0, 0, 0, 0.0664063) 0px 0px 3px 1px inset;
+            color: white;
+            cursor: auto;
+            display: block;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            font-weight: bold;
+            height: 19px;
+            letter-spacing: -1px;
+            line-height: 19px;
+            margin-bottom: 0px;
+            margin-left: -50px;
+            margin-right: 0px;
+            margin-top: 40px;
+            overflow-x: visible;
+            padding-bottom: 3px;
+            padding-left: 0px;
+            padding-right: 0px;
+            padding-top: 3px;
+            text-align: center;
+            text-decoration: none;
+            text-shadow: #522600 0px 0px 10px;
+            width: 250px;
+            z-index: 0;
+        }
+        #github {
+            position: absolute;
+            z-index: 100;
+            top: 0px;
+            right: 0px;
+            width: 130px;
+            height: 140px;
+            overflow: hidden;
+        }
+        
+        #rounded-corner
+        {
+            font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+            font-size: 12px;
+            margin: 45px;
+            width: 480px;
+            text-align: left;
+            border-collapse: collapse;
+        }
+        #rounded-corner thead th
+        {
+            background: #b9c9fe;
+        }
+
+        #rounded-corner th
+        {
+            padding: 8px;
+            font-weight: normal;
+            font-size: 13px;
+            color: #039;
+            background: #b9c9fe;
+        }
+        #rounded-corner td
+        {
+            padding: 8px;
+            background: #e8edff;
+            border-top: 1px solid #fff;
+            color: #669;
+        }
+        #rounded-corner tfoot td.rounded-foot-left
+        {
+            background: #e8edff url('table-images/botleft.png') left bottom no-repeat;
+        }
+        #rounded-corner tfoot td.rounded-foot-right
+        {
+            background: #e8edff url('table-images/botright.png') right bottom no-repeat;
+        }
+        #rounded-corner tbody tr:hover td
+        {
+            background: #d0dafd;
+        }
+		
 	</style>
 	
 	<link href="{{ STATIC_URL }}css/facebook.css" type="text/css" rel="stylesheet" media="all" />
 	
 </head><body>
-
+<div id="github"><a href="https://github.com/tschellenbach/Django-facebook" title="Fork me on GitHub">Fork me on Github</a></div>
 <div>
 
 
@@ -61,6 +153,7 @@
 	<p>By Thierry Schellenbach
 		<a href="http://www.mellowmorning.com/">mellowmorning.com</a>, <a href="http://twitter.com/tschellenbach">@tschellenbach</a>
 	</p>
+	<iframe src="//www.facebook.com/plugins/like.php?href&amp;send=false&amp;layout=standard&amp;width=450&amp;show_faces=true&amp;action=like&amp;colorscheme=light&amp;font&amp;height=80&amp;appId=163679630425801" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:450px; height:30px;" allowTransparency="true"></iframe>
 </div>
 <div class="content" style="margin-top: 10px;">
 	{% if request.GET.fb_error_or_cancel or request.GET.error %}
@@ -82,37 +175,129 @@
     {% endif %}
     
 	<div style="margin-top: 60px;">
+	    
+	    {% if not request.user.is_authenticated %}
+	    
         <div class="inner_content">
         	
 			<!--form to call registration via facebook -->
             <form action="{% url facebook_connect %}?facebook_login=1" method="post">
-	            <h2>Register, login or connect with facebook</h2>
+	            <h2>Register, login or connect with Facebook</h2>
+	            <br />
 				<input type="hidden" value="{{ request.path }}" name="next" />
 				
 				<!--
 				use error next for a seperate error page
 				<input type="hidden" value="/error/" name="error_next" />
 				-->
-				
-				<iframe src="http://www.facebook.com/plugins/facepile.php?app_id={{ FACEBOOK_APP_ID }}&amp;width=500&amp;max_rows=1" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:500px; height:80px;" allowTransparency="true"></iframe>
-				<input onclick="F.connect(this.parentNode); return false;" type="image" src="http://e.fashiocdn.com/images/b_signin_facebook_small.png" /> (javascript popup)
+				<div id="facebook_login_js">
+				<input onclick="F.connect(this.parentNode.parentNode); return false;" type="image" src="http://e.fashiocdn.com/images/b_signin_facebook_small.png" /><br />
+				(javascript popup)
+				</div>
 				<br /><br />
-				<input type="image" src="http://e.fashiocdn.com/images/b_signin_facebook_small.png" /> (redirect version)
+				<div id="facebook_login_redirect">
+				<input type="image" src="http://e.fashiocdn.com/images/b_signin_facebook_small.png" /><br />
+				(redirect version)
+				</div>
 	        </form>
+	        
+	        You are not logged in, Please login by clicking one of the buttons above
+			
+		</div>
+			
+		{% endif %}
 			
 			
-        </div>
+        <div id="header_bar">
+        
+        {% if request.user.is_authenticated %}
+            <h1>Welcome {{ request.user }}</h1><a href="{% url django.contrib.auth.views.logout %}?next={{ request.path|urlencode }}">logout</a><br />
+            
+            <p>
+            Thank you for logging in with Facebook.
+            By default you will have the following data available:
+            </p>
+            
+            <table id="rounded-corner">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tr>
+                    <td>First Name:</td><td>{{ request.user.first_name }}</td>
+                </tr>
+                <tr>
+                    <td>Last Name:</td><td>{{ request.user.last_name }}</td>
+                </tr>
+                <tr>
+                    <td>Gender:</td><td>{{ request.user.get_profile.gender }}</td>
+                </tr>
+                <tr>
+                    <td>About me:</td><td>{{ request.user.get_profile.about_me }}</td>
+                </tr>
+                <tr>
+                    <td>Facebook profile url:</td><td>{{ request.user.get_profile.facebook_profile_url }}</td>
+                </tr>
+                <tr>
+                    <td>Facebook ID:</td><td>{{ request.user.get_profile.facebook_id }}</td>
+                </tr>
+                <tr>
+                    <td>Date of Birth:</td><td>{{ request.user.get_profile.date_of_birth }}</td>
+                </tr>
+                <tr>
+                    <td>Website Url:</td><td>{{ request.user.get_profile.website_url }}</td>
+                </tr>
+                <tr>
+                    <td>Local Image:</td><td><img src="{{ request.user.get_profile.image.url }}" title="local copy" /></td>
+                </tr>
+                <tr>
+                    <td>Hotlinked Image:</td><td><img src="http://graph.facebook.com/{{ request.user.get_profile.facebook_id }}/picture?type=large" title="facebook stored image" /><br /></td>
+                </tr>
+                <tr>
+                    <td>Likes:</td>
+                    <td>
+                        <ul>
+                        {% for like in request.user.get_profile.likes|slice:":5" %}
+                            <li>{{ like.name }}</li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Friends:</td>
+                    <td>
+                        <ul>
+                        {% for friend in request.user.get_profile.friends|slice:":5" %}
+                            <li>{{ friend.name }}</li>
+                        {% endfor %}
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Getting More:</td><td>Facebook has a ton more data, read about it <a href="https://developers.facebook.com/docs/reference/api/">here</a>.</td>
+                </tr>
+            </table>
+            
+            <p>
+                You can connect users which registered the old fashioned way, by giving them the following option to connect.
+                Note that we explitly indicate that we are connecting using the connect_facebook=1 value.
+            </p>
+            <form action="{% url facebook_connect %}?facebook_login=1" method="post">
+                <a href="javascript:void(0);" onclick="F.connect(this.parentNode);">Connect this account to Facebook</a> (used to connect non facebook accounts)
+                <input type="hidden" value="{{ request.path }}" name="next" />
+                <input type="hidden" name="connect_facebook" value="1">
+            </form>
+        {% endif %}
+        
 	</div>
 	
 	<div id="footer">
-		<div>
-		{% if request.user.is_authenticated %}
-			Hello {{ request.user }}, <a href="{% url django.contrib.auth.views.logout %}?next={{ request.path|urlencode }}">logout</a>
-		{% else %}
-			You are not logged in, Please login by clicking one of the buttons above
-		{% endif %}
+
 		</div>
         <div style="float: right;">
+            <h4>Advanced Testing</h4>
 	        <form action="{% url facebook_connect %}?facebook_login=1" method="post">
 	            <a href="javascript:void(0);" onclick="F.connect(this.parentNode);">Test fresh registration</a>
 				<input type="hidden" value="{{ request.path }}" name="next" />
@@ -126,6 +311,7 @@
 		</div>
 	</div>
 
+   <br /><br /><br /><br /><br /><br /><br />
     <div id="image_upload" style="margin: 60px 0px 20px 0px;">
         <h2>Album upload flow</h2>
         <div>

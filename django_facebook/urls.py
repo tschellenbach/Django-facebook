@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import patterns, url
-
+from django_facebook import settings as facebook_settings
 
 urlpatterns = patterns('django_facebook.views',
    url(r'^connect/$', 'connect', name='facebook_connect'),
@@ -7,6 +7,8 @@ urlpatterns = patterns('django_facebook.views',
    url(r'^wall_post/$', 'wall_post', name='facebook_wall_post'),
    url(r'^canvas/$', 'canvas', name='facebook_canvas'),
 )
+
+
 
 
 #help autodiscovery a bit

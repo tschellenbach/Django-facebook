@@ -1,6 +1,14 @@
 from django.db import models
 from django.core.urlresolvers import reverse
 from django_facebook import model_managers
+from django.conf import settings
+import os
+
+
+
+
+
+PROFILE_IMAGE_PATH = os.path.join('images','facebook_profiles/%Y/%m/%d')
 
 
 class FacebookProfileModel(models.Model):
@@ -18,7 +26,7 @@ class FacebookProfileModel(models.Model):
     website_url = models.TextField(blank=True)
     blog_url = models.TextField(blank=True)
     image = models.ImageField(blank=True, null=True,
-        upload_to='profile_images', max_length=255)
+        upload_to=PROFILE_IMAGE_PATH, max_length=255)
     date_of_birth = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=1, choices=(('m', 'Male'), ('f', 'Female')), blank=True, null=True)
     raw_data = models.TextField(blank=True)
@@ -28,6 +36,14 @@ class FacebookProfileModel(models.Model):
 
     class Meta:
         abstract = True
+        
+    def likes(self):
+        likes = FacebookLike.objects.filter(user_id=self.user_id)
+        return likes
+    
+    def friends(self):
+        friends = FacebookUser.objects.filter(user_id=self.user_id)
+        return friends
 
     def post_facebook_registration(self, request):
         '''
@@ -40,6 +56,10 @@ class FacebookProfileModel(models.Model):
         response.set_cookie('fresh_registration', self.user_id)
 
         return response
+    
+    def clear_access_token(self):
+        self.access_token = None
+        self.save()
 
     def get_offline_graph(self):
         '''
@@ -51,6 +71,8 @@ class FacebookProfileModel(models.Model):
             graph = OpenFacebook(access_token=self.access_token)
             graph.current_user_id = self.facebook_id
             return graph
+        
+
 
 
 class FacebookUser(models.Model):
@@ -87,3 +109,29 @@ class FacebookLike(models.Model):
 
     class Meta:
         unique_together = ['user_id', 'facebook_id']
+        
+        
+if settings.AUTH_PROFILE_MODULE == 'django_facebook.FacebookProfile':
+    '''
+    If we are using the django facebook profile model, create the model
+    and connect it to the user create signal
+    '''
+        
+    class FacebookProfile(FacebookProfileModel):
+        '''
+        Not abstract version of the facebook profile model
+        Use this by setting
+        AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile' 
+        '''
+        user = models.OneToOneField('auth.User')
+    
+    from django.contrib.auth.models import User
+    from django.db.models.signals import post_save
+    
+    #Make sure we create a FacebookProfile when creating a User
+    def create_facebook_profile(sender, instance, created, **kwargs):
+        if created:
+            FacebookProfile.objects.create(user=instance)
+    
+    post_save.connect(create_facebook_profile, sender=User)
+        

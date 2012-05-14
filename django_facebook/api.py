@@ -35,29 +35,41 @@ def get_persistent_graph(request, *args, **kwargs):
     if not request:
         raise(ValidationError,
             'Request is required if you want to use persistent tokens')
+        
+    graph = None
+    #some situations like an expired access token require us to refresh our graph
+    require_refresh = False
+    code = request.REQUEST.get('code')
+    if code:
+        require_refresh = True
 
-    session_graph = getattr(request, 'facebook', None)
-    if session_graph:
+    local_graph = getattr(request, 'facebook', None)
+    if local_graph:
         #gets the graph from the local memory if available
-        graph = session_graph
-    else:
+        graph = local_graph
+
+    if not graph:
         #search for the graph in the session
         cached_graph = request.session.get('graph')
         if cached_graph:
             cached_graph._me = None
             graph = cached_graph
-        else:
-            #gets the new graph, note this might do token conversions (slow) 
-            graph = get_facebook_graph(request, *args, **kwargs)
-            #if it's valid replace the old cache
-            if graph is not None and graph.access_token:
-                request.session['graph'] = graph
+            
+    if not graph or require_refresh:
+        #gets the new graph, note this might do token conversions (slow) 
+        graph = get_facebook_graph(request, *args, **kwargs)
+        #if it's valid replace the old cache
+        if graph is not None and graph.access_token:
+            request.session['graph'] = graph
 
     #add the current user id and cache the graph at the request level
     _add_current_user_id(graph, request.user)
     request.facebook = graph
 
     return graph
+
+
+
 
 
 def get_facebook_graph(request=None, access_token=None, redirect_uri=None):
