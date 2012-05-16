@@ -429,7 +429,9 @@ class FacebookUserConverter(object):
         Slugify the username and replace - with _ to meet username requirements
         '''
         from django.template.defaultfilters import slugify
-        return slugify(username).replace('-', '_')
+        slugified_name = slugify(username).replace('-', '_')
+        slugified_name = slugified_name[:30]
+        return slugified_name
 
     def get_and_store_likes(self, user):
         '''
