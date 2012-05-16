@@ -97,6 +97,7 @@ def connect(request):
                     action, user = connect_user(request)
                     logger.info('Django facebook performed action: %s', action)
                 except facebook_exceptions.IncompleteProfileError, e:
+                    #show them a registration form to add additional data
                     warn_message = u'Incomplete profile data encountered '\
                         u'with error %s' % e.message.decode('utf-8', 'replace')
                     send_warning(warn_message, e=e,
@@ -110,9 +111,11 @@ def connect(request):
                     )
 
                 if action is CONNECT_ACTIONS.CONNECT:
+                    #connect means an existing account was attached to facebook
                     messages.info(request, _("You have connected your account "
                         "to %s's facebook profile") % facebook_data['name'])
                 elif action is CONNECT_ACTIONS.REGISTER:
+                    #hook for tying in specific post registration functionality
                     response = backend.post_registration_redirect(request, user)
                     return response
         else:
@@ -124,7 +127,8 @@ def connect(request):
                             'raising an error')
                 raise OpenFacebookException('please authenticate')
 
-        return next_redirect(request)
+        #for CONNECT and LOGIN we simple redirect to the next page
+        return next_redirect(request, default=facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT)
 
     if not settings.DEBUG and facebook_settings.FACEBOOK_HIDE_CONNECT_TEST:
         raise Http404

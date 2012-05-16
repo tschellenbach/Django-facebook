@@ -49,5 +49,5 @@ FACEBOOK_REGISTRATION_FORM = getattr(settings,
 default_registration_backend = 'django_facebook.registration_backends.FacebookRegistrationBackend'
 FACEBOOK_REGISTRATION_BACKEND = getattr(settings, 'FACEBOOK_REGISTRATION_BACKEND', default_registration_backend)
 
-
-
+#Fall back redirect location when no other location was found
+FACEBOOK_LOGIN_DEFAULT_REDIRECT = getattr(settings, 'FACEBOOK_LOGIN_DEFAULT_REDIRECT', '/') 
