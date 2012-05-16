@@ -152,9 +152,6 @@ def _update_access_token(user, graph):
                 profile.access_token = graph.access_token
                 profile.save()
         
-        #warn if we didn't get offline access
-        if graph.expires:
-            logger.warn('we shouldnt be finding a graph expiration, its set to %s', graph.expires)
         
 
 def _register_user(request, facebook, profile_callback=None,
