@@ -24,6 +24,8 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
     from open_facebook import exceptions as open_facebook_exceptions
     from django_facebook.utils import test_permissions
     scope_list = parse_scope(scope)
+    #canvas pages always need to be csrf excempt
+    csrf_exempt = canvas
 
     def actual_decorator(view_func):
         @wraps(view_func, assigned=available_attrs(view_func))
@@ -47,8 +49,15 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
         return _wrapped_view
 
     if view_func:
-        return actual_decorator(view_func)
-    return actual_decorator
+        wrapped_view = actual_decorator(view_func)
+    else:
+        wrapped_view = actual_decorator
+        
+    if csrf_exempt:
+        #always set canvas pages to be csrf exempt
+        wrapped_view.csrf_exempt = csrf_exempt
+    
+    return wrapped_view
 
 
 def facebook_required_lazy(view_func=None,
@@ -66,6 +75,8 @@ def facebook_required_lazy(view_func=None,
     from django_facebook.utils import test_permissions
     from open_facebook import exceptions as open_facebook_exceptions
     scope_list = parse_scope(scope)
+    #canvas pages always need to be csrf excempt
+    csrf_exempt = canvas
 
     def actual_decorator(view_func):
         @wraps(view_func, assigned=available_attrs(view_func))
@@ -94,8 +105,15 @@ def facebook_required_lazy(view_func=None,
         return _wrapped_view
 
     if view_func:
-        return actual_decorator(view_func)
-    return actual_decorator
+        wrapped_view = actual_decorator(view_func)
+    else:
+        wrapped_view = actual_decorator
+        
+    if csrf_exempt:
+        #always set canvas pages to be csrf exempt
+        wrapped_view.csrf_exempt = csrf_exempt
+        
+    return wrapped_view
 
 
 def facebook_connect_required():
