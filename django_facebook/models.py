@@ -110,21 +110,22 @@ class FacebookLike(models.Model):
     class Meta:
         unique_together = ['user_id', 'facebook_id']
         
-        
+
+class FacebookProfile(FacebookProfileModel):
+    '''
+    Not abstract version of the facebook profile model
+    Use this by setting
+    AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile' 
+    '''
+    user = models.OneToOneField('auth.User')
+    
+    
 if settings.AUTH_PROFILE_MODULE == 'django_facebook.FacebookProfile':
     '''
     If we are using the django facebook profile model, create the model
     and connect it to the user create signal
     '''
         
-    class FacebookProfile(FacebookProfileModel):
-        '''
-        Not abstract version of the facebook profile model
-        Use this by setting
-        AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile' 
-        '''
-        user = models.OneToOneField('auth.User')
-    
     from django.contrib.auth.models import User
     from django.db.models.signals import post_save
     
