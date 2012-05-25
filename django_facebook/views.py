@@ -98,8 +98,8 @@ def connect(request):
                     logger.info('Django facebook performed action: %s', action)
                 except facebook_exceptions.IncompleteProfileError, e:
                     #show them a registration form to add additional data
-                    warn_message = u'Incomplete profile data encountered '\
-                        u'with error %s' % e.message.decode('utf-8', 'replace')
+                    warning_format = u'Incomplete profile data encountered with error %s'
+                    warn_message = warning_format % e.message
                     send_warning(warn_message, e=e,
                                  facebook_data=facebook_data)
 
