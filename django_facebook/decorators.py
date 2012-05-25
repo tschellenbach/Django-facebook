@@ -1,6 +1,6 @@
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django_facebook import settings as fb_settings
-
+from django.conf import settings as app_settings
 from django.http import HttpResponseRedirect
 from django_facebook.utils import get_oauth_url, parse_scope, response_redirect
 from django.utils.decorators import available_attrs
@@ -10,9 +10,20 @@ import logging
 from django_facebook.api import require_persistent_graph, get_persistent_graph
 logger = logging.getLogger(__name__)
 
+def canvas_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
+                      redirect_field_name=REDIRECT_FIELD_NAME, login_url=None,
+                      redirect_uri=None):
+    if not redirect_uri:
+        redirect_uri = app_settings.FACEBOOK_CANVAS_PAGE
+    return facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
+                      redirect_field_name=REDIRECT_FIELD_NAME, login_url=None,
+                      redirect_uri=redirect_uri, canvas=True)
+        
+        
 
 def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
-                      redirect_field_name=REDIRECT_FIELD_NAME, login_url=None, canvas=False):
+                      redirect_field_name=REDIRECT_FIELD_NAME, login_url=None,
+                      redirect_uri=None, canvas=False):
     """
     Decorator which makes the view require the given Facebook perms,
     redirecting to the log-in page if necessary.
@@ -30,12 +41,13 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
     def actual_decorator(view_func):
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
-            oauth_url, redirect_uri = get_oauth_url(request, scope_list)
+            oauth_url, redirect_url = get_oauth_url(request, scope_list,
+                    redirect_uri=redirect_uri, canvas=canvas)
             
             #Normal facebook errors should be raised
             #OAuthException s should cause a redirect for authorization
             try:
-                permission_granted = test_permissions(request, scope_list, redirect_uri)
+                permission_granted = test_permissions(request, scope_list, redirect_url)
             except open_facebook_exceptions.OAuthException, e:
                 permission_granted = False
             
@@ -43,7 +55,7 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
                 return view_func(request, *args, **kwargs)
             else:
                 logger.info('requesting access with redirect uri: %s',
-                            redirect_uri)
+                            redirect_url)
                 response = response_redirect(oauth_url, canvas=canvas)
                 return response
         return _wrapped_view
@@ -63,7 +75,8 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
 def facebook_required_lazy(view_func=None,
                            scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
                            redirect_field_name=REDIRECT_FIELD_NAME,
-                           login_url=None, extra_params=None, canvas=False):
+                           login_url=None, extra_params=None,
+                           redirect_uri=None, canvas=False):
     """
     Decorator which makes the view require the given Facebook perms,
     redirecting to the log-in page if necessary.
@@ -82,7 +95,7 @@ def facebook_required_lazy(view_func=None,
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
             oauth_url, redirect_uri = get_oauth_url(request, scope_list,
-                                                    extra_params=extra_params)
+                    redirect_uri=redirect_uri, canvas=canvas)
             try:
                 # call get persistent graph and convert the
                 # token with correct redirect uri
