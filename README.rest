@@ -2,6 +2,8 @@
 Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmorning.com/>`_)
 ######################################################################
 
+.. image:: https://secure.travis-ci.org/tschellenbach/Django-facebook.png?branch=master
+
 **New in 4.0**
 
 4.0 introduces improved compatiblity for the offline access migration.
