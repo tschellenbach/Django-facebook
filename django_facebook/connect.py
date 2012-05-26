@@ -32,88 +32,6 @@ class CONNECT_ACTIONS:
     class REGISTER:
         pass
 
-class FacebookConnect(object):
-    
-    def __init__(self, request, access_token=None, facebook_graph=None,
-            force_connect=False, force_registration=False):
-        self.user = None
-        self.request = request
-        if request.user.is_authenticated():
-            self.user = request.user
-            
-        self.force_connect = bool(int(request.REQUEST.get('connect_facebook', 0))) or force_connect
-        self.force_registration = request.REQUEST.get('force_registration') or\
-                request.REQUEST.get('force_registration_hard') or force_registration
-        self.access_token = access_token
-        self.graph = facebook_graph or get_facebook_graph(request, access_token)
-        self.profile_class = get_profile_class()
-        user_data, profile_data = self.profile_class.objects.get_profile_data(
-                self.graph)
-        self.user_data = user_data
-        self.profile_data = profile_data
-
-    def connect(self):
-    
-        if self.force_connect and self.user and not self.force_registration:
-            #we should only allow connect if users indicate they really want to connect
-            #only when the request.CONNECT_FACEBOOK = 1
-            #if this isn't present we just do a login   
-            action = CONNECT_ACTIONS.CONNECT
-            self.user = self.update_user()
-        else:
-            email = self.user_data.get('email', False)
-            kwargs = {}
-            if email:
-                kwargs = {'facebook_email': email}
-            self.user = authenticate(facebook_id=self.profile_data['facebook_id'], **kwargs)
-        
-            if self.user and not self.force_registration:
-                action = CONNECT_ACTIONS.LOGIN
-            
-
-                # Has the user registered without Facebook, using the verified FB
-                # email address?
-                # It is after all quite common to use email addresses for usernames
-                if not self.user.get_profile().facebook_id:
-                    update = True
-                else:
-                    update = getattr(self.user, 'fb_update_required', False)
-                self.login(update=update)
-            else:
-                action = CONNECT_ACTIONS.REGISTER
-                # when force registration is active we should clearout
-                # the old profile
-                self.create_user()
-            
-#    _update_likes_and_friends(request, user, facebook)
-#
-#    _update_access_token(user, graph)
-    
-        return action
-  
-    def login(self, update=False):
-        login(self.request, self.user)
-        if update:
-            self.update_user()
-
-    def create_user(self):
-        self.user = self.profile_class.objects.create_facebook_user(
-                user_data=self.user_data,
-                profile_data=self.profile_data,
-                )
-        self.login()
-    
-    def update_user(self, overwrite=True):
-        '''
-        Updates the user and his/her profile with the data from facebook
-        '''
-        self.user = self.profile_class.objects.update_user(
-                self.user,
-                user_data=self.user_data,
-                profile_data=self.profile_data,
-                overwrite=overwrite,
-                )
-    
 
 def connect_user(request, access_token=None, facebook_graph=None):
     '''
@@ -257,16 +175,15 @@ def _register_user(request, facebook, profile_callback=None,
 
     # gets the form class specified in FACEBOOK_REGISTRATION_FORM
     form_class = get_form_class(backend, request)
-    profile_class = get_profile_class()
-    user_data, facebook_data = profile_class.objects.get_profile_data()
-    
+
+    facebook_data = facebook.facebook_registration_data()
+
     data = request.POST.copy()
     for k, v in facebook_data.items():
         if not data.get(k):
             data[k] = v
     if remove_old_connections:
-        profile_class.objects.remove_old_connections(
-                facebook_data["facebook_id"])
+        _remove_old_connections(facebook_data['facebook_id'])
 
     if request.REQUEST.get('force_registration_hard'):
         data['email'] = data['email'].replace(
@@ -412,7 +329,7 @@ def _update_image(profile, image_url):
     image_size = len(image_content)
     content_type = http_message.type
     image_file = InMemoryUploadedFile(
-        file=image_temp, name=image_name, field_name='image',
+        file=image_temp, name=image_name, field_name='image', 
         content_type=content_type, size=image_size, charset=None
     )
     profile.image.save(image_name, image_file)

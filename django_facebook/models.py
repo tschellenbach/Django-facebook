@@ -1,7 +1,6 @@
 from django.db import models
 from django.core.urlresolvers import reverse
 from django_facebook import model_managers
-from open_facebook.api import OpenFacebook
 from django.conf import settings
 import os
 
@@ -9,7 +8,7 @@ import os
 
 
 
-PROFILE_IMAGE_PATH = os.path.join('images', 'facebook_profiles/%Y/%m/%d')
+PROFILE_IMAGE_PATH = os.path.join('images','facebook_profiles/%Y/%m/%d')
 
 
 class FacebookProfileModel(models.Model):
@@ -32,7 +31,6 @@ class FacebookProfileModel(models.Model):
     gender = models.CharField(max_length=1, choices=(('m', 'Male'), ('f', 'Female')), blank=True, null=True)
     raw_data = models.TextField(blank=True)
 
-    objects = model_managers.FacebookProfileManager()
     def __unicode__(self):
         return self.user.__unicode__()
 
@@ -73,15 +71,7 @@ class FacebookProfileModel(models.Model):
             graph = OpenFacebook(access_token=self.access_token)
             graph.current_user_id = self.facebook_id
             return graph
-    
-    
-    def _get_open_facebook(self):
-        if self.access_token:
-            return OpenFacebook(access_token=self.access_token)
-        else:
-            return None
-
-    fb = property(_get_open_facebook)
+        
 
 
 
@@ -94,7 +84,7 @@ class FacebookUser(models.Model):
     user_id = models.IntegerField()
     facebook_id = models.BigIntegerField()
     name = models.TextField(blank=True, null=True)
-    gender = models.CharField(choices=(('F', 'female'), ('M', 'male')), blank=True, null=True, max_length=1)
+    gender = models.CharField(choices=(('F', 'female'),('M', 'male')), blank=True, null=True, max_length=1)
 
     objects = model_managers.FacebookUserManager()
 
