@@ -14,6 +14,8 @@ from django_facebook import signals
 from django_facebook.api import get_facebook_graph, FacebookUserConverter
 from django_facebook.utils import (get_registration_backend, get_form_class,
                                    get_profile_class)
+from django_facebook.tasks import extend_access_token
+
 import urllib2
 from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
@@ -151,6 +153,9 @@ def _update_access_token(user, graph):
             if graph.access_token != profile.access_token:
                 profile.access_token = graph.access_token
                 profile.save()
+                 # if the profile model supports it, add an extended access token which is valid for aprox. 60 days
+                if hasattr(profile,'extended_access_token'):
+                    extend_access_token.delay(profile,graph.access_token)
         
         #warn if we didn't get offline access
         if graph.expires:
