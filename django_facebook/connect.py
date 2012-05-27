@@ -308,7 +308,7 @@ def _update_user(user, facebook, overwrite=True):
 
 
     image_url = facebook_data['image']
-    if hasattr(profile, 'image') and not profile.image:
+    if hasattr(profile, 'image') and not profile.image and facebook_settings.FACEBOOK_STORE_LOCAL_IMAGE:
         profile_dirty = _update_image(profile, image_url)
 
     #save both models if they changed

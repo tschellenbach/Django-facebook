@@ -20,6 +20,7 @@ FACEBOOK_TRACK_RAW_DATA = getattr(settings, 'FACEBOOK_TRACK_RAW_DATA', False)
 # if we should store friends and likes
 FACEBOOK_STORE_LIKES = getattr(settings, 'FACEBOOK_STORE_LIKES', False)
 FACEBOOK_STORE_FRIENDS = getattr(settings, 'FACEBOOK_STORE_FRIENDS', False)
+FACEBOOK_STORE_LOCAL_IMAGE = getattr(settings, 'FACEBOOK_STORE_LOCAL_IMAGE', False)
 # if we should be using celery to do the above two,
 # recommended if you want to store friends or likes
 FACEBOOK_CELERY_STORE = getattr(settings, 'FACEBOOK_CELERY_STORE', False)
