@@ -23,7 +23,8 @@ def clear_persistent_graph_cache(request):
         profile.clear_access_token()
 
 
-def test_permissions(request, scope_list, redirect_uri=None):
+def test_permissions(request, scope_list, redirect_uri=None,
+        retry_with_cleaned_cache=True):
     '''
     Call Facebook me/permissions to see if we are allowed to do this
     '''
@@ -38,7 +39,12 @@ def test_permissions(request, scope_list, redirect_uri=None):
         except facebook_exceptions.OAuthException:
             # this happens when someone revokes their permissions
             # while the session is still stored
-            permissions = {}
+            if retry_with_cleaned_cache == True:
+                request.session.delete('graph')
+                return test_permissions(request, scope_list, redirect_uri=None,
+                        retry_with_cleaned_cache=False)
+            else:
+                permissions = {}
         permissions_dict = dict([(k, bool(int(v)))
                                  for k, v in permissions.items()
                                  if v == '1' or v == 1])
@@ -59,7 +65,8 @@ def test_permissions(request, scope_list, redirect_uri=None):
     return scope_allowed
 
 
-def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
+def get_oauth_url(request, scope, redirect_uri=None, canvas=None,
+        extra_params=None):
     '''
     Returns the oauth url for the given request and scope
     Request maybe shouldnt be tied to this function, but for now it seems
@@ -73,7 +80,7 @@ def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
     redirect_uri = redirect_uri or request.build_absolute_uri()
 
     # set attempt=1 to prevent endless redirect loops
-    if 'attempt=1' not in redirect_uri:
+    if not canvas and 'attempt=1' not in redirect_uri:
         if '?' not in redirect_uri:
             redirect_uri += '?attempt=1'
         else:
