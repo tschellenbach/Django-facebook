@@ -23,28 +23,35 @@ Backwards incompatible changes:
 **The docs can also be found at: http://django-facebook.rtfd.org/**
 
 
-Demo
-----
+Demo & About
+------------
 
-Django Facebook assumes you want users to register through Facebook.
-After registration it gives you access to the graph, allowing for such applications as:
+Django Facebook enables your users to easily register using the Facebook API. 
+It converts the Facebook user data and creates regular User and Profile objects.
+This makes it easy to integrate with your existing Django application. 
+After registration it gives you access to user's graph. Allowing for applications such as:
 
+* Open graph/ Timeline functionality
+* Seamless personalization
 * Inviting friends
 * Finding friends
 * Posting to a users profile
-* Open graph/ Timeline functionality
 
+I've built it for my startup Fashiolista.com and it's currently used in production there with thousands of signups per day.
 For a demo of the signup flow have a look at Fashiolista's landing page (`fashiolista.com <http://www.fashiolista.com/intro_wide_minimal/>`_)
 
+Before you get started building your application, know that contributions are very welcome.
+Seriously, if you see a bug or think of an improvement just open a pull request or issue.
+Feel free to contact me if you have questions.
 
-Contributions are welcome!!
-Contact me here or `@tschellenbach <http://www.twitter.com/tschellenbach>`_
 Updates and tutorials can be found on my blog `mellowmorning <http://www.mellowmorning.com/>`_
 
+Further demos and tutorials will soon be available on `django-facebook.com <http://www.django-facebook.com/>`_
 
 
-About Django Facebook
----------------------
+
+Features
+--------
 
 **Features**
 
