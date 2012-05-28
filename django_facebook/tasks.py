@@ -1,6 +1,8 @@
 from celery import task
 from django.db import IntegrityError
 import logging
+import urllib
+import urllib2
 logger = logging.getLogger(__name__)
 
 
@@ -87,6 +89,19 @@ def get_and_store_friends(user, facebook):
     except IntegrityError, e:
         logger.warn('get_and_store_friends failed for %s with error %s', user.id, e)
 
+@task.task()
+def extend_access_token(profile,access_token):
+    q = {
+            "client_id": settings.FACEBOOK_APP_ID,
+            "client_secret": settings.FACEBOOK_APP_SECRET,
+            "grant_type": "fb_exchange_token",
+            "fb_exchange_token": access_token,
+        }
+    response = urllib2.urlopen('https://graph.facebook.com/oauth/access_token?%s' % urllib.urlencode(q)).read()
+    # returns a str object instead of json for some reason ...
+    token = response.split('&', 1)[0].split('=')[1]
+    profile.extended_access_token = token
+    profile.save()
 
 @task.task()
 def async_connect_user(request, graph):
