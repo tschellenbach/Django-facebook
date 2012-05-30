@@ -8,47 +8,30 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'FacebookUser'
-        db.create_table('django_facebook_facebookuser', (
+
+        # Adding model 'FacebookProfile'
+        db.create_table('django_facebook_facebookprofile', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user_id', self.gf('django.db.models.fields.IntegerField')()),
-            ('facebook_id', self.gf('django.db.models.fields.BigIntegerField')()),
-            ('name', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('about_me', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('facebook_id', self.gf('django.db.models.fields.BigIntegerField')(unique=True, null=True, blank=True)),
+            ('access_token', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('facebook_name', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
+            ('facebook_profile_url', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('website_url', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('blog_url', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('image', self.gf('django.db.models.fields.files.ImageField')(max_length=255, null=True, blank=True)),
+            ('date_of_birth', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
             ('gender', self.gf('django.db.models.fields.CharField')(max_length=1, null=True, blank=True)),
+            ('raw_data', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True)),
         ))
-        db.send_create_signal('django_facebook', ['FacebookUser'])
-
-        # Adding unique constraint on 'FacebookUser', fields ['user_id', 'facebook_id']
-        db.create_unique('django_facebook_facebookuser', ['user_id', 'facebook_id'])
-
-        # Adding model 'FacebookLike'
-        db.create_table('django_facebook_facebooklike', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user_id', self.gf('django.db.models.fields.IntegerField')()),
-            ('facebook_id', self.gf('django.db.models.fields.BigIntegerField')()),
-            ('name', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('category', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('created_time', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-        ))
-        db.send_create_signal('django_facebook', ['FacebookLike'])
-
-        # Adding unique constraint on 'FacebookLike', fields ['user_id', 'facebook_id']
-        db.create_unique('django_facebook_facebooklike', ['user_id', 'facebook_id'])
+        db.send_create_signal('django_facebook', ['FacebookProfile'])
 
 
     def backwards(self, orm):
-        # Removing unique constraint on 'FacebookLike', fields ['user_id', 'facebook_id']
-        db.delete_unique('django_facebook_facebooklike', ['user_id', 'facebook_id'])
 
-        # Removing unique constraint on 'FacebookUser', fields ['user_id', 'facebook_id']
-        db.delete_unique('django_facebook_facebookuser', ['user_id', 'facebook_id'])
-
-        # Deleting model 'FacebookUser'
-        db.delete_table('django_facebook_facebookuser')
-
-        # Deleting model 'FacebookLike'
-        db.delete_table('django_facebook_facebooklike')
-
+        # Deleting model 'FacebookProfile'
+        db.delete_table('django_facebook_facebookprofile')
 
 
     models = {
