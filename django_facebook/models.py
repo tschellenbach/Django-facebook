@@ -52,7 +52,7 @@ class FacebookProfileModel(models.Model):
         from django_facebook.utils import next_redirect
         default_url = reverse('facebook_connect')
         response = next_redirect(request, default=default_url,
-                                 next_key='register_next')
+                                 next_key=['register_next','next','redirect_uri'])
         response.set_cookie('fresh_registration', self.user_id)
 
         return response
