@@ -15,6 +15,8 @@ from open_facebook.api import FacebookConnection
 from functools import partial
 from django_facebook.utils import cleanup_oauth_url
 from django_facebook.tests_utils.base import RequestMock
+from django.test.client import Client
+from django.core.urlresolvers import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -123,6 +125,12 @@ class UserConnectTest(FacebookTest):
         action, user = connect_user(self.request, facebook_graph=facebook)
         # The test form always sets username to test form
         self.assertEqual(user.username, 'Test form')
+        
+    def test_connect_page(self):
+        url = reverse('facebook_connect')
+        c = Client()
+        response = c.get(url)
+        self.assertEqual(response.status_code, 200)
 
 
 class AuthBackend(FacebookTest):
