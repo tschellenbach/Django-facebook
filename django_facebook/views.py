@@ -15,7 +15,8 @@ from django_facebook.api import get_persistent_graph, FacebookUserConverter, \
     require_persistent_graph
 from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
-from django_facebook.utils import next_redirect, get_registration_backend
+from django_facebook.utils import next_redirect, get_registration_backend,\
+    replication_safe
 from django_facebook.decorators import (facebook_required,
                                         facebook_required_lazy)
 from open_facebook.utils import send_warning
@@ -66,6 +67,7 @@ def image_upload(request):
 
 
 @csrf_exempt
+@replication_safe
 @facebook_required_lazy(extra_params=dict(facebook_login='1'))
 def connect(request):
     '''
