@@ -67,7 +67,8 @@ facebookClass.prototype = {
         var scope = this;
         FB.login(function(response) {
             if (response.status == 'unknown') {
-                scope.connectLoading(gettext('Sorry, we couldn\'t log you in. Please try again.', true, true));
+                var errorMessage = gettext('Sorry, we couldn\'t log you in. Please try again.');
+                scope.connectLoading(errorMessage, true, true);
             } else {
                 //showloading
                 scope.connectLoading(gettext('Now loading your profile...'));

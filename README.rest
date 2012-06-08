@@ -2,30 +2,56 @@
 Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmorning.com/>`_)
 ######################################################################
 
+.. image:: https://secure.travis-ci.org/tschellenbach/Django-facebook.png?branch=master
+
+**New in 4.0**
+
+4.0 introduces improved compatiblity for the offline access migration.
+I highly recommend upgrading. These are some of the awesome new features:
+
+* Standalone registration support (we no longer require django userena and django registration)
+* Local image storage is now easy to setup and enabled by default
+* Automatic reauthentication for expired tokens (Great for the offline access migration)
+* Travis - `CI tested <http://travis-ci.org/#!/tschellenbach/Django-facebook/>`  
+
+Backwards incompatible changes:
+
+* You need to explicitly send connect_facebook=1 to connect an existing account to your Facebook account
+* You need to specify a custom backend when using Django registration or Userena. See the section on django userena and django registration support.
+* You should make sure your media settings are ok to support image upload
+
 **The docs can also be found at: http://django-facebook.rtfd.org/**
 
-First
------
 
-Django Facebook assumes you want users to register through Facebook.
-After registration it gives you access to the graph, allowing for such applications as:
+Demo & About
+------------
 
+Django Facebook enables your users to easily register using the Facebook API. 
+It converts the Facebook user data and creates regular User and Profile objects.
+This makes it easy to integrate with your existing Django application. 
+After registration it gives you access to user's graph. Allowing for applications such as:
+
+* Open graph/ Timeline functionality
+* Seamless personalization
 * Inviting friends
 * Finding friends
 * Posting to a users profile
-* Open graph beta functionality
 
+I've built it for my startup Fashiolista.com and it's currently used in production there with thousands of signups per day.
 For a demo of the signup flow have a look at Fashiolista's landing page (`fashiolista.com <http://www.fashiolista.com/intro_wide_minimal/>`_)
 
+Before you get started building your application, know that contributions are very welcome.
+Seriously, if you see a bug or think of an improvement just open a pull request or issue.
+Feel free to contact me if you have questions.
 
-Contributions are welcome!!
-Contact me here or `@tschellenbach <http://www.twitter.com/tschellenbach>`_
 Updates and tutorials can be found on my blog `mellowmorning <http://www.mellowmorning.com/>`_
 
+Further demos and tutorials will soon be available on `django-facebook.com <http://www.django-facebook.com/>`_
 
 
-About Django Facebook
----------------------
+
+Features
+--------
 
 **Features**
 
@@ -34,15 +60,11 @@ About Django Facebook
    * Facebook canvas pages (For building facebook applications)
    * Mobile (Or any other flow giving you a valid access token)
 * Django User Registration (Convert Facebook user data into a user model)
-* Use Facebook data to register a user with your Django app. Facebook connect using the open graph API.
+* Store likes, friends and user data locally.
 * Facebook FQL access
 * OAuth 2.0 compliant
+* Automated reauthentication (For expired tokens)
 * Includes Open Facebook (stable and tested python client to the graph API)
-
-
-Requirements
-------------------------------
-* Django registration or Django Userena (contact me if you use something else for registration.) 
 
 
 Installation
@@ -53,8 +75,17 @@ Download the source code or use ``pip install django_facebook``.
 
 **Create a Facebook App**
 
-In case you don't yet have a facebook app. You need an app to use the open graph api and make the login process work.
-You can create a facebook app at this url: http://www.facebook.com/developers/createapp.php
+You need a facebook app to use the open graph API and make the login process work.
+If you don't have a facebook app, now is the time to create one.
+You can create a facebook app at `this url <http://www.facebook.com/developers/createapp.php>`_. 
+
+Facebook authentication only works if the domain you are working on matches your app domain.
+Be sure to configure the right app domain in your facebook application settings.
+
+An example:
+
+Your site is www.fashiolista.com, your app domain is set to fashiolista.com and you do your development at ``local.fashiolista.com``.
+If you try to authenticate with Facebook from a different domain you will get an authentication error.
 
 **Settings**
 
@@ -71,70 +102,116 @@ add django facebook to your installed apps::
 
     'django_facebook',
 
-Add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS``
-setting)::
+Add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS`` setting)::
 
     'django_facebook.context_processors.facebook',
 
-If you would like to use automatic redirection, as well as static files includes (which django-facebook uses by default), make sure the following lines are present in ``TEMPLATE_CONTEXT_PROCESSORS`` as well::
+The full setting on a new django 1.4 app looks like this::
 
-    'django.core.context_processors.request',
-    'django.core.context_processors.static',
+    TEMPLATE_CONTEXT_PROCESSORS = (
+        'django_facebook.context_processors.facebook',
+        'django.contrib.auth.context_processors.auth',
+        'django.core.context_processors.debug',
+        'django.core.context_processors.i18n',
+        'django.core.context_processors.media',
+        'django.core.context_processors.static',
+        'django.core.context_processors.tz',
+        'django.contrib.messages.context_processors.messages',
+    )
 
 Add this to your ``AUTHENTICATION_BACKENDS`` setting::
 
     'django_facebook.auth_backends.FacebookBackend',
 
-Note that if you do not have an ``AUTHENTICATION_BACKENDS`` setting specified and would still like to use normal django authentication, you should also add the following default auth backend::
+The full setting on a new django 1.4 app looks like this::
 
-    'django.contrib.auth.backends.ModelBackend',
+    AUTHENTICATION_BACKENDS = (
+        'django_facebook.auth_backends.FacebookBackend',
+        'django.contrib.auth.backends.ModelBackend',
+    )
 
-You should also add the following ``REGISTRATION_BACKEND`` if it does not exist already::
-
-    REGISTRATION_BACKEND = 'registration.backends.default.DefaultBackend'
-
-If you are using django-registration (the third party registration manager), you may need to add an admin email address::
-
-    DEFAULT_FROM_EMAIL = 'admin@example.com'
-    
 Now, add this line to your url config::
 
     (r'^facebook/', include('django_facebook.urls')),
+    (r'^accounts/', include('django_facebook.auth_urls')), #Don't add this line if you use django registration or userena for registration and auth.
+
 
 **Update your models**
 
-An abstract model is specified here django_facebook/models.py and is named "FacebookProfileModel".  Add these fields to your profile model or subclass the abstract class.  Your subclassed model should have a field called "user" with a ForeignKey pointing to your User model (django.contrib.auth.models.User in most cases).
+Django uses a custom Profile model to store additional user information. 
+Read more about this topic in the `Django Docs <https://docs.djangoproject.com/en/dev/topics/auth/#storing-additional-information-about-users>`_.
 
-If you get errors with your user profile not found, you will need to create a profile for the user at some point, since this is not done automatically.  One way to do this is via a post_save signal for your User.  Below is an example, with "FacebookProfile" as the name of the custom user profile.  Keep in mind that your project's requirements may differ::
+If you don't already have a custom Profile model, simply uses the provided model by setting your AUTH_PROFILE_MODULE to FacebookProfile::
 
-    from django.db.models import signals
+    AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile'
+    
+Be sure to run manage.py syncdb after setting this up.
+
+Otherwise Django Facebook provides an abstract model which you can inherit like this::
+
+    from django_facebook.models import FacebookProfileModel
+
+
+    class MyCustomProfile(FacebookProfileModel):
+        user = models.OneToOneField('auth.User')
+        ....
+    
     from django.contrib.auth.models import User
+    from django.db.models.signals import post_save
     
-    def create_userprofile(sender, **kwargs):
-        created = kwargs['created'] # object created or just saved?
-    
+    #Make sure we create a MyCustomProfile when creating a User
+    def create_facebook_profile(sender, instance, created, **kwargs):
         if created:
-            FacebookProfile.objects.create(user=kwargs['instance'])
+            MyCustomProfile.objects.create(user=instance)
     
-    signals.post_save.connect(create_userprofile, sender=User)
+    post_save.connect(create_facebook_profile, sender=User)
+    
+Don't forget to update your database using syncdb or south after this step.
 
-See the django docs for more information on setting up a Profile model or understanding abstract classes.
 
-**Check the example**
+Check the example & Customize!
+------------------------------
 
 Right now you should have a working registration/connect/login in flow available at /facebook/connect/
 Test if everything is working and ensure you didn't miss a step somewhere.
 If you encounter any difficulties please open an issue.
 
-**Django Userena**
 
-A few settings changes are needed to play nicely with Django Userena.
-In your settings point Django Facebook to the right registration form and template:
+**Registration Backends**
+
+Django Facebook uses registration backends to integrate with various registration frameworks.
+No registration backend is required. However if you want to integrate with django registration,
+django userena or a custom backend you need to point us in the right direction.
+
+**Django Registration support**
+Simply set your facebook registration backend to your preferred backend.
 
 ::
 
-    FACEBOOK_REGISTRATION_FORM = 'userena.forms.SignupForm'
-    FACEBOOK_REGISTRATION_TEMPLATE = 'userena/signup_form.html'
+    FACEBOOK_REGISTRATION_BACKEND = 'registration.backends.default.DefaultBackend'
+
+**Django Userena support**
+
+We recommend using Django Userena. It seems easier to work with than Django Registration.
+Both are supported and good packages though.
+To use django userena simply point to the userena compatability layer.
+
+::
+
+    FACEBOOK_REGISTRATION_BACKEND = 'django_facebook.registration_backends.UserenaBackend'
+
+
+Also have a look at the userena settings file in the facebook example project.
+It provides a clear example of how to configure Userena and Django Facebook to work together.
+
+**Old Django Registration Support**
+
+Even older version of Django Registration are supported. Simply point to the old django registration
+compatability backend.
+
+::
+
+    FACEBOOK_REGISTRATION_BACKEND = 'django_facebook.registration_backends.OldDjangoRegistrationBackend'
 
 Supporting any other registration system is quite easy.
 Adjust the above settings to point to your own code.

@@ -1,5 +1,5 @@
 # Django settings for django_facebook_test project.
-
+import os
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -7,8 +7,12 @@ ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
 
+BASE_ROOT = os.path.abspath(
+    os.path.join(os.path.split(__file__)[0]))
+
 MANAGERS = ADMINS
 
+# Database config
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
@@ -45,18 +49,18 @@ USE_L10N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = ''
+MEDIA_ROOT = os.path.join(BASE_ROOT, 'media/')
 
 
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = ''
+MEDIA_URL = '/media/'
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/static/"
-STATICFILES_ROOT = ''
+STATICFILES_ROOT = os.path.join(BASE_ROOT, 'static/')
 
 # URL that handles the static files served from STATICFILES_ROOT.
 # Example: "http://static.lawrence.com/", "http://example.com/static/"
@@ -80,7 +84,7 @@ STATICFILES_FINDERS = (
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '+-0bztbe745cv72%zriu2jy2grdqv!$%n6dmpxi5%s+t&iny9_'
-
+MODE = 'standalone'
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -111,7 +115,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'registration',
+    #'registration', The default is now not to use django registration
     'django_facebook',
     'member',
     'south',
@@ -122,11 +126,12 @@ INSTALLED_APPS = (
 )
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-REGISTRATION_BACKEND = 'registration.backends.default.DefaultBackend'
+
 FACEBOOK_APP_ID = '215464901804004'
 FACEBOOK_APP_SECRET = '0aceba27823a9dfefa955f76949fa4b4'
-FACEBOOK_STORE_LIKES = False
-FACEBOOK_STORE_FRIENDS = False
+FACEBOOK_STORE_LIKES = True
+FACEBOOK_STORE_FRIENDS = True
+FACEBOOK_LOGIN_DEFAULT_REDIRECT = '/facebook/connect/'
 
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend', 'django_facebook.auth_backends.FacebookBackend',)
 AUTH_PROFILE_MODULE = 'member.UserProfile'

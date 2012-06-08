@@ -5,7 +5,7 @@
 
 user_data = {}
 
-
+base_data = dict(image='http://u.fashiocdn.com/images/users/0/0/6/O/J/5.jpg', image_thumb='http://u.fashiocdn.com/images/users/0/0/6/O/J/5.jpg')
 user_data['no_email'] = {'first_name': 'Thierry', 'last_name': 'Schellenbach', 'verified': True, 'name': 'Thierry Schellenbach', 'gender': 'man', 'image': 'http://graph.facebook.com/me/picture?type=large', 'updated_time': '2010-04-01T14:26:55+0000', 'birthday': '04/07', 'link': 'http://www.facebook.com/profile.php?id=1225707780', 'location': {'id': None, 'name': None}, 'timezone':-5, 'id': '1225707780', 'image_thumb': 'http://graph.facebook.com/me/picture'}
 user_data['tschellenbach'] = {'email': 'fake@mellowmorning.com', 'first_name': 'Thierry', 'last_name': 'Schellenbach', 'verified': True, 'name': 'Thierry Schellenbach', 'gender': 'man', 'image': 'http://graph.facebook.com/me/picture?type=large', 'updated_time': '2010-04-01T14:26:55+0000', 'birthday': '04/07', 'link': 'http://www.facebook.com/profile.php?id=1225707780', 'location': {'id': None, 'name': None}, 'timezone':-5, 'id': '1225707780', 'image_thumb': 'http://graph.facebook.com/me/picture'}
 user_data['new_user'] = {'email': 'fake_new@mellowmorning.com', 'first_name': 'Thierry', 'last_name': 'Schellenbach', 'verified': True, 'name': 'Thierry Schellenbach', 'gender': 'male', 'image': 'http://graph.facebook.com/me/picture?type=large', 'updated_time': '2010-04-01T14:26:55+0000', 'birthday': '04/07', 'link': 'http://www.facebook.com/profile.php?id=1225707780', 'location': {'id': None, 'name': None}, 'timezone':-5, 'id': '1225707781', 'image_thumb': 'http://graph.facebook.com/me/picture'}
@@ -105,3 +105,7 @@ user_data['unicode_string'] = {u'bio': u'ATELIER : TODOS LOS DIAS DE 14 A 22 HS 
             u'start_date': u'2008-12'},
            {u'employer': {u'id': u'198034683561689',
                           u'name': u'el atelier de la isla'}}]}
+
+for k, v in user_data.items():
+    v.update(base_data)
+    

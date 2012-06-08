@@ -13,3 +13,10 @@ facebook_post_store_friends = Signal(providing_args=['user', 'friends', 'current
 
 # Sent after storing the likes from graph to db
 facebook_post_store_likes = Signal(providing_args=['user', 'likes', 'current_likes', 'inserted_likes'])
+
+#Some signals for compatibility with Django Registration
+# A new user has registered.
+user_registered = Signal(providing_args=["user", "request"])
+
+# A user has activated his or her account.
+user_activated = Signal(providing_args=["user", "request"])

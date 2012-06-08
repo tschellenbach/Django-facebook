@@ -15,7 +15,8 @@ from django_facebook.api import get_persistent_graph, FacebookUserConverter, \
     require_persistent_graph
 from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
-from django_facebook.utils import next_redirect
+from django_facebook.utils import next_redirect, get_registration_backend,\
+    replication_safe
 from django_facebook.decorators import (facebook_required,
                                         facebook_required_lazy)
 from open_facebook.utils import send_warning
@@ -66,6 +67,7 @@ def image_upload(request):
 
 
 @csrf_exempt
+@replication_safe
 @facebook_required_lazy(extra_params=dict(facebook_login='1'))
 def connect(request):
     '''
@@ -74,18 +76,21 @@ def connect(request):
     - login
     - register
     '''
+    backend = get_registration_backend()
     context = RequestContext(request)
 
     assert context.get('FACEBOOK_APP_ID'), 'Please specify a facebook app id '\
         'and ensure the context processor is enabled'
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
-
+    
     if facebook_login:
+        require_persistent_graph(request)
         logger.info('trying to connect using facebook')
         graph = get_persistent_graph(request)
         if graph:
             logger.info('found a graph object')
             facebook = FacebookUserConverter(graph)
+            
             if facebook.is_authenticated():
                 logger.info('facebook is authenticated')
                 facebook_data = facebook.facebook_profile_data()
@@ -94,8 +99,9 @@ def connect(request):
                     action, user = connect_user(request)
                     logger.info('Django facebook performed action: %s', action)
                 except facebook_exceptions.IncompleteProfileError, e:
-                    warn_message = u'Incomplete profile data encountered '\
-                        u'with error %s' % e.message.decode('utf-8', 'replace')
+                    #show them a registration form to add additional data
+                    warning_format = u'Incomplete profile data encountered with error %s'
+                    warn_message = warning_format % e.message
                     send_warning(warn_message, e=e,
                                  facebook_data=facebook_data)
 
@@ -107,11 +113,13 @@ def connect(request):
                     )
 
                 if action is CONNECT_ACTIONS.CONNECT:
+                    #connect means an existing account was attached to facebook
                     messages.info(request, _("You have connected your account "
                         "to %s's facebook profile") % facebook_data['name'])
                 elif action is CONNECT_ACTIONS.REGISTER:
-                    return user.get_profile().post_facebook_registration(
-                        request)
+                    #hook for tying in specific post registration functionality
+                    response = backend.post_registration_redirect(request, user)
+                    return response
         else:
             if 'attempt' in request.GET:
                 return next_redirect(request, next_key=['error_next', 'next'],
@@ -121,7 +129,8 @@ def connect(request):
                             'raising an error')
                 raise OpenFacebookException('please authenticate')
 
-        return next_redirect(request)
+        #for CONNECT and LOGIN we simple redirect to the next page
+        return next_redirect(request, default=facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT)
 
     if not settings.DEBUG and facebook_settings.FACEBOOK_HIDE_CONNECT_TEST:
         raise Http404

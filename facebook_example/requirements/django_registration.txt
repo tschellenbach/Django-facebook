@@ -1,0 +1,2 @@
+-r development.txt
+django-registration

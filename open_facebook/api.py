@@ -429,7 +429,9 @@ class OpenFacebook(FacebookConnection):
         '''
         try:
             me = self.me()
-        except facebook_exceptions.OpenFacebookException:
+        except facebook_exceptions.OpenFacebookException, e:
+            if isinstance(e, facebook_exceptions.OAuthException):
+                raise
             me = None
         
         authenticated = bool(me)

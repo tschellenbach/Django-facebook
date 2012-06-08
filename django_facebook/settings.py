@@ -5,7 +5,7 @@ from django.conf import settings
 FACEBOOK_APP_ID = getattr(settings, 'FACEBOOK_APP_ID', None)
 FACEBOOK_APP_SECRET = getattr(settings, 'FACEBOOK_APP_SECRET', None)
 FACEBOOK_DEFAULT_SCOPE = getattr(settings, 'FACEBOOK_DEFAULT_SCOPE', [
-    'email', 'user_about_me', 'user_birthday'])
+    'email', 'user_about_me', 'user_birthday', 'user_website'])
 
 # Absolute canvas page url as per facebook standard
 FACEBOOK_CANVAS_PAGE = getattr(settings, 'FACEBOOK_CANVAS_PAGE',
@@ -13,7 +13,7 @@ FACEBOOK_CANVAS_PAGE = getattr(settings, 'FACEBOOK_CANVAS_PAGE',
 
 # These you don't need to change
 FACEBOOK_HIDE_CONNECT_TEST = getattr(settings,
-                                     'FACEBOOK_HIDE_CONNECT_TEST', True)
+                                     'FACEBOOK_HIDE_CONNECT_TEST', False)
 # Track all raw data coming in from FB
 FACEBOOK_TRACK_RAW_DATA = getattr(settings, 'FACEBOOK_TRACK_RAW_DATA', False)
 
@@ -44,6 +44,12 @@ FACEBOOK_REGISTRATION_TEMPLATE = getattr(settings,
 # Allow custom signup form
 FACEBOOK_REGISTRATION_FORM = getattr(settings,
     'FACEBOOK_REGISTRATION_FORM', None)
+
+default_registration_backend = 'django_facebook.registration_backends.FacebookRegistrationBackend'
+FACEBOOK_REGISTRATION_BACKEND = getattr(settings, 'FACEBOOK_REGISTRATION_BACKEND', default_registration_backend)
+
+#Fall back redirect location when no other location was found
+FACEBOOK_LOGIN_DEFAULT_REDIRECT = getattr(settings, 'FACEBOOK_LOGIN_DEFAULT_REDIRECT', '/') 
 
 # Force profile update every login
 FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN= getattr(settings, 'FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN', False)
