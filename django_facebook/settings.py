@@ -45,9 +45,11 @@ FACEBOOK_REGISTRATION_TEMPLATE = getattr(settings,
 FACEBOOK_REGISTRATION_FORM = getattr(settings,
     'FACEBOOK_REGISTRATION_FORM', None)
 
-
 default_registration_backend = 'django_facebook.registration_backends.FacebookRegistrationBackend'
 FACEBOOK_REGISTRATION_BACKEND = getattr(settings, 'FACEBOOK_REGISTRATION_BACKEND', default_registration_backend)
 
 #Fall back redirect location when no other location was found
 FACEBOOK_LOGIN_DEFAULT_REDIRECT = getattr(settings, 'FACEBOOK_LOGIN_DEFAULT_REDIRECT', '/') 
+
+# Force profile update every login
+FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN= getattr(settings, 'FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN', False)
