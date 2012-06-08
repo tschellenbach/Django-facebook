@@ -1,6 +1,7 @@
 from django.contrib.auth import models, backends
 from django.db.utils import DatabaseError
 from django_facebook.utils import get_profile_class
+from django_facebook import settings as facebook_settings
 #from user import models as models_user
 
 
@@ -38,4 +39,6 @@ class FacebookBackend(backends.ModelBackend):
                 # populate the profile cache while we're getting it anyway
                 user = profile.user
                 user._profile = profile
+                if facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN:
+                    user.fb_update_required = True
                 return user

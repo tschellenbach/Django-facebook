@@ -44,3 +44,6 @@ FACEBOOK_REGISTRATION_TEMPLATE = getattr(settings,
 # Allow custom signup form
 FACEBOOK_REGISTRATION_FORM = getattr(settings,
     'FACEBOOK_REGISTRATION_FORM', None)
+
+# Force profile update every login
+FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN= getattr(settings, 'FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN', False)
