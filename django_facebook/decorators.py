@@ -91,7 +91,14 @@ def facebook_required_lazy(view_func=None,
                 #You should require a persistent graph in the url when you start using this
                 return view_func(request, *args, **kwargs)
             except open_facebook_exceptions.OpenFacebookException, e:
-                permission_granted = test_permissions(request, scope_list, redirect_uri)
+                try:
+                    permission_granted = test_permissions(request, scope_list, redirect_uri)
+                except open_facebook_exceptions.PermissionException, e:
+                    if fb_settings.FACEBOOK_PERMISSION_DENIED_REDIRECT:
+                        return HttpResponseRedirect("%s?%s" % (
+                            fb_settings.FACEBOOK_PERMISSION_DENIED_REDIRECT,
+                            request.META['QUERY_STRING']))
+                    raise
                 if permission_granted:
                     # an error if we already have permissions
                     # shouldn't have been caught
