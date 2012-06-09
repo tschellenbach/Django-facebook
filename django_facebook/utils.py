@@ -352,6 +352,27 @@ def cleanup_oauth_url(redirect_uri):
     return redirect_uri
 
 
+def replication_safe(f):
+    '''
+    Usually views which do a POST will require the next page to be 
+    read from the master database. (To prevent issues with replication lag).
+    
+    However certain views like login do not have this issue.
+    They do a post, but don't modify data which you'll show on subsequent pages.
+    
+    This decorators marks these views as safe.
+    This ensures requests on the next page are allowed to use the slave db
+    '''
+    from functools import wraps
+
+    @wraps(f)
+    def wrapper(request, *args, **kwargs):
+        request.replication_safe = True
+        response = f(request, *args, **kwargs)
+        return response
+    
+    return wrapper
+
 def get_class_from_string(path, default='raise'):
     """
     Return the class specified by the string.

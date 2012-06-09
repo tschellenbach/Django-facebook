@@ -13,7 +13,7 @@ FACEBOOK_CANVAS_PAGE = getattr(settings, 'FACEBOOK_CANVAS_PAGE',
 
 # These you don't need to change
 FACEBOOK_HIDE_CONNECT_TEST = getattr(settings,
-                                     'FACEBOOK_HIDE_CONNECT_TEST', True)
+                                     'FACEBOOK_HIDE_CONNECT_TEST', False)
 # Track all raw data coming in from FB
 FACEBOOK_TRACK_RAW_DATA = getattr(settings, 'FACEBOOK_TRACK_RAW_DATA', False)
 

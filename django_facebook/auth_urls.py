@@ -27,14 +27,15 @@ from django.conf.urls.defaults import *
 
 from django.contrib.auth import views as auth_views
 from django_facebook import registration_views
+from django_facebook.utils import replication_safe
 
 urlpatterns = patterns('',
                        url(r'^login/$',
-                           auth_views.login,
+                           replication_safe(auth_views.login),
                            {'template_name': 'registration/login.html'},
                            name='auth_login'),
                        url(r'^logout/$',
-                           auth_views.logout,
+                           replication_safe(auth_views.logout),
                            {'template_name': 'registration/logout.html'},
                            name='auth_logout'),
                        url(r'^password/change/$',
