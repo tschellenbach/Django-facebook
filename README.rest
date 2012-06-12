@@ -336,6 +336,16 @@ Django-facebook ships with a few signals that you can use to easily accommodate 
 
 
 
+Facebook App Center
+-------------------
+
+The Facebook App center requires your app to authenticate the user's experience when landing on your site.
+It already provides you with the required token. (Honestly I think it's a really weird user experience.)
+But to get it working you must use the following url for site url (App -> Settings -> Basic -> Website with Facebook Login)
+
+http://www.mydomain.com/facebook/connect/?facebook_login=1
+
+Note that the given tokens can't be used for local testing. (Facebook checks the url for which the authorization was given.)
 
 
 Contributing and Running tests
