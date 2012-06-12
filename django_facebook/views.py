@@ -84,9 +84,8 @@ def connect(request):
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
     
     if facebook_login:
-        require_persistent_graph(request)
         logger.info('trying to connect using facebook')
-        graph = get_persistent_graph(request)
+        graph = require_persistent_graph(request)
         if graph:
             logger.info('found a graph object')
             facebook = FacebookUserConverter(graph)

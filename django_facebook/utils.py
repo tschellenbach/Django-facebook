@@ -71,6 +71,7 @@ def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
     query_dict['scope'] = ','.join(scope)
     query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
     redirect_uri = redirect_uri or request.build_absolute_uri()
+    current_uri = redirect_uri
 
     # set attempt=1 to prevent endless redirect loops
     if 'attempt=1' not in redirect_uri:
@@ -79,24 +80,10 @@ def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
         else:
             redirect_uri += '&attempt=1'
 
-    # add the extra params if specified
-    # TODO: renable this and fix the url merging!!
-    if extra_params and False:
-        # from open_facebook.utils import merge_urls
-        # TODO: Properly merge the url params
-        params_query_dict = QueryDict('', True)
-        params_query_dict.update(extra_params)
-        query_string = params_query_dict.urlencode()
-        if '?' not in redirect_uri:
-            redirect_uri += '?'
-        else:
-            redirect_uri += '&'
-        redirect_uri += query_string
-
     query_dict['redirect_uri'] = redirect_uri
-    url = 'https://www.facebook.com/dialog/oauth?'
-    url += query_dict.urlencode()
-    return url, redirect_uri
+    oauth_url = 'https://www.facebook.com/dialog/oauth?'
+    oauth_url += query_dict.urlencode()
+    return oauth_url, current_uri, redirect_uri
 
 
 class CanvasRedirect(HttpResponse):

@@ -30,12 +30,12 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
     def actual_decorator(view_func):
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
-            oauth_url, redirect_uri = get_oauth_url(request, scope_list)
+            oauth_url, current_uri, redirect_uri = get_oauth_url(request, scope_list)
             
             #Normal facebook errors should be raised
             #OAuthException s should cause a redirect for authorization
             try:
-                permission_granted = test_permissions(request, scope_list, redirect_uri)
+                permission_granted = test_permissions(request, scope_list, current_uri)
             except open_facebook_exceptions.OAuthException, e:
                 permission_granted = False
             
@@ -81,17 +81,17 @@ def facebook_required_lazy(view_func=None,
     def actual_decorator(view_func):
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
-            oauth_url, redirect_uri = get_oauth_url(request, scope_list,
+            oauth_url, current_uri, redirect_uri = get_oauth_url(request, scope_list,
                                                     extra_params=extra_params)
             try:
                 # call get persistent graph and convert the
                 # token with correct redirect uri
-                get_persistent_graph(request, redirect_uri=redirect_uri)
+                get_persistent_graph(request, redirect_uri=current_uri)
                 #Note we're not requiring a persistent graph here
-                #You should require a persistent graph in the url when you start using this
+                #You should require a persistent graph in the view when you start using this
                 return view_func(request, *args, **kwargs)
             except open_facebook_exceptions.OpenFacebookException, e:
-                permission_granted = test_permissions(request, scope_list, redirect_uri)
+                permission_granted = test_permissions(request, scope_list, current_uri)
                 if permission_granted:
                     # an error if we already have permissions
                     # shouldn't have been caught
