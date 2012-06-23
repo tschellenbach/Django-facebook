@@ -43,7 +43,9 @@ from django_facebook.utils import to_int
 logger = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT = 8
-REQUEST_ATTEMPTS = 2
+#two retries was too little, sometimes facebook is a bit flaky
+REQUEST_ATTEMPTS = 3
+
 
 
 try:
@@ -299,7 +301,7 @@ class FacebookAuthorization(FacebookConnection):
         return response['access_token']
 
     @classmethod
-    def create_test_user(cls, app_access_token, permissions=None):
+    def create_test_user(cls, app_access_token, permissions=None, name=None):
         '''
         My test user
         {u'access_token': u'215464901804004|2.AQBHGHuWRllFbN4E.3600.1311465600.0-100002619711402|EtaLBkqHGsTa0cpMlFA4bmL4aAc', u'password': u'564490991', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002619711402&n=3c5fAe1nNVk0HaJ', u'id': u'100002619711402', u'email': u'hello_luncrwh_world@tfbnw.net'}
@@ -309,35 +311,95 @@ class FacebookAuthorization(FacebookConnection):
         {u'access_token': u'215464901804004|b8d73771906a072829857c2f.0-100002661892257|DALPDLEZl4B0BNm0RYXnAsuri-I', u'password': u'1932271520', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002661892257&n=Zdu5jdD4tjNsfma', u'id': u'100002661892257', u'email': u'hello_nrthuig_world@tfbnw.net'}
         '''
         if not permissions:
-            permissions = 'read_stream,publish_stream,' \
-                          'user_photos,offline_access'
+            permissions = ['read_stream','publish_stream','user_photos,offline_access']
+        if isinstance(permissions, list):
+            permissions = ','.join(permissions)
 
+        default_name = 'Permissions %s' % permissions.replace(',', ' ').replace('_', '')
+        name = name or default_name
         kwargs = {
             'access_token': app_access_token,
             'installed': True,
-            'name': 'Hello World',
+            'name': name,
             'method': 'post',
             'permissions': permissions,
         }
         path = '%s/accounts/test-users' % facebook_settings.FACEBOOK_APP_ID
-        response = cls.request(path, **kwargs)
+        #add the test user data to the test user data class
+        test_user_data = cls.request(path, **kwargs)
+        test_user = TestUser(test_user_data)
 
-        return response
+        return test_user
 
     @classmethod
     def get_or_create_test_user(cls, app_access_token, permissions=None):
+        '''
+        There is no supported way of get or creating a test user
+        However
+        - creating a test user takes around 5s
+        - you an only create 500 test users
+        So this slows your testing flow quite a bit.
+        
+        This method checks your test users
+        Queries their names (stores the permissions in the name)
+        
+        '''
         if not permissions:
-            permissions = ['read_stream', 'publish_stream',
-                           'user_photos', 'offline_access']
+            permissions = ['read_stream','publish_stream','user_photos,offline_access']
+        if isinstance(permissions, list):
+            permissions = ','.join(permissions)
+            
+        #hacking the permissions into the name of the test user
+        name = 'Permissions %s' % permissions.replace(',', ' ').replace('_', '')
 
-        kwargs = {
-            'access_token': app_access_token,
-        }
+        #retrieve all test users
+        test_users = cls.get_test_users(app_access_token)
+        user_id_dict = dict([(int(u['id']), u) for u in test_users])
+        user_ids = map(str, user_id_dict.keys())
+        
+        #use fql to figure out their names
+        facebook = OpenFacebook(app_access_token)
+        users = facebook.fql('SELECT uid, name FROM user WHERE uid in (%s)' % ','.join(user_ids))
+        users_dict = dict([(u['name'],u['uid']) for u in users])
+        user_id = users_dict.get(name)
+        
+        if user_id:
+            #we found our user, extend the data a bit
+            test_user_data = user_id_dict[user_id]
+            test_user_data['name'] = name
+            test_user = TestUser(test_user_data)
+        else:
+            #create the user
+            test_user = cls.create_test_user(app_access_token, permissions, name)
+        
+        return test_user
+    
+    @classmethod
+    def get_test_users(cls, app_access_token):
+        kwargs = dict(access_token=app_access_token)
         path = '%s/accounts/test-users' % facebook_settings.FACEBOOK_APP_ID
-
+        #retrieve all test users
         response = cls.request(path, **kwargs)
+        test_users = response['data']
+        return test_users
+    
+    @classmethod
+    def delete_test_user(cls, app_access_token, test_user_id):
+        kwargs = dict(access_token=app_access_token, method='delete')
+        path = '%s/' % test_user_id
 
+        #retrieve all test users
+        response = cls.request(path, **kwargs)
         return response
+    
+    @classmethod
+    def delete_test_users(cls, app_access_token):
+        #retrieve all test users
+        test_users = cls.get_test_users(app_access_token)
+        test_user_ids = [u['id'] for u in test_users]
+        for test_user_id in test_user_ids:
+            cls.delete_test_user(app_access_token, test_user_id)
+        
 
 
 class OpenFacebook(FacebookConnection):
@@ -502,3 +564,23 @@ class OpenFacebook(FacebookConnection):
         logger.info('requesting url %s', url)
         response = self._request(url, post_data)
         return response
+    
+    
+class TestUser(object):
+    '''
+    Simple wrapper around test users
+    '''
+    def __init__(self, data):
+        self.name = data['name']
+        self.id = data['id']
+        self.access_token = data['access_token']
+        self.data = data
+        
+    def graph(self):
+        graph = OpenFacebook(self.access_token)
+        return graph
+    
+    def __repr__(self):
+        return 'Test user %s' % self.name
+    
+

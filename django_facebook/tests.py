@@ -11,18 +11,44 @@ from django_facebook.api import (get_facebook_graph, FacebookUserConverter,
                                  get_persistent_graph)
 from django_facebook import signals
 import logging
-from open_facebook.api import FacebookConnection
+from open_facebook.api import FacebookConnection, FacebookAuthorization,\
+    OpenFacebook
 from functools import partial
 from django_facebook.utils import cleanup_oauth_url
 from django_facebook.tests_utils.base import RequestMock
 from django.test.client import Client
 from django.core.urlresolvers import reverse
+import unittest
 
 logger = logging.getLogger(__name__)
 
 
 __doctests__ = ['django_facebook.api']
 
+
+
+
+
+class LiveFacebookTest(FacebookTest):
+    
+    @unittest.skip('Skipping since you might have created test users manually, lets not delete them :)')
+    def test_create_test_user(self):
+        
+        #start by clearing out our test users (maybe this isnt safe to use in testing)
+        #if other people create test users manualy this could be annoying
+        app_access_token = FacebookAuthorization.get_app_access_token()
+        FacebookAuthorization.delete_test_users(app_access_token)
+        
+        #the permissions for which we want a test user
+        permissions = ['email','publish_actions']
+        
+        #gets the test user object
+        test_user = FacebookAuthorization.get_or_create_test_user(app_access_token, permissions)
+        graph = test_user.graph()
+        print graph.me()
+
+    
+    
 
 
 class UserConnectTest(FacebookTest):
