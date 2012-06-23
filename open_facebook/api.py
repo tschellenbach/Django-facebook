@@ -35,7 +35,7 @@ Currently that would be a bad idea though because of maintenance
 from django.http import QueryDict
 from django_facebook import settings as facebook_settings
 from open_facebook import exceptions as facebook_exceptions
-from open_facebook.utils import json, encode_params, send_warning
+from open_facebook.utils import json, encode_params, send_warning, memoized
 import logging
 import urllib
 import urllib2
@@ -299,6 +299,15 @@ class FacebookAuthorization(FacebookConnection):
         }
         response = cls.request('oauth/access_token', **kwargs)
         return response['access_token']
+    
+    @classmethod
+    @memoized
+    def get_cached_app_access_token(cls):
+        '''
+        Caches the access token in memory, good for speeding up testing
+        '''
+        app_access_token = cls.get_app_access_token()
+        return app_access_token
 
     @classmethod
     def create_test_user(cls, app_access_token, permissions=None, name=None):
@@ -327,6 +336,7 @@ class FacebookAuthorization(FacebookConnection):
         path = '%s/accounts/test-users' % facebook_settings.FACEBOOK_APP_ID
         #add the test user data to the test user data class
         test_user_data = cls.request(path, **kwargs)
+        test_user_data['name'] = name
         test_user = TestUser(test_user_data)
 
         return test_user

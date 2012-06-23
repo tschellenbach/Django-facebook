@@ -23,6 +23,9 @@ class RequestMock(RequestFactory):
 
 
 class FacebookTest(TestCase):
+    '''
+    Normal facebook tests run against a fake API
+    '''
     def setUp(self):
         from django_facebook.tests_utils.mock_official_sdk import MockFacebookAPI
         from open_facebook import api
@@ -32,3 +35,9 @@ class FacebookTest(TestCase):
 
         rf = RequestMock()
         self.request = rf.get('/')
+        
+class LiveFacebookTest(TestCase):
+    '''
+    Live Facebook Tests run against the actual Facebook API
+    '''
+    pass

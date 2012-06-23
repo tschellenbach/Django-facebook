@@ -5,7 +5,7 @@ from django_facebook import exceptions as facebook_exceptions
 from django_facebook.auth_backends import FacebookBackend
 from django_facebook.connect import (_register_user, connect_user,
                                      CONNECT_ACTIONS)
-from django_facebook.tests_utils.base import FacebookTest
+from django_facebook.tests_utils.base import FacebookTest, LiveFacebookTest
 from django_facebook.utils import get_profile_class
 from django_facebook.api import (get_facebook_graph, FacebookUserConverter,
                                  get_persistent_graph)
@@ -29,14 +29,14 @@ __doctests__ = ['django_facebook.api']
 
 
 
-class LiveFacebookTest(FacebookTest):
+class TestUserTest(LiveFacebookTest):
     
-    @unittest.skip('Skipping since you might have created test users manually, lets not delete them :)')
     def test_create_test_user(self):
-        
+        #Also, somehow unittest.skip doesnt work with travis ci?
+        return 'Skipping since you might have created test users manually, lets not delete them :)'
         #start by clearing out our test users (maybe this isnt safe to use in testing)
         #if other people create test users manualy this could be annoying
-        app_access_token = FacebookAuthorization.get_app_access_token()
+        app_access_token = FacebookAuthorization.get_cached_app_access_token()
         FacebookAuthorization.delete_test_users(app_access_token)
         
         #the permissions for which we want a test user
@@ -45,11 +45,33 @@ class LiveFacebookTest(FacebookTest):
         #gets the test user object
         test_user = FacebookAuthorization.get_or_create_test_user(app_access_token, permissions)
         graph = test_user.graph()
-        print graph.me()
+        me = graph.me()
+        assert me
 
-    
-    
 
+class ConnectViewTest(LiveFacebookTest):
+    def test_register(self):
+        #setup the test user   
+        permissions = facebook_settings.FACEBOOK_DEFAULT_SCOPE
+        app_access_token = FacebookAuthorization.get_cached_app_access_token()
+        test_user = FacebookAuthorization.get_or_create_test_user(app_access_token, permissions)
+        
+        #test the connect view in the registration mode (empty db)
+        c = Client()
+        url = reverse('facebook_connect')
+        access_token = test_user.access_token
+        c.get(url, {'facebook_login': '1', 'access_token': access_token})
+        user = User.objects.all().order_by('-id')[:1][0]
+        profile = user.get_profile()
+        self.assertEqual(access_token, profile.access_token)
+        
+        #test the login flow
+        c.get(url, {'facebook_login': '1', 'access_token': access_token})
+        new_user = User.objects.all().order_by('-id')[:1][0]
+        new_profile = user.get_profile()
+        self.assertEqual(access_token, new_profile.access_token)
+
+        self.assertEqual(user, new_user)
 
 class UserConnectTest(FacebookTest):
     '''
