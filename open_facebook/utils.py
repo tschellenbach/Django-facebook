@@ -79,7 +79,7 @@ def send_warning(message, request=None, e=None, **extra_data):
 
     error_message = None
     if e:
-        error_message = unicode(e)
+        error_message = e
 
     data = {
          'username': username,
