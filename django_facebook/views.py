@@ -21,6 +21,7 @@ from django_facebook.decorators import (facebook_required,
                                         facebook_required_lazy)
 from open_facebook.utils import send_warning
 from open_facebook.exceptions import OpenFacebookException
+from django.shortcuts import redirect
 
 
 logger = logging.getLogger(__name__)
@@ -118,6 +119,9 @@ def connect(request):
                 elif action is CONNECT_ACTIONS.REGISTER:
                     #hook for tying in specific post registration functionality
                     response = backend.post_registration_redirect(request, user)
+                    #compatability for django registration backends which return tuples instead of a response
+                    #alternatively we could wrap django registration backends, but that would be hard to understand
+                    response = response if isinstance(response, HttpResponse) else redirect(response)
                     return response
         else:
             if 'attempt' in request.GET:
