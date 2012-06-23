@@ -60,13 +60,15 @@ class ConnectViewTest(LiveFacebookTest):
         c = Client()
         url = reverse('facebook_connect')
         access_token = test_user.access_token
-        c.get(url, {'facebook_login': '1', 'access_token': access_token})
+        response = c.get(url, {'facebook_login': '1', 'access_token': access_token})
+        self.assertEqual(response.status_code, 302)
         user = User.objects.all().order_by('-id')[:1][0]
         profile = user.get_profile()
         self.assertEqual(access_token, profile.access_token)
         
         #test the login flow
-        c.get(url, {'facebook_login': '1', 'access_token': access_token})
+        response = c.get(url, {'facebook_login': '1', 'access_token': access_token})
+        self.assertEqual(response.status_code, 302)
         new_user = User.objects.all().order_by('-id')[:1][0]
         new_profile = user.get_profile()
         self.assertEqual(access_token, new_profile.access_token)
