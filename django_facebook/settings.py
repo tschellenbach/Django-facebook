@@ -51,3 +51,5 @@ FACEBOOK_REGISTRATION_BACKEND = getattr(settings, 'FACEBOOK_REGISTRATION_BACKEND
 
 #Fall back redirect location when no other location was found
 FACEBOOK_LOGIN_DEFAULT_REDIRECT = getattr(settings, 'FACEBOOK_LOGIN_DEFAULT_REDIRECT', '/') 
+
+FACEBOOK_REGISTRATION_REDIRECT = getattr(settings, 'FACEBOOK_REGISTRATION_REDIRECT', None)
