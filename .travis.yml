@@ -18,9 +18,9 @@ install:
   - python setup.py install
   - pip install -r facebook_example/requirements/$REQUIREMENTS.txt --use-mirrors -I
   - pip install -q Django==$DJANGO --use-mirrors
-before_script:
-  - "pep8 --exclude=migrations --ignore=E501,E225 django_facebook"
-  - pyflakes -x W src
+#before_script:
+#  - "pep8 --exclude=migrations --ignore=E501,E225 django_facebook"
+#  - pyflakes -x W src
 script:
   - pip install -e .
   - cd facebook_example
