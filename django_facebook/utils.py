@@ -28,10 +28,11 @@ def test_permissions(request, scope_list, redirect_uri=None):
     Call Facebook me/permissions to see if we are allowed to do this
     '''
     from django_facebook.api import get_persistent_graph
-    from open_facebook import exceptions as facebook_exceptions
+    
     fb = get_persistent_graph(request, redirect_uri=redirect_uri)
     permissions_dict = {}
     if fb:
+        #see what permissions we have
         permissions_dict = fb.permissions()
 
     # see if we have all permissions
