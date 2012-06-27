@@ -32,16 +32,7 @@ def test_permissions(request, scope_list, redirect_uri=None):
     fb = get_persistent_graph(request, redirect_uri=redirect_uri)
     permissions_dict = {}
     if fb:
-        try:
-            permissions_response = fb.get('me/permissions')
-            permissions = permissions_response['data'][0]
-        except facebook_exceptions.OAuthException:
-            # this happens when someone revokes their permissions
-            # while the session is still stored
-            permissions = {}
-        permissions_dict = dict([(k, bool(int(v)))
-                                 for k, v in permissions.items()
-                                 if v == '1' or v == 1])
+        permissions_dict = fb.permissions()
 
     # see if we have all permissions
     scope_allowed = True

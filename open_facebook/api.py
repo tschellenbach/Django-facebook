@@ -550,6 +550,21 @@ class OpenFacebook(FacebookConnection):
             self._me = me = self.get('me')
 
         return me
+    
+    def permissions(self):
+        '''
+        Shortcut for self.get('me/permissions')
+        '''
+        try:
+            permissions_response = self.get('me/permissions')
+            permissions = permissions_response['data'][0]
+        except facebook_exceptions.OAuthException:
+            permissions = {}
+            
+        permissions_dict = dict([(k, bool(int(v)))
+                         for k, v in permissions.items()
+                         if v == '1' or v == 1])
+        return permissions_dict
 
     def my_image_url(self, size=None):
         '''
