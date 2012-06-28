@@ -92,8 +92,8 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
     on the same page
     '''
     #this is not a production flow, but very handy for testing
-    if not access_token and request.GET.get('access_token'):
-        access_token = request.GET['access_token']
+    if not access_token and request.REQUEST.get('access_token'):
+        access_token = request.REQUEST['access_token']
     # should drop query params be included in the open facebook api,
     # maybe, weird this...
     from open_facebook import OpenFacebook, FacebookAuthorization
