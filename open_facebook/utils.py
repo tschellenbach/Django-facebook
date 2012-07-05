@@ -180,3 +180,11 @@ class memoized(object):
         return functools.partial(self.__call__, obj)
   
   
+def camel_to_underscore(name):
+    '''Convert camelcase style naming to underscore style naming
+    
+    e.g. SpamEggs -> spam_eggs '''
+    import string
+    for c in string.ascii_uppercase:
+        name = name.replace(c, '_%c' % c)
+    return name.strip('_').lower()
