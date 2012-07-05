@@ -341,4 +341,41 @@ class OpenGraphShare(CreatedAtAbstractBase):
         share_dict_string = self.share_dict
         share_dict = json.decode(share_dict_string)
         return share_dict
+    
+    
+class FacebookInvite(CreatedAtAbstractBase):
+    user = models.ForeignKey(User)
+    user_invited = models.CharField(max_length=255)
+    message = models.TextField(blank=True, null=True)
+    type = models.CharField(blank=True, null=True, max_length=255)
+
+    #status data
+    wallpost_id = models.CharField(blank=True, null=True, max_length=255)
+    error = models.BooleanField(default=False)
+    error_message = models.TextField(blank=True, null=True)
+    last_attempt = models.DateTimeField(blank=True, null=True, auto_now_add=True)
+    
+    #reminder data
+    reminder_wallpost_id = models.CharField(blank=True, null=True, max_length=255)
+    reminder_error = models.BooleanField(default=False)
+    reminder_error_message = models.TextField(blank=True, null=True)
+    reminder_last_attempt = models.DateTimeField(blank=True, null=True, auto_now_add=True)
+
+    def __unicode__(self):
+        message = 'user %s invited fb id %s' % (self.user, self.user_invited)
+        return message
+    
+    def resend(self, graph=None):
+        from django_facebook.invite import post_on_profile
+        if not graph:
+            graph = self.user.get_profile().get_offline_graph()
+            if not graph:
+                return
+        facebook_id = self.user_invited
+        invite_result = post_on_profile(self.user, graph, facebook_id, self.message, force_send=True)
+        return invite_result
+    
+    class Meta:
+        unique_together = ('user', 'user_invited')
+    
 

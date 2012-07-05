@@ -6,7 +6,6 @@ import re
 from django_facebook import settings as facebook_settings
 from django.utils.encoding import iri_to_uri
 from django.template.loader import render_to_string
-from django_facebook.registration_backends import FacebookRegistrationBackend
 
 
 logger = logging.getLogger(__name__)
@@ -90,7 +89,8 @@ class CanvasRedirect(HttpResponse):
         js_redirect = render_to_string('django_facebook/canvas_redirect.html', context)
         
         super(CanvasRedirect, self).__init__(js_redirect)
-        
+
+
 def response_redirect(redirect_url, canvas=False):
     '''
     Abstract away canvas redirects
@@ -99,6 +99,7 @@ def response_redirect(redirect_url, canvas=False):
         return CanvasRedirect(redirect_url)
     
     return HttpResponseRedirect(redirect_url)
+
 
 def next_redirect(request, default='/', additional_params=None,
                   next_key='next', redirect_url=None, canvas=False):
@@ -211,7 +212,6 @@ def get_registration_backend():
         backend = backend_class()
         
     return backend
-
 
 
 def get_django_registration_version():
@@ -352,6 +352,7 @@ def replication_safe(f):
     
     return wrapper
 
+
 def get_class_from_string(path, default='raise'):
     """
     Return the class specified by the string.
@@ -387,3 +388,5 @@ def get_class_from_string(path, default='raise'):
         else:
             backend_class = default
     return backend_class
+
+
