@@ -71,8 +71,8 @@ class FacebookProfileModel(models.Model):
         '''
         results = None
         if facebook_settings.FACEBOOK_CELERY_TOKEN_EXTEND:
-            from django_facebook.tasks import extend_access_token
-            extend_access_token.delay(self, self.access_token)
+            from django_facebook import tasks
+            tasks.extend_access_token.delay(self, self.access_token)
         else:
             results = self._extend_access_token(self.access_token)
         return results
