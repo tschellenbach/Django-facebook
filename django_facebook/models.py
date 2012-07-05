@@ -8,10 +8,8 @@ import datetime
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 import logging
-import simplejson
 from open_facebook.utils import json, camel_to_underscore
 from django.db.models.base import ModelBase
-from django.contrib.auth.models import User
 import sys
 logger = logging.getLogger(__name__)
 
