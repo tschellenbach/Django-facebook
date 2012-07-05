@@ -11,6 +11,9 @@ FACEBOOK_DEFAULT_SCOPE = getattr(settings, 'FACEBOOK_DEFAULT_SCOPE', [
 FACEBOOK_CANVAS_PAGE = getattr(settings, 'FACEBOOK_CANVAS_PAGE',
                                'http://apps.facebook.com/fashiolista_test/')
 
+# Disable this setting if you don't want to store a local image
+FACEBOOK_STORE_LOCAL_IMAGE = getattr(settings, 'FACEBOOK_STORE_LOCAL_IMAGE', True)
+
 # These you don't need to change
 FACEBOOK_HIDE_CONNECT_TEST = getattr(settings,
                                      'FACEBOOK_HIDE_CONNECT_TEST', False)
@@ -23,6 +26,8 @@ FACEBOOK_STORE_FRIENDS = getattr(settings, 'FACEBOOK_STORE_FRIENDS', False)
 # if we should be using celery to do the above two,
 # recommended if you want to store friends or likes
 FACEBOOK_CELERY_STORE = getattr(settings, 'FACEBOOK_CELERY_STORE', False)
+# use celery for updating tokens, recommended since it's quite slow
+FACEBOOK_CELERY_TOKEN_EXTEND = getattr(settings, 'FACEBOOK_CELERY_TOKEN_EXTEND', False)
 
 FACEBOOK_DEBUG_REDIRECTS = getattr(settings, 'FACEBOOK_DEBUG_REDIRECTS', False)
 FACEBOOK_STORE_ALL_ACCESS_TOKENS = getattr(settings, 'FACEBOOK_STORE_ALL_ACCESS_TOKENS', False) 
@@ -44,7 +49,6 @@ FACEBOOK_REGISTRATION_TEMPLATE = getattr(settings,
 # Allow custom signup form
 FACEBOOK_REGISTRATION_FORM = getattr(settings,
     'FACEBOOK_REGISTRATION_FORM', None)
-
 
 default_registration_backend = 'django_facebook.registration_backends.FacebookRegistrationBackend'
 FACEBOOK_REGISTRATION_BACKEND = getattr(settings, 'FACEBOOK_REGISTRATION_BACKEND', default_registration_backend)

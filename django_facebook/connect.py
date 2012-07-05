@@ -15,7 +15,6 @@ from django_facebook.api import get_facebook_graph, FacebookUserConverter
 from django_facebook.utils import (get_registration_backend, get_form_class,
                                    get_profile_class)
 import urllib2
-from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
@@ -49,7 +48,7 @@ def connect_user(request, access_token=None, facebook_graph=None):
     facebook_data = facebook.facebook_profile_data()
     force_registration = request.REQUEST.get('force_registration') or\
         request.REQUEST.get('force_registration_hard')
-        
+
     connect_facebook = bool(int(request.REQUEST.get('connect_facebook', 0)))
 
     logger.debug('force registration is set to %s', force_registration)
@@ -68,7 +67,6 @@ def connect_user(request, access_token=None, facebook_graph=None):
         auth_user = authenticate(facebook_id=facebook_data['id'], **kwargs)
         if auth_user and not force_registration:
             action = CONNECT_ACTIONS.LOGIN
-            
 
             # Has the user registered without Facebook, using the verified FB
             # email address?
@@ -84,11 +82,11 @@ def connect_user(request, access_token=None, facebook_graph=None):
             # the old profile
             user = _register_user(request, facebook,
                                   remove_old_connections=force_registration)
-            
+
     _update_likes_and_friends(request, user, facebook)
 
     _update_access_token(user, graph)
-    
+
     return action, user
 
 
@@ -137,7 +135,8 @@ def _update_likes_and_friends(request, user, facebook):
              }
         })
         transaction.savepoint_rollback(sid)
-       
+
+
 def _update_access_token(user, graph):
     '''
     Conditionally updates the access token in the database
@@ -151,8 +150,7 @@ def _update_access_token(user, graph):
             if graph.access_token != profile.access_token:
                 profile.access_token = graph.access_token
                 profile.save()
-        
-        
+
 
 def _register_user(request, facebook, profile_callback=None,
                    remove_old_connections=False):
@@ -298,10 +296,11 @@ def _update_user(user, facebook, overwrite=True):
             profile.raw_data = serialized_fb_data
             profile_dirty = True
 
-
     image_url = facebook_data['image']
-    if hasattr(profile, 'image') and not profile.image:
-        profile_dirty = _update_image(profile, image_url)
+    #update the image if we are allowed and have to
+    if facebook_settings.FACEBOOK_STORE_LOCAL_IMAGE:
+        if hasattr(profile, 'image') and not profile.image:
+            profile_dirty = _update_image(profile, image_url)
 
     #save both models if they changed
     if user_dirty:
@@ -313,6 +312,7 @@ def _update_user(user, facebook, overwrite=True):
         profile=profile, facebook_data=facebook_data)
 
     return user
+
 
 def _update_image(profile, image_url):
     '''
@@ -336,6 +336,7 @@ def _update_image(profile, image_url):
     image_temp.flush()
     profile_dirty = True
     return profile_dirty
+
 
 def update_connection(request, graph):
     '''

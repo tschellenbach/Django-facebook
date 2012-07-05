@@ -54,7 +54,6 @@ except ImportError:
     django_statsd = None
 
 
-
 class FacebookConnection(object):
     '''
     Shared class for sending requests to facebook and parsing
@@ -85,11 +84,11 @@ class FacebookConnection(object):
         '''
         logger.info('requesting url %s with post data %s', url, post_data)
         post_request = (post_data is not None or 'method=post' in url)
-        
+
         if post_request and facebook_settings.FACEBOOK_READ_ONLY:
             response = dict(id=123456789)
             return response
-        
+
         opener = urllib2.build_opener()
         opener.addheaders = [('User-agent', 'Open Facebook Python')]
         # give it a few shots, connection is buggy at times
@@ -238,12 +237,31 @@ class FacebookAuthorization(FacebookConnection):
         '''
         Turns a code into an access token
         '''
-        kwargs = dict(client_id=facebook_settings.FACEBOOK_APP_ID)
-        kwargs['client_secret'] = facebook_settings.FACEBOOK_APP_SECRET
+        kwargs = cls._client_info()
         kwargs['code'] = code
         kwargs['redirect_uri'] = redirect_uri
         response = cls.request('oauth/access_token', **kwargs)
         return response
+
+    @classmethod
+    def extend_access_token(cls, access_token):
+        '''
+        https://developers.facebook.com/roadmap/offline-access-removal/
+        We can extend the token only once per day
+        Normal short lived tokens last 1-2 hours
+        Long lived tokens (given by extending) last 60 days
+        '''
+        kwargs = cls._client_info()
+        kwargs['grant_type'] = 'fb_exchange_token'
+        kwargs['fb_exchange_token'] = access_token
+        response = cls.request('oauth/access_token', **kwargs)
+        return response
+
+    @classmethod
+    def _client_info(cls):
+        kwargs = dict(client_id=facebook_settings.FACEBOOK_APP_ID)
+        kwargs['client_secret'] = facebook_settings.FACEBOOK_APP_SECRET
+        return kwargs
 
     @classmethod
     def parse_signed_data(cls, signed_request,
@@ -321,7 +339,7 @@ class FacebookAuthorization(FacebookConnection):
         {u'access_token': u'215464901804004|b8d73771906a072829857c2f.0-100002661892257|DALPDLEZl4B0BNm0RYXnAsuri-I', u'password': u'1932271520', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002661892257&n=Zdu5jdD4tjNsfma', u'id': u'100002661892257', u'email': u'hello_nrthuig_world@tfbnw.net'}
         '''
         if not permissions:
-            permissions = ['read_stream','publish_stream','user_photos,offline_access']
+            permissions = ['read_stream', 'publish_stream', 'user_photos,offline_access']
         if isinstance(permissions, list):
             permissions = ','.join(permissions)
 
@@ -356,7 +374,7 @@ class FacebookAuthorization(FacebookConnection):
         
         '''
         if not permissions:
-            permissions = ['read_stream','publish_stream','user_photos,offline_access']
+            permissions = ['read_stream', 'publish_stream', 'user_photos,offline_access']
         if isinstance(permissions, list):
             permissions = ','.join(permissions)
             
@@ -371,7 +389,7 @@ class FacebookAuthorization(FacebookConnection):
         #use fql to figure out their names
         facebook = OpenFacebook(app_access_token)
         users = facebook.fql('SELECT uid, name FROM user WHERE uid in (%s)' % ','.join(user_ids))
-        users_dict = dict([(u['name'],u['uid']) for u in users])
+        users_dict = dict([(u['name'], u['uid']) for u in users])
         user_id = users_dict.get(name)
         
         if user_id:
@@ -402,7 +420,7 @@ class FacebookAuthorization(FacebookConnection):
         #retrieve all test users
         response = cls.request(path, **kwargs)
         return response
-    
+
     @classmethod
     def delete_test_users(cls, app_access_token):
         #retrieve all test users
@@ -410,7 +428,6 @@ class FacebookAuthorization(FacebookConnection):
         test_user_ids = [u['id'] for u in test_users]
         for test_user_id in test_user_ids:
             cls.delete_test_user(app_access_token, test_user_id)
-        
 
 
 class OpenFacebook(FacebookConnection):
@@ -506,7 +523,6 @@ class OpenFacebook(FacebookConnection):
             if isinstance(e, facebook_exceptions.OAuthException):
                 raise
             me = None
-        
         authenticated = bool(me)
         return authenticated
 
@@ -561,7 +577,6 @@ class OpenFacebook(FacebookConnection):
             permissions = permissions_response['data'][0]
         except facebook_exceptions.OAuthException:
             permissions = {}
-            
         permissions_dict = dict([(k, bool(int(v)))
                          for k, v in permissions.items()
                          if v == '1' or v == 1])
@@ -590,8 +605,8 @@ class OpenFacebook(FacebookConnection):
         logger.info('requesting url %s', url)
         response = self._request(url, post_data)
         return response
-    
-    
+
+
 class TestUser(object):
     '''
     Simple wrapper around test users
@@ -601,12 +616,12 @@ class TestUser(object):
         self.id = data['id']
         self.access_token = data['access_token']
         self.data = data
-        
+
     def graph(self):
         graph = OpenFacebook(self.access_token)
         return graph
-    
+
     def __repr__(self):
         return 'Test user %s' % self.name
-    
+
 

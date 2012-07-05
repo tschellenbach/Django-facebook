@@ -1,7 +1,8 @@
-from django.db import models
+from django_facebook import settings as facebook_settings
 from django.core.urlresolvers import reverse
 from django_facebook import model_managers
 from django.conf import settings
+from django.db import models
 import os
 
 
@@ -36,11 +37,11 @@ class FacebookProfileModel(models.Model):
 
     class Meta:
         abstract = True
-        
+
     def likes(self):
         likes = FacebookLike.objects.filter(user_id=self.user_id)
         return likes
-    
+
     def friends(self):
         friends = FacebookUser.objects.filter(user_id=self.user_id)
         return friends
@@ -56,10 +57,33 @@ class FacebookProfileModel(models.Model):
         response.set_cookie('fresh_registration', self.user_id)
 
         return response
-    
+
     def clear_access_token(self):
         self.access_token = None
         self.save()
+
+    def extend_access_token(self):
+        '''
+        https://developers.facebook.com/roadmap/offline-access-removal/
+        We can extend the token only once per day
+        Normal short lived tokens last 1-2 hours
+        Long lived tokens (given by extending) last 60 days
+        '''
+        results = None
+        if facebook_settings.FACEBOOK_CELERY_TOKEN_EXTEND:
+            from django_facebook.tasks import extend_access_token
+            extend_access_token.delay(self, self.access_token)
+        else:
+            results = self._extend_access_token(self.access_token)
+        return results
+
+    def _extend_access_token(self, access_token):
+        from open_facebook.api import FacebookAuthorization
+        results = FacebookAuthorization.extend_access_token(access_token)
+        access_token, expires = results['access_token'], results['expires']
+        self.access_token = access_token
+        self.save()
+        return results
 
     def get_offline_graph(self):
         '''
@@ -71,8 +95,6 @@ class FacebookProfileModel(models.Model):
             graph = OpenFacebook(access_token=self.access_token)
             graph.current_user_id = self.facebook_id
             return graph
-        
-
 
 
 class FacebookUser(models.Model):
