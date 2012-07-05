@@ -68,6 +68,8 @@ class FacebookProfileModel(models.Model):
         We can extend the token only once per day
         Normal short lived tokens last 1-2 hours
         Long lived tokens (given by extending) last 60 days
+
+        The token can be extended multiple times, supposedly on every visit
         '''
         results = None
         if facebook_settings.FACEBOOK_CELERY_TOKEN_EXTEND:

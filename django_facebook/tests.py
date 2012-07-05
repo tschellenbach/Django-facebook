@@ -2,7 +2,6 @@ from __future__ import with_statement
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.urlresolvers import reverse
 from django.test.client import Client
-from django.test.utils import override_settings
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings, signals
 from django_facebook.api import get_facebook_graph, FacebookUserConverter, \
