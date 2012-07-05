@@ -54,6 +54,7 @@ except ImportError:
     django_statsd = None
 
 
+
 class FacebookConnection(object):
     '''
     Shared class for sending requests to facebook and parsing
