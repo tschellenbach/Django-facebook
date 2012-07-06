@@ -47,7 +47,6 @@ REQUEST_TIMEOUT = 8
 REQUEST_ATTEMPTS = 3
 
 
-
 try:
     import django_statsd
 except ImportError:
