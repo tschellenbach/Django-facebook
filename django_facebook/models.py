@@ -269,6 +269,7 @@ class OpenGraphShare(CreatedAtAbstractBase):
         share.save()
         result = share.send()
     '''
+    from django.contrib.auth.models import User
     user = models.ForeignKey(User)
 
     #domain stores
@@ -342,6 +343,7 @@ class OpenGraphShare(CreatedAtAbstractBase):
     
     
 class FacebookInvite(CreatedAtAbstractBase):
+    from django.contrib.auth.models import User
     user = models.ForeignKey(User)
     user_invited = models.CharField(max_length=255)
     message = models.TextField(blank=True, null=True)
