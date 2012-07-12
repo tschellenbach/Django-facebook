@@ -148,9 +148,7 @@ class FacebookProfile(FacebookProfileModel):
     '''
     user = models.OneToOneField('auth.User')
 
-print settings.AUTH_PROFILE_MODULE, 'settings'
 if settings.AUTH_PROFILE_MODULE == 'django_facebook.FacebookProfile':
-    print 'connecting....'
     '''
     If we are using the django facebook profile model, create the model
     and connect it to the user create signal
