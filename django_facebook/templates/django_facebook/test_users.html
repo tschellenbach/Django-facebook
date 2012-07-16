@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('[type=submit]').click(function(){
+                $('#page_loading').show()
+            });
+        });
+        
+    </script>
+{% endblock extrahead %}
+
+{% block content %}
+    <div>
+        <h1>Test Users</h1>
+    </div>
+    <br/>
+    <h3>Create Users</h3>
+    <form enctype="multipart/form-data" id="test_users_form" action="." method="post" accept-charset="utf-8">
+        <label for="user_name">User Name</label>
+        <input type="text" name="user_name">
+        <br>
+        <label style="float:left; margin-right:10px;" for="app_access">Has App Permissions?</label><input type="checkbox" name="app_access" checked="checked">
+        <br>
+        <br>
+        <input type="submit" name="create_user" value="Create User">
+    </form>
+    <br>
+    <hr>
+    <h3>Delete User</h3>
+    <form enctype="multipart/form-data" id="test_users_form" action="." method="post" accept-charset="utf-8">
+        <label for="user_name">User ID</label>
+        <input type="text" name="delete_user_id">
+        <input type="submit" name="delete_user" value="Delete User">
+    </form>
+    <br>
+    <hr>
+    <h3>Get Users</h3>
+    <form enctype="multipart/form-data" id="test_users_form" action="." method="post" accept-charset="utf-8">
+        <input type="submit" name="get_users" value="Get Users">
+    </form>
+    <br>
+    <img id="page_loading" class="hidden" src="/static/images/facebook_loading.gif">
+    {% if fb_response %}
+        <br><br><br>
+        <hr>
+        <h3>Facebook Response</h3>
+        {{fb_response}}
+    {% endif %}
+    {% if test_users %}
+        <br><br><br>
+        <h3>TEST USERS</h3>
+        <br>
+        <hr>
+        {% for fb_user in test_users %}
+            <ul>
+                <li><h4>{{fb_user.id}}</h4></li>
+                <li>{{fb_user.login_url}}</li>
+            </ul>
+            <hr>
+        {% endfor %}
+    {% endif %}
+{% endblock content %}
