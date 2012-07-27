@@ -6,6 +6,8 @@ urlpatterns = patterns('django_facebook.views',
    url(r'^image_upload/$', 'image_upload', name='facebook_image_upload'),
    url(r'^wall_post/$', 'wall_post', name='facebook_wall_post'),
    url(r'^canvas/$', 'canvas', name='facebook_canvas'),
+
+   url(r'^test-users/$', 'test_users', name="fb_test_users")
 )
 
 
