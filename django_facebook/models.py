@@ -148,6 +148,7 @@ class FacebookProfile(FacebookProfileModel):
     '''
     user = models.OneToOneField('auth.User')
 
+
 if settings.AUTH_PROFILE_MODULE == 'django_facebook.FacebookProfile':
     '''
     If we are using the django facebook profile model, create the model
