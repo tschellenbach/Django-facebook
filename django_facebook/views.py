@@ -121,8 +121,17 @@ def connect(request):
                     response = backend.post_registration_redirect(request, user)
                     #compatability for django registration backends which return tuples instead of a response
                     #alternatively we could wrap django registration backends, but that would be hard to understand
-                    response = response if isinstance(response, HttpResponse) else redirect(response)
-                    return response
+                    if isinstance(response, HttpResponse):
+                        return response
+                    else:
+                        try:
+                            redirect(response)
+                            #Not sure this return is necessary
+                            return response
+                        except TypeError:
+                            #redirect to the next page
+                            return next_redirect(request, default=facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT)
+                    
         else:
             if 'attempt' in request.GET:
                 return next_redirect(request, next_key=['error_next', 'next'],
