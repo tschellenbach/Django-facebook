@@ -278,12 +278,12 @@ def _update_user(user, facebook, overwrite=True):
         if facebook_value:
             if (f in profile_field_names and hasattr(profile, f)):
                 logger.debug('profile field %s changed from %s to %s', f,
-                             getattr(profile, f, 'Empty'), facebook_value)
+                             getattr(profile, f), facebook_value)
                 setattr(profile, f, facebook_value)
                 profile_dirty = True
             elif (f in user_field_names and hasattr(user, f)):
                 logger.debug('user field %s changed from %s to %s', f,
-                             getattr(user, f, 'Empty'), facebook_value)
+                             getattr(user, f), facebook_value)
                 setattr(user, f, facebook_value)
                 user_dirty = True
 
