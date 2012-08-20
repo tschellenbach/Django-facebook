@@ -332,6 +332,7 @@ def _update_image(profile, image_url):
         file=image_temp, name=image_name, field_name='image', 
         content_type=content_type, size=image_size, charset=None
     )
+    image_file.seek(0)
     profile.image.save(image_name, image_file)
     image_temp.flush()
     profile_dirty = True
