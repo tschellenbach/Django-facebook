@@ -141,6 +141,20 @@ def connect(request):
     return render_to_response('django_facebook/connect.html', context)
 
 
+def disconnect(request):
+    '''
+    Removes Facebook from the users profile
+    And redirects to the specified next page
+    '''
+    if request.method == 'POST':
+        messages.info(request, _("You have disconnected your Facebook profile."))
+        profile = request.user.get_profile()
+        profile.disconnect_facebook()
+        profile.save()
+    response = next_redirect(request)
+    return response
+
+
 def connect_async_ajax(request):
     '''
     Not yet implemented:
