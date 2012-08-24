@@ -4,3 +4,7 @@ class FacebookException(Exception):
 
 class IncompleteProfileError(FacebookException):
     pass
+
+class AlreadyConnectedError(FacebookException):
+    def __init__(self, users):
+        self.users = users

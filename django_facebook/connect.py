@@ -111,6 +111,13 @@ def _connect_user(request, facebook, overwrite=True):
         raise ValueError(
             'Facebook needs to be authenticated for connect flows')
 
+    data = facebook.facebook_profile_data()
+    facebook_id = data['id']
+    
+    #see if we already have profiles connected to this facebook account
+    old_connections = _get_old_connections(facebook_id, request.user.id)[:20]
+    if old_connections and not request.REQUEST.get('confirm_connect'):
+        raise facebook_exceptions.AlreadyConnectedError(list(old_connections))
     user = _update_user(request.user, facebook, overwrite=overwrite)
 
     return user
@@ -223,10 +230,10 @@ def _register_user(request, facebook, profile_callback=None,
     return new_user
 
 
-def _remove_old_connections(facebook_id, current_user_id=None):
+def _get_old_connections(facebook_id, current_user_id=None):
     '''
-    Removes the facebook id for profiles with the specified facebook id
-    which arent the current user id
+    Gets other accounts connected to this facebook id, which are not
+    attached to the current user
     '''
     profile_class = get_profile_class()
     other_facebook_accounts = profile_class.objects.filter(
@@ -234,6 +241,15 @@ def _remove_old_connections(facebook_id, current_user_id=None):
     if current_user_id:
         other_facebook_accounts = other_facebook_accounts.exclude(
             user__id=current_user_id)
+    return other_facebook_accounts
+
+
+def _remove_old_connections(facebook_id, current_user_id=None):
+    '''
+    Removes the facebook id for profiles with the specified facebook id
+    which arent the current user id
+    '''
+    other_facebook_accounts = _get_old_connections(facebook_id, current_user_id)
     other_facebook_accounts.update(facebook_id=None)
 
 

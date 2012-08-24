@@ -111,6 +111,11 @@ def connect(request):
                         facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE,
                         context_instance=context,
                     )
+                except facebook_exceptions.AlreadyConnectedError, e:
+                    user_ids = [u.id for u in e.users]
+                    ids_string = ','.join(map(str, user_ids))
+                    return next_redirect(request, next_key=['error_next', 'next'],
+                        additional_params=dict(already_connected=ids_string))
 
                 if action is CONNECT_ACTIONS.CONNECT:
                     #connect means an existing account was attached to facebook
