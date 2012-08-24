@@ -25,7 +25,7 @@ class BaseFacebookProfileModel(models.Model):
     NOTE: If you don't use this this abstract class, make sure you copy/paste
     the fields in.
     '''
-    about_me = models.TextField(blank=True, null=True)
+    about_me = models.TextField(blank=True)
     facebook_id = models.BigIntegerField(blank=True, unique=True, null=True)
     access_token = models.TextField(
         blank=True, help_text='Facebook token for offline access')
