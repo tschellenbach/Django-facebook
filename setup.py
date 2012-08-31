@@ -117,7 +117,6 @@ Canvas page authentication for facebook applications. FQL access via the server 
 """
 
 
-
 setup(
     name = 'django-facebook',
     version = __version__,

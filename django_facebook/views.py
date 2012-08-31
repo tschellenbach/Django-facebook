@@ -111,6 +111,11 @@ def connect(request):
                         facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE,
                         context_instance=context,
                     )
+                except facebook_exceptions.AlreadyConnectedError, e:
+                    user_ids = [u.id for u in e.users]
+                    ids_string = ','.join(map(str, user_ids))
+                    return next_redirect(request, next_key=['error_next', 'next'],
+                        additional_params=dict(already_connected=ids_string))
 
                 if action is CONNECT_ACTIONS.CONNECT:
                     #connect means an existing account was attached to facebook
@@ -148,6 +153,20 @@ def connect(request):
         raise Http404
 
     return render_to_response('django_facebook/connect.html', context)
+
+
+def disconnect(request):
+    '''
+    Removes Facebook from the users profile
+    And redirects to the specified next page
+    '''
+    if request.method == 'POST':
+        messages.info(request, _("You have disconnected your Facebook profile."))
+        profile = request.user.get_profile()
+        profile.disconnect_facebook()
+        profile.save()
+    response = next_redirect(request)
+    return response
 
 
 def connect_async_ajax(request):

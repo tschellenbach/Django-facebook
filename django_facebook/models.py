@@ -17,25 +17,25 @@ logger = logging.getLogger(__name__)
 PROFILE_IMAGE_PATH = os.path.join('images', 'facebook_profiles/%Y/%m/%d')
 
 
-class FacebookProfileModel(models.Model):
+
+
+class BaseFacebookProfileModel(models.Model):
     '''
     Abstract class to add to your profile model.
     NOTE: If you don't use this this abstract class, make sure you copy/paste
     the fields in.
     '''
-    about_me = models.TextField(blank=True)
+    about_me = models.TextField(blank=True, null=True)
     facebook_id = models.BigIntegerField(blank=True, unique=True, null=True)
     access_token = models.TextField(
-        blank=True, help_text='Facebook token for offline access')
-    facebook_name = models.CharField(max_length=255, blank=True)
-    facebook_profile_url = models.TextField(blank=True)
-    website_url = models.TextField(blank=True)
-    blog_url = models.TextField(blank=True)
-    image = models.ImageField(blank=True, null=True,
-        upload_to=PROFILE_IMAGE_PATH, max_length=255)
+        blank=True, help_text='Facebook token for offline access', null=True)
+    facebook_name = models.CharField(max_length=255, blank=True, null=True)
+    facebook_profile_url = models.TextField(blank=True, null=True)
+    website_url = models.TextField(blank=True, null=True)
+    blog_url = models.TextField(blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
     gender = models.CharField(max_length=1, choices=(('m', 'Male'), ('f', 'Female')), blank=True, null=True)
-    raw_data = models.TextField(blank=True)
+    raw_data = models.TextField(blank=True, null=True)
 
     def __unicode__(self):
         return self.user.__unicode__()
@@ -62,6 +62,10 @@ class FacebookProfileModel(models.Model):
         response.set_cookie('fresh_registration', self.user_id)
 
         return response
+    
+    def disconnect_facebook(self):
+        self.access_token = None
+        self.facebook_id = None
 
     def clear_access_token(self):
         self.access_token = None
@@ -102,6 +106,22 @@ class FacebookProfileModel(models.Model):
             graph = OpenFacebook(access_token=self.access_token)
             graph.current_user_id = self.facebook_id
             return graph
+
+
+class FacebookProfileModel(BaseFacebookProfileModel):
+    '''
+    the image field really destroys the subclassability of an abstract model
+    you always need to customize the upload settings and storage settings
+    
+    thats why we stick it in a separate class
+    
+    override the BaseFacebookProfile if you want to change the image
+    '''
+    image = models.ImageField(blank=True, null=True,
+        upload_to=PROFILE_IMAGE_PATH, max_length=255)
+    
+    class Meta:
+        abstract = True
 
 
 class FacebookUser(models.Model):
