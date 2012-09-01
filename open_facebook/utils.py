@@ -252,7 +252,7 @@ class MultipartPostHandler(urllib2.BaseHandler):
         for(key, value) in vars:
             buf.write('--%s\r\n' % boundary)
             buf.write('Content-Disposition: form-data; name="%s"' % key)
-            buf.write('\r\n\r\n' + value + '\r\n')
+            buf.write('\r\n\r\n' + str(value) + '\r\n')
         for(key, fd) in files:
             file_size = os.fstat(fd.fileno())[stat.ST_SIZE]
             filename = fd.name.split('/')[-1]
