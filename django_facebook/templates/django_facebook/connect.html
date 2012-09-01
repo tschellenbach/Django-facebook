@@ -1,4 +1,4 @@
-
+{% load url from future %}
 
 <html><head>
 	<title>Connect with Facebook</title>
@@ -214,7 +214,7 @@
         <div id="header_bar">
         
         {% if request.user.is_authenticated %}
-            <h1>Welcome {{ request.user }}</h1><a href="{% url auth_logout %}?next={{ request.path|urlencode }}">logout</a><br />
+            <h1>Welcome {{ request.user }}</h1><a href="{% url 'auth_logout' %}?next={{ request.path|urlencode }}">logout</a><br />
             
             <p>
             Thank you for logging in with Facebook.
@@ -318,7 +318,7 @@
     <div id="image_upload" style="margin: 60px 0px 20px 0px;">
         <h2>Album upload flow</h2>
         <div>
-            <form action="{% url facebook_image_upload %}" method="get">
+            <form action="{% url 'facebook_image_upload' %}" method="get">
                 {% csrf_token %}
                 <input type="hidden" value="{{ request.path }}" name="next" />
                 
@@ -337,7 +337,7 @@
     <div id="wall_post" style="margin: 60px 0px 20px 0px;">
         <h2>Post to My Wall</h2>
         <div>
-            <form action="{% url facebook_wall_post %}" method="get">
+            <form action="{% url 'facebook_wall_post' %}" method="get">
                 {% csrf_token %}
                 <input type="hidden" value="{{ request.path }}" name="next" />
 
@@ -351,7 +351,7 @@
     <div id="wall_post" style="margin: 60px 0px 20px 0px;">
         <h2>Post to My Wall - Javascript Popup version</h2>
         <div>
-            <form action="{% url facebook_wall_post %}" method="post">
+            <form action="{% url 'facebook_wall_post' %}" method="post">
                 {% csrf_token %}
                 <input type="hidden" value="{{ request.path }}" name="next" />
 
