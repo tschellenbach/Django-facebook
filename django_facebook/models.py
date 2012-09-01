@@ -56,7 +56,7 @@ class BaseFacebookProfileModel(models.Model):
         Behaviour after registering with facebook
         '''
         from django_facebook.utils import next_redirect
-        default_url = reverse('facebook_connect')
+        default_url = settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT
         response = next_redirect(request, default=default_url,
                                  next_key='register_next')
         response.set_cookie('fresh_registration', self.user_id)
