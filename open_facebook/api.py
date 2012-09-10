@@ -547,14 +547,32 @@ class OpenFacebook(FacebookConnection):
         self.request(*args, **kwargs)
 
     def fql(self, query, **kwargs):
-        """Runs the specified query against the Facebook FQL API.
-        """
-        kwargs['format'] = 'JSON'
-        kwargs['query'] = query
-        path = 'fql.query'
+        '''
+        Runs the specified query against the Facebook FQL API.
+        '''
+        kwargs['q'] = query
+        path = 'fql'
 
-        response = self.request(path, old_api=True, **kwargs)
+        response = self.request(path, **kwargs)
 
+        return response
+    
+    def batch_fql(self, queries_dict):
+        '''
+        queries_dict a dict with the required queries
+        returns the query results in:
+        
+        response['fql_results']['query1']
+        response['fql_results']['query2']
+        etc
+        '''
+        query = json.dumps(queries_dict)
+        response = self.fql(query)
+        query_results = response['data']
+        named_results = dict([(r['name'], r) for r in query_results])
+        response['data'] = []
+        response['fql_results'] = named_results
+        
         return response
 
     def me(self):
