@@ -11,16 +11,17 @@ class Migration(SchemaMigration):
         # Adding model 'UserProfile'
         db.create_table('member_userprofile', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('about_me', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('about_me', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
             ('facebook_id', self.gf('django.db.models.fields.BigIntegerField')(unique=True, null=True, blank=True)),
-            ('access_token', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('facebook_name', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
-            ('facebook_profile_url', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('website_url', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('blog_url', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('image', self.gf('django.db.models.fields.files.ImageField')(max_length=255, null=True, blank=True)),
+            ('access_token', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('facebook_name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
+            ('facebook_profile_url', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('website_url', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('blog_url', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
             ('date_of_birth', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('raw_data', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('gender', self.gf('django.db.models.fields.CharField')(max_length=1, null=True, blank=True)),
+            ('raw_data', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('image', self.gf('django.db.models.fields.files.ImageField')(max_length=255, null=True, blank=True)),
             ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True)),
         ))
         db.send_create_signal('member', ['UserProfile'])
@@ -48,7 +49,7 @@ class Migration(SchemaMigration):
         },
         'auth.user': {
             'Meta': {'object_name': 'User'},
-            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2012, 9, 10, 12, 45, 7, 850000)'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
             'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
@@ -56,7 +57,7 @@ class Migration(SchemaMigration):
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2012, 9, 10, 12, 45, 7, 850000)'}),
             'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
@@ -71,18 +72,19 @@ class Migration(SchemaMigration):
         },
         'member.userprofile': {
             'Meta': {'object_name': 'UserProfile'},
-            'about_me': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'access_token': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'blog_url': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'about_me': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'access_token': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'blog_url': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'date_of_birth': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'facebook_id': ('django.db.models.fields.BigIntegerField', [], {'unique': 'True', 'null': 'True', 'blank': 'True'}),
-            'facebook_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'facebook_profile_url': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'facebook_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
+            'facebook_profile_url': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'gender': ('django.db.models.fields.CharField', [], {'max_length': '1', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'image': ('django.db.models.fields.files.ImageField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'raw_data': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'raw_data': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'}),
-            'website_url': ('django.db.models.fields.TextField', [], {'blank': 'True'})
+            'website_url': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'})
         }
     }
 
