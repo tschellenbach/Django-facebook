@@ -569,7 +569,7 @@ class OpenFacebook(FacebookConnection):
         query = json.dumps(queries_dict)
         response = self.fql(query)
         query_results = response['data']
-        named_results = dict([(r['name'], r) for r in query_results])
+        named_results = dict([(r['name'], r['fql_result_set']) for r in query_results])
         response['data'] = []
         response['fql_results'] = named_results
         
