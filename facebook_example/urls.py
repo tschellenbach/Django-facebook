@@ -5,7 +5,7 @@ from django.conf import settings
 # admin.autodiscover()
 
 urlpatterns = patterns('',
-    #(r'^accounts/', include('registration.backends.default.urls')),
+    #
     (r'^facebook/', include('django_facebook.urls')),
     
     #what to do with these?
@@ -24,6 +24,10 @@ urlpatterns = patterns('',
 if settings.MODE == 'userena':
     urlpatterns += patterns('',
         (r'^accounts/', include('userena.urls')),
+    )
+elif settings.MODE == 'django_registration':
+    urlpatterns += patterns('',
+        (r'^accounts/', include('registration.backends.default.urls')),
     )
 
 
