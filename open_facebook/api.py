@@ -35,7 +35,7 @@ Currently that would be a bad idea though because of maintenance
 from django.http import QueryDict
 from django_facebook import settings as facebook_settings
 from open_facebook import exceptions as facebook_exceptions
-from open_facebook.utils import json, encode_params, send_warning, memoized
+from open_facebook.utils import json, encode_params, send_warning, memoized, MultipartPostHandler
 import logging
 import urllib
 import urllib2
@@ -88,8 +88,7 @@ class FacebookConnection(object):
             response = dict(id=123456789)
             return response
 
-        opener = urllib2.build_opener()
-        opener.addheaders = [('User-agent', 'Open Facebook Python')]
+        opener = urllib2.build_opener(MultipartPostHandler)
         # give it a few shots, connection is buggy at times
 
         path = url.split('?', 1)[0].rsplit('/', 1)[-1].replace('.', '_')
@@ -105,8 +104,14 @@ class FacebookConnection(object):
                 try:
                     # For older python versions you could leave out the timeout
                     # response_file = opener.open(url, post_string)
-                    response_file = opener.open(url, post_string,
-                                                timeout=timeout)
+                    
+                    if post_data and "source" in post_data:
+                        response_file = opener.open(url, post_data,
+                                                    timeout=timeout)
+                    else:
+                        response_file = opener.open(url, post_string,
+                                                    timeout=timeout)
+                        
                 except (urllib2.HTTPError,), e:
                     # catch the silly status code errors
                     if 'http error' in str(e).lower():
