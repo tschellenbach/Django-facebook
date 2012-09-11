@@ -137,6 +137,24 @@ class UserConnectTest(FacebookTest):
         action, user = connect_user(self.request, facebook_graph=facebook)
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
 
+    def test_fb_update_required(self):
+        def pre_update(sender, profile, facebook_data, **kwargs):
+            profile.pre_update_signal = True
+
+        Profile = get_profile_class()
+        signals.facebook_pre_update.connect(pre_update, sender=Profile)
+        facebook = get_facebook_graph(access_token='tschellenbach')
+
+        facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = True
+        action, user = connect_user(self.request, facebook_graph=facebook)
+        self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
+        self.assertTrue(hasattr(user.get_profile(), 'pre_update_signal'))
+
+        facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = False
+        action, user = connect_user(self.request, facebook_graph=facebook)
+        self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
+        self.assertFalse(hasattr(user.get_profile(), 'pre_update_signal'))
+
     def test_new_user(self):
         facebook = get_facebook_graph(access_token='new_user')
         action, user = connect_user(self.request, facebook_graph=facebook)
