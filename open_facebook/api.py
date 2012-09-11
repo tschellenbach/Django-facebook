@@ -555,7 +555,8 @@ class OpenFacebook(FacebookConnection):
 
         response = self.request(path, **kwargs)
 
-        return response
+        #return only the data for backward compatability
+        return response['data']
     
     def batch_fql(self, queries_dict):
         '''
@@ -567,13 +568,10 @@ class OpenFacebook(FacebookConnection):
         etc
         '''
         query = json.dumps(queries_dict)
-        response = self.fql(query)
-        query_results = response['data']
+        query_results = self.fql(query)
         named_results = dict([(r['name'], r['fql_result_set']) for r in query_results])
-        response['data'] = []
-        response['fql_results'] = named_results
         
-        return response
+        return named_results
 
     def me(self):
         '''
