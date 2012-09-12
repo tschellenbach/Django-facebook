@@ -1,6 +1,6 @@
 from django.core.handlers.base import BaseHandler
-from django.test.client import RequestFactory
 from django.test import TestCase
+from django.test.client import Client, RequestFactory
 
 
 class RequestMock(RequestFactory):
@@ -24,7 +24,7 @@ class RequestMock(RequestFactory):
 
 class FacebookTest(TestCase):
     '''
-    Normal facebook tests run against a fake API
+    Normal Facebook tests run against a fake API
     '''
     def setUp(self):
         from django_facebook.tests_utils.mock_official_sdk import MockFacebookAPI
@@ -35,6 +35,7 @@ class FacebookTest(TestCase):
 
         rf = RequestMock()
         self.request = rf.get('/')
+        self.client = Client()
 
 
 class LiveFacebookTest(TestCase):
