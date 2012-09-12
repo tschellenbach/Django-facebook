@@ -8,7 +8,7 @@ class MockFacebookAPI(OpenFacebook):
         from django_facebook.tests_utils.sample_data.user_data import user_data
         data = user_data[self.access_token]
         return data
-    
+
     def my_image_url(self, size=None):
         from django_facebook.tests_utils.sample_data.user_data import user_data
         data = user_data[self.access_token]
@@ -18,7 +18,7 @@ class MockFacebookAPI(OpenFacebook):
     def is_authenticated(self, *args, **kwargs):
         from django_facebook.tests_utils.sample_data.user_data import user_data
         return self.access_token in user_data
-    
+
     def get(self, path, **kwargs):
         if 'likes' in path:
             like = dict(name="Vogue Nederland", category="Media/news/publishing", id="136067283169158")
