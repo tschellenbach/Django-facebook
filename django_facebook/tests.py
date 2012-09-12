@@ -2,8 +2,7 @@ from __future__ import with_statement
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.urlresolvers import reverse
 from django.test.client import Client
-from django_facebook import exceptions as facebook_exceptions, \
-    settings as facebook_settings, signals
+from django_facebook import settings as facebook_settings, signals
 from django_facebook.api import get_facebook_graph, FacebookUserConverter, \
     get_persistent_graph
 from django_facebook.auth_backends import FacebookBackend
@@ -77,6 +76,16 @@ class ConnectViewTest(LiveFacebookTest):
         self.assertEqual(user, new_user)
 
 
+class UserConnectViewTest(FacebookTest):
+    fixtures = ['users.json']
+    
+    def test_connect(self):
+        request = RequestMock().get('/')
+        request.session = {}
+        request.user = AnonymousUser()
+        get_persistent_graph(request, access_token='short_username')
+
+
 class UserConnectTest(FacebookTest):
     '''
     Tests the connect user functionality
@@ -87,7 +96,11 @@ class UserConnectTest(FacebookTest):
         request = RequestMock().get('/')
         request.session = {}
         request.user = AnonymousUser()
-        get_persistent_graph(request, access_token='short_username')
+        
+        graph = get_facebook_graph(access_token='short_username')
+        FacebookUserConverter(graph)
+        action, user = connect_user(self.request, facebook_graph=graph)
+        self.assertEqual(action, CONNECT_ACTIONS.REGISTER)
 
     def test_gender_matching(self):
         request = RequestMock().get('/')

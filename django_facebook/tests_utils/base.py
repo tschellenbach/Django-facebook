@@ -35,7 +35,8 @@ class FacebookTest(TestCase):
 
         rf = RequestMock()
         self.request = rf.get('/')
-        
+
+  
 class LiveFacebookTest(TestCase):
     '''
     Live Facebook Tests run against the actual Facebook API

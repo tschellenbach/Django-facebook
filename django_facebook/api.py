@@ -12,6 +12,7 @@ from django_facebook import signals
 
 logger = logging.getLogger(__name__)
 
+
 def require_persistent_graph(request, *args, **kwargs):
     '''
     Just like get_persistent graph, but instead of returning None
@@ -68,9 +69,6 @@ def get_persistent_graph(request, *args, **kwargs):
     request.facebook = graph
 
     return graph
-
-
-
 
 
 def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise_=False):
