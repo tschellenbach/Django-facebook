@@ -45,8 +45,8 @@ class FacebookProfileAdmin(admin.ModelAdmin):
             instance.user
         )
     user_.allow_tags = True
-    
-    
+
+
 def facebook_profile(open_graph_share):
     '''
     Nicely displayed version of the facebook user
@@ -66,7 +66,8 @@ facebook_profile.short_description = 'Profile'
 class OpenGraphShareAdmin(admin.ModelAdmin):
     raw_id_fields = ['user']
     list_filter = ['created_at', 'completed_at', 'action_domain']
-    list_display = ['user', 'action_domain', facebook_profile, 'completed_at', 'error_message']
+    list_display = ['user', 'action_domain', facebook_profile,
+                    'completed_at', 'error_message']
     actions = [admin_actions.retry_open_graph_share]
     date_hierarchy = 'created_at'
 

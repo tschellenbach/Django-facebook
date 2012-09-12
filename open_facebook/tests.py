@@ -10,7 +10,7 @@ from open_facebook.utils import json
 
 
 class TestErrorMapping(unittest.TestCase):
-    
+
     def test_oauth_errors(self):
         expires_response = '''{
           "error": {
@@ -43,22 +43,23 @@ class TestErrorMapping(unittest.TestCase):
         }
         '''
         responses = [expires_response, changed_password_response,
-                      deauthorized_response, loggedout_response]
+                     deauthorized_response, loggedout_response]
         response_objects = []
         for response_string in responses:
             response = json.loads(response_string)
-            
+
             response_objects.append(response)
-            
+
         from open_facebook import exceptions as open_facebook_exceptions
         for response in response_objects:
             oauth = False
             try:
                 FacebookConnection.raise_error(response['error']['type'],
-                                    response['error']['message'])
+                                               response['error']['message'])
             except open_facebook_exceptions.OAuthException, e:
                 oauth = True
             assert oauth, 'response %s didnt raise oauth error' % response
+
 
 class TestOpenFacebook(unittest.TestCase):
     def test_thijs_profile(self):
@@ -89,7 +90,7 @@ class TestOpenFacebook(unittest.TestCase):
             'me/permissions')['data'][0].items() if v]
         print permissions
         return
-        print fb.fql("SELECT uid, name, sex FROM user WHERE uid IN " \
+        print fb.fql("SELECT uid, name, sex FROM user WHERE uid IN "
                      "(SELECT uid2 FROM friend WHERE uid1 = me())")
         return
         actions = [dict(name='Follow', link='http://www.fashiolista.com/')]

@@ -12,7 +12,8 @@ FACEBOOK_CANVAS_PAGE = getattr(settings, 'FACEBOOK_CANVAS_PAGE',
                                'http://apps.facebook.com/fashiolista_test/')
 
 # Disable this setting if you don't want to store a local image
-FACEBOOK_STORE_LOCAL_IMAGE = getattr(settings, 'FACEBOOK_STORE_LOCAL_IMAGE', True)
+FACEBOOK_STORE_LOCAL_IMAGE = getattr(
+    settings, 'FACEBOOK_STORE_LOCAL_IMAGE', True)
 
 # These you don't need to change
 FACEBOOK_HIDE_CONNECT_TEST = getattr(settings,
@@ -27,13 +28,15 @@ FACEBOOK_STORE_FRIENDS = getattr(settings, 'FACEBOOK_STORE_FRIENDS', False)
 # recommended if you want to store friends or likes
 FACEBOOK_CELERY_STORE = getattr(settings, 'FACEBOOK_CELERY_STORE', False)
 # use celery for updating tokens, recommended since it's quite slow
-FACEBOOK_CELERY_TOKEN_EXTEND = getattr(settings, 'FACEBOOK_CELERY_TOKEN_EXTEND', False)
+FACEBOOK_CELERY_TOKEN_EXTEND = getattr(
+    settings, 'FACEBOOK_CELERY_TOKEN_EXTEND', False)
 
 FACEBOOK_DEBUG_REDIRECTS = getattr(settings, 'FACEBOOK_DEBUG_REDIRECTS', False)
-FACEBOOK_STORE_ALL_ACCESS_TOKENS = getattr(settings, 'FACEBOOK_STORE_ALL_ACCESS_TOKENS', False) 
+FACEBOOK_STORE_ALL_ACCESS_TOKENS = getattr(
+    settings, 'FACEBOOK_STORE_ALL_ACCESS_TOKENS', False)
 
 #READ only mode, convenient when doing load testing etc.
-FACEBOOK_READ_ONLY = getattr(settings, 'FACEBOOK_READ_ONLY', False) 
+FACEBOOK_READ_ONLY = getattr(settings, 'FACEBOOK_READ_ONLY', False)
 
 # check for required settings
 required_settings = ['FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET']
@@ -44,17 +47,20 @@ for setting_name in required_settings:
 
 # Allow custom registration template
 FACEBOOK_REGISTRATION_TEMPLATE = getattr(settings,
-    'FACEBOOK_REGISTRATION_TEMPLATE', ['django_facebook/registration.html', 'registration/registration_form.html'])
+                                         'FACEBOOK_REGISTRATION_TEMPLATE', ['django_facebook/registration.html', 'registration/registration_form.html'])
 
 # Allow custom signup form
 FACEBOOK_REGISTRATION_FORM = getattr(settings,
-    'FACEBOOK_REGISTRATION_FORM', None)
+                                     'FACEBOOK_REGISTRATION_FORM', None)
 
 default_registration_backend = 'django_facebook.registration_backends.FacebookRegistrationBackend'
-FACEBOOK_REGISTRATION_BACKEND = getattr(settings, 'FACEBOOK_REGISTRATION_BACKEND', default_registration_backend)
+FACEBOOK_REGISTRATION_BACKEND = getattr(
+    settings, 'FACEBOOK_REGISTRATION_BACKEND', default_registration_backend)
 
 #Fall back redirect location when no other location was found
-FACEBOOK_LOGIN_DEFAULT_REDIRECT = getattr(settings, 'FACEBOOK_LOGIN_DEFAULT_REDIRECT', '/') 
+FACEBOOK_LOGIN_DEFAULT_REDIRECT = getattr(
+    settings, 'FACEBOOK_LOGIN_DEFAULT_REDIRECT', '/')
 
 # Force profile update every login
-FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN= getattr(settings, 'FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN', False)
+FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = getattr(
+    settings, 'FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN', False)

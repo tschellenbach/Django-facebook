@@ -36,8 +36,8 @@ def open_graph_beta(request):
     entity_url = 'http://www.fashiolista.com/item/2081202/'
     fb.set('me/fashiolista:love', item=entity_url)
     messages.info(request,
-                  'Frictionless sharing to open graph beta action ' \
-                  'fashiolista:love with item_url %s, this url contains ' \
+                  'Frictionless sharing to open graph beta action '
+                  'fashiolista:love with item_url %s, this url contains '
                   'open graph data which Facebook scrapes' % entity_url)
 
 
@@ -60,7 +60,7 @@ def image_upload(request):
 
     for picture in pictures:
         fb.set('me/photos', url=picture, message='the writing is one The '
-            'wall image %s' % picture)
+               'wall image %s' % picture)
 
     messages.info(request, 'The images have been added to your profile!')
 
@@ -83,14 +83,14 @@ def connect(request):
     assert context.get('FACEBOOK_APP_ID'), 'Please specify a facebook app id '\
         'and ensure the context processor is enabled'
     facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
-    
+
     if facebook_login:
         logger.info('trying to connect using facebook')
         graph = require_persistent_graph(request)
         if graph:
             logger.info('found a graph object')
             facebook = FacebookUserConverter(graph)
-            
+
             if facebook.is_authenticated():
                 logger.info('facebook is authenticated')
                 facebook_data = facebook.facebook_profile_data()
@@ -114,16 +114,18 @@ def connect(request):
                 except facebook_exceptions.AlreadyConnectedError, e:
                     user_ids = [u.id for u in e.users]
                     ids_string = ','.join(map(str, user_ids))
-                    return next_redirect(request, next_key=['error_next', 'next'],
+                    return next_redirect(
+                        request, next_key=['error_next', 'next'],
                         additional_params=dict(already_connected=ids_string))
 
                 if action is CONNECT_ACTIONS.CONNECT:
                     #connect means an existing account was attached to facebook
                     messages.info(request, _("You have connected your account "
-                        "to %s's facebook profile") % facebook_data['name'])
+                                             "to %s's facebook profile") % facebook_data['name'])
                 elif action is CONNECT_ACTIONS.REGISTER:
                     #hook for tying in specific post registration functionality
-                    response = backend.post_registration_redirect(request, user)
+                    response = backend.post_registration_redirect(
+                        request, user)
                     #compatibility for Django registration backends which return redirect tuples instead of a response
                     if not isinstance(response, HttpResponse):
                         to, args, kwargs = response
@@ -132,9 +134,9 @@ def connect(request):
         else:
             if 'attempt' in request.GET:
                 return next_redirect(request, next_key=['error_next', 'next'],
-                    additional_params=dict(fb_error_or_cancel=1))
+                                     additional_params=dict(fb_error_or_cancel=1))
             else:
-                logger.info('Facebook authentication needed for connect, ' \
+                logger.info('Facebook authentication needed for connect, '
                             'raising an error')
                 raise OpenFacebookException('please authenticate')
 
@@ -153,7 +155,8 @@ def disconnect(request):
     And redirects to the specified next page
     '''
     if request.method == 'POST':
-        messages.info(request, _("You have disconnected your Facebook profile."))
+        messages.info(
+            request, _("You have disconnected your Facebook profile."))
         profile = request.user.get_profile()
         profile.disconnect_facebook()
         profile.save()
@@ -200,6 +203,7 @@ def canvas(request):
 
     return render_to_response('django_facebook/canvas.html', context)
 
+
 @facebook_required_lazy(canvas=True)
 def page_tab(request):
     '''
@@ -212,19 +216,16 @@ def page_tab(request):
     likes = facebook.get('me/likes')['data']
     context['likes'] = likes
     from user.models import FacebookPageTab
-    
+
     signed_request = request.REQUEST.get('signed_request')
-    
+
     data = facebook.prefetched_data
     page_id = data['page']['id']
     defaults = dict(created_by_user=data['user_id'])
-    tab, created = FacebookPageTab.objects.get_or_create(page_id=page_id, defaults=defaults)
+    tab, created = FacebookPageTab.objects.get_or_create(
+        page_id=page_id, defaults=defaults)
     context['facebook'] = facebook
-    
-    raise Exception, tab
+
+    raise Exception(tab)
 
     return render_to_response('django_facebook/page_tab.html', context)
-
-
-
-

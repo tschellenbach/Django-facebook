@@ -30,15 +30,17 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
     def actual_decorator(view_func):
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
-            oauth_url, current_uri, redirect_uri = get_oauth_url(request, scope_list)
-            
+            oauth_url, current_uri, redirect_uri = get_oauth_url(
+                request, scope_list)
+
             #Normal facebook errors should be raised
             #OAuthException s should cause a redirect for authorization
             try:
-                permission_granted = test_permissions(request, scope_list, current_uri)
+                permission_granted = test_permissions(
+                    request, scope_list, current_uri)
             except open_facebook_exceptions.OAuthException, e:
                 permission_granted = False
-            
+
             if permission_granted:
                 return view_func(request, *args, **kwargs)
             else:
@@ -52,11 +54,11 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
         wrapped_view = actual_decorator(view_func)
     else:
         wrapped_view = actual_decorator
-        
+
     if csrf_exempt:
         #always set canvas pages to be csrf exempt
         wrapped_view.csrf_exempt = csrf_exempt
-    
+
     return wrapped_view
 
 
@@ -69,7 +71,7 @@ def facebook_required_lazy(view_func=None,
     redirecting to the log-in page if necessary.
     Based on exceptions instead of a check up front
     Faster, but more prone to bugs
-    
+
     Use this in combination with require_persistent_graph
     """
     from django_facebook.utils import test_permissions
@@ -81,8 +83,9 @@ def facebook_required_lazy(view_func=None,
     def actual_decorator(view_func):
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request, *args, **kwargs):
-            oauth_url, current_uri, redirect_uri = get_oauth_url(request, scope_list,
-                                                    extra_params=extra_params)
+            oauth_url, current_uri, redirect_uri = get_oauth_url(
+                request, scope_list,
+                extra_params=extra_params)
             try:
                 # call get persistent graph and convert the
                 # token with correct redirect uri
@@ -91,15 +94,17 @@ def facebook_required_lazy(view_func=None,
                 #You should require a persistent graph in the view when you start using this
                 return view_func(request, *args, **kwargs)
             except open_facebook_exceptions.OpenFacebookException, e:
-                permission_granted = test_permissions(request, scope_list, current_uri)
+                permission_granted = test_permissions(
+                    request, scope_list, current_uri)
                 if permission_granted:
                     # an error if we already have permissions
                     # shouldn't have been caught
                     # raise to prevent bugs with error mapping to cause issues
                     raise
                 else:
-                    logger.info(u'requesting access with redirect uri: %s, error was %s',
-                                redirect_uri, e)
+                    logger.info(
+                        u'requesting access with redirect uri: %s, error was %s',
+                        redirect_uri, e)
                     response = response_redirect(oauth_url, canvas=canvas)
                     return response
         return _wrapped_view
@@ -108,11 +113,11 @@ def facebook_required_lazy(view_func=None,
         wrapped_view = actual_decorator(view_func)
     else:
         wrapped_view = actual_decorator
-        
+
     if csrf_exempt:
         #always set canvas pages to be csrf exempt
         wrapped_view.csrf_exempt = csrf_exempt
-        
+
     return wrapped_view
 
 
@@ -123,6 +128,3 @@ def facebook_connect_required():
     """
     #TODO: BUILD THIS :)
     pass
-
-
-

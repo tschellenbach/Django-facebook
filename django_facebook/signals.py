@@ -9,10 +9,12 @@ facebook_pre_update = Signal(providing_args=['profile', 'facebook_data'])
 facebook_post_update = Signal(providing_args=['profile', 'facebook_data'])
 
 # Sent after storing the friends from graph to db
-facebook_post_store_friends = Signal(providing_args=['user', 'friends', 'current_friends', 'inserted_friends'])
+facebook_post_store_friends = Signal(
+    providing_args=['user', 'friends', 'current_friends', 'inserted_friends'])
 
 # Sent after storing the likes from graph to db
-facebook_post_store_likes = Signal(providing_args=['user', 'likes', 'current_likes', 'inserted_likes'])
+facebook_post_store_likes = Signal(
+    providing_args=['user', 'likes', 'current_likes', 'inserted_likes'])
 
 #Some signals for compatibility with Django Registration
 # A new user has registered.

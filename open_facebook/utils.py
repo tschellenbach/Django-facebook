@@ -51,7 +51,7 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
                 # know how to print itself properly. We shouldn't raise a
                 # further exception.
                 return ' '.join([smart_str(arg, encoding, strings_only,
-                        errors) for arg in s])
+                                           errors) for arg in s])
             return unicode(s).encode(encoding, errors)
     elif isinstance(s, unicode):
         return s.encode(encoding, errors)
@@ -83,15 +83,15 @@ def send_warning(message, request=None, e=None, **extra_data):
         error_message = unicode(e)
 
     data = {
-         'username': username,
-         'body': error_message,
+        'username': username,
+        'body': error_message,
     }
     data.update(extra_data)
     logger.warn(message,
-        exc_info=sys.exc_info(), extra={
-        'request': request,
-        'data': data
-    })
+                exc_info=sys.exc_info(), extra={
+                'request': request,
+                'data': data
+                })
 
 
 def merge_urls(generated_url, human_url):
@@ -155,12 +155,13 @@ def merge_urls(generated_url, human_url):
 
 class memoized(object):
     '''Decorator. Caches a function's return value each time it is called.
-    If called later with the same arguments, the cached value is returned 
+    If called later with the same arguments, the cached value is returned
     (not reevaluated).
     '''
     def __init__(self, func):
         self.func = func
         self.cache = {}
+
     def __call__(self, *args):
         try:
             return self.cache[args]
@@ -172,17 +173,19 @@ class memoized(object):
             # uncachable -- for instance, passing a list as an argument.
             # Better to not cache than to blow up entirely.
             return self.func(*args)
+
     def __repr__(self):
         '''Return the function's docstring.'''
         return self.func.__doc__
+
     def __get__(self, obj, objtype):
         '''Support instance methods.'''
         return functools.partial(self.__call__, obj)
-  
-  
+
+
 def camel_to_underscore(name):
     '''Convert camelcase style naming to underscore style naming
-    
+
     e.g. SpamEggs -> spam_eggs '''
     import string
     for c in string.ascii_uppercase:

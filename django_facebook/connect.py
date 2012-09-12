@@ -55,7 +55,7 @@ def connect_user(request, access_token=None, facebook_graph=None):
     if connect_facebook and request.user.is_authenticated() and not force_registration:
         #we should only allow connect if users indicate they really want to connect
         #only when the request.CONNECT_FACEBOOK = 1
-        #if this isn't present we just do a login   
+        #if this isn't present we just do a login
         action = CONNECT_ACTIONS.CONNECT
         user = _connect_user(request, facebook)
     else:
@@ -113,7 +113,7 @@ def _connect_user(request, facebook, overwrite=True):
 
     data = facebook.facebook_profile_data()
     facebook_id = data['id']
-    
+
     #see if we already have profiles connected to this facebook account
     old_connections = _get_old_connections(facebook_id, request.user.id)[:20]
     if old_connections and not request.REQUEST.get('confirm_connect'):
@@ -134,13 +134,13 @@ def _update_likes_and_friends(request, user, facebook):
         transaction.savepoint_commit(sid)
     except IntegrityError, e:
         logger.warn(u'Integrity error encountered during registration, '
-                'probably a double submission %s' % e,
-            exc_info=sys.exc_info(), extra={
-            'request': request,
-            'data': {
-                 'body': unicode(e),
-             }
-        })
+                    'probably a double submission %s' % e,
+                    exc_info=sys.exc_info(), extra={
+                    'request': request,
+                    'data': {
+                        'body': unicode(e),
+                    }
+                    })
         transaction.savepoint_rollback(sid)
 
 
@@ -195,7 +195,7 @@ def _register_user(request, facebook, profile_callback=None,
             '@', '+test%s@' % randint(0, 1000000000))
 
     form = form_class(data=data, files=request.FILES,
-        initial={'ip': request.META['REMOTE_ADDR']})
+                      initial={'ip': request.META['REMOTE_ADDR']})
 
     if not form.is_valid():
         error_message_format = u'Facebook data %s gave error %s'
@@ -217,7 +217,7 @@ def _register_user(request, facebook, profile_callback=None,
             new_user = form.save()
 
     signals.facebook_user_registered.send(sender=auth.models.User,
-        user=new_user, facebook_data=facebook_data)
+                                          user=new_user, facebook_data=facebook_data)
 
     #update some extra data not yet done by the form
     new_user = _update_user(new_user, facebook)
@@ -249,7 +249,8 @@ def _remove_old_connections(facebook_id, current_user_id=None):
     Removes the facebook id for profiles with the specified facebook id
     which arent the current user id
     '''
-    other_facebook_accounts = _get_old_connections(facebook_id, current_user_id)
+    other_facebook_accounts = _get_old_connections(
+        facebook_id, current_user_id)
     other_facebook_accounts.update(facebook_id=None)
 
 
@@ -262,12 +263,12 @@ def _update_user(user, facebook, overwrite=True):
     # partial support (everything except raw_data and facebook_id is included)
     facebook_data = facebook.facebook_registration_data(username=False)
     facebook_fields = ['facebook_name', 'facebook_profile_url', 'gender',
-        'date_of_birth', 'about_me', 'website_url', 'first_name', 'last_name']
+                       'date_of_birth', 'about_me', 'website_url', 'first_name', 'last_name']
     user_dirty = profile_dirty = False
     profile = user.get_profile()
 
     signals.facebook_pre_update.send(sender=get_profile_class(),
-        profile=profile, facebook_data=facebook_data)
+                                     profile=profile, facebook_data=facebook_data)
 
     profile_field_names = [f.name for f in profile._meta.fields]
     user_field_names = [f.name for f in user._meta.fields]
@@ -323,7 +324,7 @@ def _update_user(user, facebook, overwrite=True):
         profile.save()
 
     signals.facebook_post_update.send(sender=get_profile_class(),
-        profile=profile, facebook_data=facebook_data)
+                                      profile=profile, facebook_data=facebook_data)
 
     return user
 
@@ -343,7 +344,7 @@ def _update_image(profile, image_url):
     image_size = len(image_content)
     content_type = http_message.type
     image_file = InMemoryUploadedFile(
-        file=image_temp, name=image_name, field_name='image', 
+        file=image_temp, name=image_name, field_name='image',
         content_type=content_type, size=image_size, charset=None
     )
     image_file.seek(0)
@@ -365,8 +366,3 @@ def update_connection(request, graph):
     _update_likes_and_friends(request, user, facebook)
     _update_access_token(user, graph)
     return user
-
-
-
-
-

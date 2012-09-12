@@ -31,7 +31,8 @@ class TestUserTest(LiveFacebookTest):
         #the permissions for which we want a test user
         permissions = ['email', 'publish_actions']
         #gets the test user object
-        test_user = FacebookAuthorization.get_or_create_test_user(app_access_token, permissions)
+        test_user = FacebookAuthorization.get_or_create_test_user(
+            app_access_token, permissions)
         graph = test_user.graph()
         me = graph.me()
         assert me
@@ -41,7 +42,8 @@ class ExtendTokenTest(LiveFacebookTest):
     def test_extend_token(self):
         return 'this doesnt work in travis, but locally its fine... weird'
         app_access_token = FacebookAuthorization.get_cached_app_access_token()
-        test_user = FacebookAuthorization.get_or_create_test_user(app_access_token)
+        test_user = FacebookAuthorization.get_or_create_test_user(
+            app_access_token)
         access_token = test_user.access_token
         results = FacebookAuthorization.extend_access_token(access_token)
         if 'access_token' not in results:
@@ -54,20 +56,23 @@ class ConnectViewTest(LiveFacebookTest):
         #setup the test user
         permissions = facebook_settings.FACEBOOK_DEFAULT_SCOPE
         app_access_token = FacebookAuthorization.get_cached_app_access_token()
-        test_user = FacebookAuthorization.get_or_create_test_user(app_access_token, permissions)
+        test_user = FacebookAuthorization.get_or_create_test_user(
+            app_access_token, permissions)
 
         #test the connect view in the registration mode (empty db)
         c = Client()
         url = reverse('facebook_connect')
         access_token = test_user.access_token
-        response = c.get(url, {'facebook_login': '1', 'access_token': access_token})
+        response = c.get(
+            url, {'facebook_login': '1', 'access_token': access_token})
         self.assertEqual(response.status_code, 302)
         user = User.objects.all().order_by('-id')[:1][0]
         profile = user.get_profile()
         self.assertEqual(access_token, profile.access_token)
 
         #test the login flow
-        response = c.get(url, {'facebook_login': '1', 'access_token': access_token})
+        response = c.get(
+            url, {'facebook_login': '1', 'access_token': access_token})
         self.assertEqual(response.status_code, 302)
         new_user = User.objects.all().order_by('-id')[:1][0]
         new_profile = user.get_profile()
@@ -78,7 +83,7 @@ class ConnectViewTest(LiveFacebookTest):
 
 class UserConnectViewTest(FacebookTest):
     fixtures = ['users.json']
-    
+
     def test_connect(self):
         request = RequestMock().get('/')
         request.session = {}
@@ -96,7 +101,7 @@ class UserConnectTest(FacebookTest):
         request = RequestMock().get('/')
         request.session = {}
         request.user = AnonymousUser()
-        
+
         graph = get_facebook_graph(access_token='short_username')
         FacebookUserConverter(graph)
         action, user = connect_user(self.request, facebook_graph=graph)
@@ -208,7 +213,7 @@ class UserConnectTest(FacebookTest):
         action, user = connect_user(self.request, facebook_graph=facebook)
         # The test form always sets username to test form
         self.assertEqual(user.username, 'Test form')
-        
+
     def test_connect_page(self):
         url = reverse('facebook_connect')
         c = Client()
@@ -241,7 +246,7 @@ class ErrorMappingTest(FacebookTest):
     def test_mapping(self):
         from open_facebook import exceptions as open_facebook_exceptions
         raise_something = partial(FacebookConnection.raise_error, 0,
-                                  "(#200) The user hasn't authorized the " \
+                                  "(#200) The user hasn't authorized the "
                                   "application to perform this action")
         self.assertRaises(open_facebook_exceptions.PermissionException,
                           raise_something)
@@ -296,5 +301,3 @@ class SignalTest(FacebookTest):
                                  'pre_update_signal'), True)
         self.assertEqual(hasattr(user.get_profile(),
                                  'post_update_signal'), True)
-
-

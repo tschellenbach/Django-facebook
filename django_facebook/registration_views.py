@@ -18,13 +18,13 @@ def register(request):
             new_user = backend.register(request, **form.cleaned_data)
             response = backend.post_registration_redirect(request, new_user)
             #keep the post behaviour exactly the same as django facebook
-            
+
             return response
     else:
         form = form_class()
-    
+
     context = RequestContext(request)
     context['form'] = form
     response = render_to_response(template_name, context_instance=context)
-    
+
     return response

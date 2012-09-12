@@ -32,7 +32,8 @@ class BaseFacebookProfileModel(models.Model):
     website_url = models.TextField(blank=True, null=True)
     blog_url = models.TextField(blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
-    gender = models.CharField(max_length=1, choices=(('m', 'Male'), ('f', 'Female')), blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=(
+        ('m', 'Male'), ('f', 'Female')), blank=True, null=True)
     raw_data = models.TextField(blank=True, null=True)
 
     def __unicode__(self):
@@ -60,7 +61,7 @@ class BaseFacebookProfileModel(models.Model):
         response.set_cookie('fresh_registration', self.user_id)
 
         return response
-    
+
     def disconnect_facebook(self):
         self.access_token = None
         self.facebook_id = None
@@ -110,14 +111,14 @@ class FacebookProfileModel(BaseFacebookProfileModel):
     '''
     the image field really destroys the subclassability of an abstract model
     you always need to customize the upload settings and storage settings
-    
+
     thats why we stick it in a separate class
-    
+
     override the BaseFacebookProfile if you want to change the image
     '''
     image = models.ImageField(blank=True, null=True,
-        upload_to=PROFILE_IMAGE_PATH, max_length=255)
-    
+                              upload_to=PROFILE_IMAGE_PATH, max_length=255)
+
     class Meta:
         abstract = True
 
@@ -131,13 +132,14 @@ class FacebookUser(models.Model):
     user_id = models.IntegerField()
     facebook_id = models.BigIntegerField()
     name = models.TextField(blank=True, null=True)
-    gender = models.CharField(choices=(('F', 'female'), ('M', 'male')), blank=True, null=True, max_length=1)
+    gender = models.CharField(choices=(
+        ('F', 'female'), ('M', 'male')), blank=True, null=True, max_length=1)
 
     objects = model_managers.FacebookUserManager()
 
     class Meta:
         unique_together = ['user_id', 'facebook_id']
-        
+
     def __unicode__(self):
         return u'Facebook user %s' % self.name
 
@@ -156,13 +158,13 @@ class FacebookLike(models.Model):
 
     class Meta:
         unique_together = ['user_id', 'facebook_id']
-        
+
 
 class FacebookProfile(FacebookProfileModel):
     '''
     Not abstract version of the facebook profile model
     Use this by setting
-    AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile' 
+    AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile'
     '''
     user = models.OneToOneField('auth.User')
 
@@ -242,7 +244,7 @@ class CreatedAtAbstractBase(BaseModel):
         '''
         if self.auto_clean:
             self.clean()
-        saved = models.Model.save(self, *args, **kwargs) 
+        saved = models.Model.save(self, *args, **kwargs)
         return saved
 
     def __unicode__(self):
@@ -303,7 +305,8 @@ class OpenGraphShare(CreatedAtAbstractBase):
     #completion data
     completed_at = models.DateTimeField(blank=True, null=True)
     error_message = models.TextField(blank=True, null=True)
-    last_attempt = models.DateTimeField(blank=True, null=True, auto_now_add=True)
+    last_attempt = models.DateTimeField(
+        blank=True, null=True, auto_now_add=True)
     share_id = models.CharField(blank=True, null=True, max_length=255)
 
     def save(self, *args, **kwargs):
@@ -324,7 +327,8 @@ class OpenGraphShare(CreatedAtAbstractBase):
 
         #start sharing
         if graph and user_enabled:
-            graph_location = '%s/%s' % (self.facebook_user_id, self.action_domain)
+            graph_location = '%s/%s' % (
+                self.facebook_user_id, self.action_domain)
             share_dict = self.get_share_dict()
             from open_facebook.exceptions import OpenFacebookException
             try:
@@ -353,13 +357,13 @@ class OpenGraphShare(CreatedAtAbstractBase):
     def set_share_dict(self, share_dict):
         share_dict_string = json.encode(share_dict)
         self.share_dict = share_dict_string
-    
+
     def get_share_dict(self):
         share_dict_string = self.share_dict
         share_dict = json.decode(share_dict_string)
         return share_dict
-    
-    
+
+
 class FacebookInvite(CreatedAtAbstractBase):
     from django.contrib.auth.models import User
     user = models.ForeignKey(User)
@@ -371,18 +375,21 @@ class FacebookInvite(CreatedAtAbstractBase):
     wallpost_id = models.CharField(blank=True, null=True, max_length=255)
     error = models.BooleanField(default=False)
     error_message = models.TextField(blank=True, null=True)
-    last_attempt = models.DateTimeField(blank=True, null=True, auto_now_add=True)
-    
+    last_attempt = models.DateTimeField(
+        blank=True, null=True, auto_now_add=True)
+
     #reminder data
-    reminder_wallpost_id = models.CharField(blank=True, null=True, max_length=255)
+    reminder_wallpost_id = models.CharField(
+        blank=True, null=True, max_length=255)
     reminder_error = models.BooleanField(default=False)
     reminder_error_message = models.TextField(blank=True, null=True)
-    reminder_last_attempt = models.DateTimeField(blank=True, null=True, auto_now_add=True)
+    reminder_last_attempt = models.DateTimeField(
+        blank=True, null=True, auto_now_add=True)
 
     def __unicode__(self):
         message = 'user %s invited fb id %s' % (self.user, self.user_invited)
         return message
-    
+
     def resend(self, graph=None):
         from django_facebook.invite import post_on_profile
         if not graph:
@@ -390,10 +397,9 @@ class FacebookInvite(CreatedAtAbstractBase):
             if not graph:
                 return
         facebook_id = self.user_invited
-        invite_result = post_on_profile(self.user, graph, facebook_id, self.message, force_send=True)
+        invite_result = post_on_profile(
+            self.user, graph, facebook_id, self.message, force_send=True)
         return invite_result
-    
+
     class Meta:
         unique_together = ('user', 'user_invited')
-    
-
