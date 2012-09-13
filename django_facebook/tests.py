@@ -14,6 +14,7 @@ from django_facebook.utils import cleanup_oauth_url, get_profile_class
 from functools import partial
 from open_facebook.api import FacebookConnection, FacebookAuthorization
 import logging
+from mock import patch
 
 
 logger = logging.getLogger(__name__)
@@ -87,16 +88,70 @@ class UserConnectViewTest(FacebookTest):
     def test_connect(self):
         '''
         Test if we can do logins
+        django_facebook.connect.connect_user
         '''
-        return
+        user = User.objects.all()[:1][0]
+        register_action = CONNECT_ACTIONS.REGISTER
         url = reverse('facebook_connect')
+
+        #see if the basics don't give errors
+        response = self.client.get('%s?facebook_login=a' % url)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('%s?facebook_login=0' % url)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('%s?facebook_login=' % url)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        post_data = dict(access_token='short_username', next='%s?redirected=1' % url, facebook_login=1)
-        response = self.client.post(url, post_data)
-        self.assertEqual(response.context['action'], CONNECT_ACTIONS.LOGIN)
-        self.assertEqual(response.status_code, 302)
-        #assert '?redirected=1' in response.redirect_chain[0][0]
+
+        #test registration flow
+        from django_facebook.connect import connect_user
+        with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.REGISTER, user)) as wrapped_connect:
+            post_data = dict(access_token='short_username',
+                             next='%s?redirected=1' % url, facebook_login=1)
+            response = self.client.post(url, post_data, follow=True)
+            self.assertEqual(wrapped_connect.call_count, 1)
+            assert '?redirected=1' in response.redirect_chain[0][0]
+            self.assertEqual(response.status_code, 200)
+
+        #user register next instead of next
+        with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.REGISTER, user)) as wrapped_connect:
+            post_data = dict(access_token='short_username', register_next='%s?redirected=1' % url, facebook_login=1)
+            response = self.client.post(url, post_data, follow=True)
+            self.assertEqual(wrapped_connect.call_count, 1)
+            assert '?redirected=1' in response.redirect_chain[0][0]
+            self.assertEqual(response.status_code, 200)
+
+        #test login
+        with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.LOGIN, user)) as wrapped_connect:
+            post_data = dict(access_token='short_username',
+                             next='%s?loggggg=1' % url, facebook_login=1)
+            response = self.client.post(url, post_data, follow=True)
+            self.assertEqual(wrapped_connect.call_count, 1)
+            assert '?loggggg=1' in response.redirect_chain[0][0]
+            self.assertEqual(response.status_code, 200)
+
+        #test connect
+        with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.CONNECT, user)) as wrapped_connect:
+            post_data = dict(access_token='short_username',
+                             next='%s?loggggg=1' % url, facebook_login=1)
+            response = self.client.post(url, post_data, follow=True)
+            self.assertEqual(wrapped_connect.call_count, 1)
+            assert '?loggggg=1' in response.redirect_chain[0][0]
+            self.assertEqual(response.status_code, 200)
+
+        #test connect
+        from django_facebook import exceptions as facebook_exceptions
+        profile_error = facebook_exceptions.IncompleteProfileError()
+        profile_error.form = None
+        with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.REGISTER, user), side_effect=profile_error) as wrapped_connect:
+            post_data = dict(access_token='short_username',
+                             next='%s?loggggg=1' % url, facebook_login=1)
+            response = self.client.post(url, post_data, follow=True)
+            self.assertEqual(wrapped_connect.call_count, 1)
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.context)
+            assert response.template.name in facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE or response.template.name == facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE
 
 
 class UserConnectTest(FacebookTest):

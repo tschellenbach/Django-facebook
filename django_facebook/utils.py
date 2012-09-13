@@ -289,6 +289,22 @@ def to_int(input, default=0, exception=(ValueError, TypeError), regexp=None):
         return default
 
 
+def to_bool(input, default=False):
+    '''
+    Take a request value and turn it into a bool
+    Never raises errors
+    '''
+    if input is None:
+        value = default
+    else:
+        int_value = to_int(input, default=None)
+        if int_value is None:
+            value = default
+        else:
+            value = bool(int_value)
+    return value
+
+
 def remove_query_param(url, key):
     p = re.compile('%s=[^=&]*&' % key, re.VERBOSE)
     url = p.sub('', url)

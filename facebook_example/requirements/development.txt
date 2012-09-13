@@ -2,3 +2,4 @@ django>=1.3
 django_facebook
 south
 PIL
+mock

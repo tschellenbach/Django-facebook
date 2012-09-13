@@ -13,10 +13,9 @@ from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings
 from django_facebook.api import get_persistent_graph, FacebookUserConverter, \
     require_persistent_graph
-from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
 from django_facebook.utils import next_redirect, get_registration_backend,\
-    replication_safe
+    replication_safe, to_bool
 from django_facebook.decorators import (facebook_required,
                                         facebook_required_lazy)
 from open_facebook.utils import send_warning
@@ -80,19 +79,20 @@ def connect(request):
     backend = get_registration_backend()
     context = RequestContext(request)
 
-    assert context.get('FACEBOOK_APP_ID'), 'Please specify a facebook app id '\
+    #validation to ensure the context processor is enabled
+    assert context.get('FACEBOOK_APP_ID'), 'Please specify a Facebook app id '\
         'and ensure the context processor is enabled'
-    facebook_login = bool(int(request.REQUEST.get('facebook_login', 0)))
+    facebook_login = to_bool(request.REQUEST.get('facebook_login'))
 
     if facebook_login:
-        logger.info('trying to connect using facebook')
+        logger.info('trying to connect using Facebook')
         graph = require_persistent_graph(request)
         if graph:
             logger.info('found a graph object')
             facebook = FacebookUserConverter(graph)
 
             if facebook.is_authenticated():
-                logger.info('facebook is authenticated')
+                logger.info('Facebook is authenticated')
                 facebook_data = facebook.facebook_profile_data()
                 #either, login register or connect the user
                 try:
