@@ -134,7 +134,8 @@ class UserConnectViewTest(FacebookTest):
         url = reverse('facebook_connect')
 
         #test super slow Facebook
-        errors = [SSLError(), URLError('<urlopen error _ssl.c:489: The handshake operation timed out>')]
+        errors = [SSLError(), URLError(
+            '<urlopen error _ssl.c:489: The handshake operation timed out>')]
         for error in errors:
             with patch('django_facebook.views.FacebookUserConverter') as converter:
                 instance = converter.return_value
@@ -191,7 +192,7 @@ class UserConnectTest(FacebookTest):
         self.request.user = AnonymousUser()
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
-        
+
     def test_parallel_register(self):
         '''
         Adding some testing for the case when one person tries to register
@@ -205,17 +206,17 @@ class UserConnectTest(FacebookTest):
         self.request.user.is_authenticated = lambda: False
         with patch('django_facebook.connect.authenticate') as patched:
             return_sequence = [user, None]
-            
+
             def side(*args, **kwargs):
                 value = return_sequence.pop()
                 return value
-            
+
             patched.side_effect = side
             with patch('django_facebook.connect._register_user') as patched_register:
                 patched_register.side_effect = facebook_exceptions.AlreadyRegistered('testing parallel registers')
                 action, user = connect_user(self.request, facebook_graph=graph)
                 self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
-        
+
     def test_utf8(self):
         graph = get_facebook_graph(access_token='unicode_string')
         facebook = FacebookUserConverter(graph)

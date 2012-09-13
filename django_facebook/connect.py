@@ -79,12 +79,13 @@ def connect_user(request, access_token=None, facebook_graph=None):
             # when force registration is active we should remove the old profile
             try:
                 user = _register_user(request, facebook,
-                                    remove_old_connections=force_registration)
+                                      remove_old_connections=force_registration)
             except facebook_exceptions.AlreadyRegistered, e:
                 #in Multithreaded environments it's possible someone beats us to
                 #the punch, in that case just login
                 logger.info('parallel register encountered, slower thread is doing a login')
-                auth_user = authenticate(facebook_id=facebook_data['id'], **kwargs)
+                auth_user = authenticate(
+                    facebook_id=facebook_data['id'], **kwargs)
                 action = CONNECT_ACTIONS.LOGIN
                 user = _login_user(request, facebook, auth_user, update=False)
 
