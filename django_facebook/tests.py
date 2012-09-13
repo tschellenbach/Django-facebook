@@ -18,6 +18,7 @@ from mock import patch
 from mock import Mock
 from ssl import SSLError
 from urllib2 import URLError
+from django_facebook import exceptions as facebook_exceptions
 
 
 logger = logging.getLogger(__name__)
@@ -52,37 +53,6 @@ class ExtendTokenTest(LiveFacebookTest):
         results = FacebookAuthorization.extend_access_token(access_token)
         if 'access_token' not in results:
             raise ValueError('we didnt get a fresh token')
-
-
-class ConnectViewTest(LiveFacebookTest):
-    def test_register(self):
-        return 'currently this doesnt work reliably with the live facebook api'
-        #setup the test user
-        permissions = facebook_settings.FACEBOOK_DEFAULT_SCOPE
-        app_access_token = FacebookAuthorization.get_cached_app_access_token()
-        test_user = FacebookAuthorization.get_or_create_test_user(
-            app_access_token, permissions)
-
-        #test the connect view in the registration mode (empty db)
-        c = Client()
-        url = reverse('facebook_connect')
-        access_token = test_user.access_token
-        response = c.get(
-            url, {'facebook_login': '1', 'access_token': access_token})
-        self.assertEqual(response.status_code, 302)
-        user = User.objects.all().order_by('-id')[:1][0]
-        profile = user.get_profile()
-        self.assertEqual(access_token, profile.access_token)
-
-        #test the login flow
-        response = c.get(
-            url, {'facebook_login': '1', 'access_token': access_token})
-        self.assertEqual(response.status_code, 302)
-        new_user = User.objects.all().order_by('-id')[:1][0]
-        new_profile = user.get_profile()
-        self.assertEqual(access_token, new_profile.access_token)
-
-        self.assertEqual(user, new_user)
 
 
 class UserConnectViewTest(FacebookTest):
@@ -221,7 +191,26 @@ class UserConnectTest(FacebookTest):
         self.request.user = AnonymousUser()
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
+        
+    def test_parallel_register(self):
+        #going for a register, connect and login
+        graph = get_facebook_graph(access_token='short_username')
+        FacebookUserConverter(graph)
+        action, user = connect_user(self.request, facebook_graph=graph)
+        self.assertEqual(action, CONNECT_ACTIONS.REGISTER)
 
+        self.request.user.is_authenticated = lambda: False
+        with patch('django_facebook.connect.authenticate') as patched:
+            return_sequence = [user, None]
+            def side(*args, **kwargs):
+                value = return_sequence.pop()
+                return value
+            patched.side_effect = side
+            with patch('django_facebook.connect._register_user') as patched_register:
+                patched_register.side_effect = facebook_exceptions.AlreadyRegistered('testing parallel registers')
+                action, user = connect_user(self.request, facebook_graph=graph)
+                self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
+        
     def test_utf8(self):
         graph = get_facebook_graph(access_token='unicode_string')
         facebook = FacebookUserConverter(graph)

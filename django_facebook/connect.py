@@ -1,22 +1,20 @@
-import logging
-from random import randint
-import sys
-
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
+from django.core.files.temp import NamedTemporaryFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.utils import simplejson as json
-
-from django_facebook import settings as facebook_settings
-from django_facebook import exceptions as facebook_exceptions
-from django_facebook import signals
+from django_facebook import exceptions as facebook_exceptions, \
+    settings as facebook_settings, signals
 from django_facebook.api import get_facebook_graph, FacebookUserConverter
-from django_facebook.utils import (get_registration_backend, get_form_class,
-                                   get_profile_class)
+from django_facebook.utils import get_registration_backend, get_form_class, \
+    get_profile_class, to_bool
+from random import randint
+import logging
+import sys
 import urllib2
-from django.core.files.temp import NamedTemporaryFile
-from django.core.files.uploadedfile import InMemoryUploadedFile
+
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +47,7 @@ def connect_user(request, access_token=None, facebook_graph=None):
     force_registration = request.REQUEST.get('force_registration') or\
         request.REQUEST.get('force_registration_hard')
 
-    connect_facebook = bool(int(request.REQUEST.get('connect_facebook', 0)))
+    connect_facebook = to_bool(request.REQUEST.get('connect_facebook'))
 
     logger.debug('force registration is set to %s', force_registration)
     if connect_facebook and request.user.is_authenticated() and not force_registration:
@@ -71,17 +69,24 @@ def connect_user(request, access_token=None, facebook_graph=None):
             # Has the user registered without Facebook, using the verified FB
             # email address?
             # It is after all quite common to use email addresses for usernames
+            update = getattr(auth_user, 'fb_update_required', False)
             if not auth_user.get_profile().facebook_id:
                 update = True
-            else:
-                update = getattr(auth_user, 'fb_update_required', False)
+            #login the user
             user = _login_user(request, facebook, auth_user, update=update)
         else:
             action = CONNECT_ACTIONS.REGISTER
-            # when force registration is active we should clearout
-            # the old profile
-            user = _register_user(request, facebook,
-                                  remove_old_connections=force_registration)
+            # when force registration is active we should remove the old profile
+            try:
+                user = _register_user(request, facebook,
+                                    remove_old_connections=force_registration)
+            except facebook_exceptions.AlreadyRegistered, e:
+                #in Multithreaded environments it's possible someone beats us to
+                #the punch, in that case just login
+                logger.info('parallel register encountered, slower thread is doing a login')
+                auth_user = authenticate(facebook_id=facebook_data['id'], **kwargs)
+                action = CONNECT_ACTIONS.LOGIN
+                user = _login_user(request, facebook, auth_user, update=False)
 
     _update_likes_and_friends(request, user, facebook)
 
@@ -204,17 +209,22 @@ def _register_user(request, facebook, profile_callback=None,
         error.form = form
         raise error
 
-    #for new registration systems use the backends methods of saving
-    new_user = None
-    if backend:
-        new_user = backend.register(request, **form.cleaned_data)
-    #fall back to the form approach
-    if not new_user:
-        # For backward compatibility, if django-registration form is used
-        try:
-            new_user = form.save(profile_callback=profile_callback)
-        except TypeError:
-            new_user = form.save()
+    try:
+        #for new registration systems use the backends methods of saving
+        new_user = None
+        if backend:
+            new_user = backend.register(request, **form.cleaned_data)
+        #fall back to the form approach
+        if not new_user:
+            # For backward compatibility, if django-registration form is used
+            try:
+                new_user = form.save(profile_callback=profile_callback)
+            except TypeError:
+                new_user = form.save()
+    except IntegrityError, e:
+        #this happens when users click multiple times, the first request registers
+        #the second one raises an error
+        raise facebook_exceptions.AlreadyRegistered(e)
 
     signals.facebook_user_registered.send(sender=auth.models.User,
                                           user=new_user, facebook_data=facebook_data)
