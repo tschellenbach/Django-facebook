@@ -14,6 +14,7 @@ postgres:
   database: django_fb_test
 install:
   - pip install pep8 --use-mirrors
+  - pip install coverage
   - pip install https://github.com/dcramer/pyflakes/tarball/master
   - python setup.py install
   - pip install -r facebook_example/requirements/$REQUIREMENTS.txt --use-mirrors -I
@@ -24,4 +25,5 @@ before_script:
 script:
   - pip install -e .
   - cd facebook_example
-  - python manage.py test $TESTS --settings=$SETTINGS
+  - coverage run manage.py test $TESTS --settings=$SETTINGS
+  - coverage report
