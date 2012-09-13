@@ -108,7 +108,10 @@ class FacebookConnection(object):
                     response_file = opener.open(url, post_string,
                                                 timeout=timeout)
                 except (urllib2.HTTPError,), e:
-                    # catch the silly status code errors
+                    # Facebook sents error codes for many of their flows
+                    # we still want the json to allow for proper handling
+                    if hasattr(e, 'code') and e.code == 500:
+                        raise urllib2.URLError('Facebook is down')
                     if 'http error' in str(e).lower():
                         response_file = e
                     else:
