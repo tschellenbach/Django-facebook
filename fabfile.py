@@ -1,11 +1,11 @@
 from fabric.api import local
 
 
-def publish(validate='yes'):
+def publish(test='yes'):
     '''
     Easy publishing of my nice open source project
     '''
-    if validate == 'yes':
+    if test == 'yes':
         validate()
 
     local('git push')
