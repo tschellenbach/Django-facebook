@@ -22,6 +22,7 @@ from open_facebook.utils import send_warning
 from open_facebook.exceptions import OpenFacebookException
 from django.shortcuts import redirect
 from ssl import SSLError
+from urllib2 import URLError
 
 
 logger = logging.getLogger(__name__)
@@ -90,10 +91,10 @@ def connect(request):
 
     try:
         response = _connect(request, facebook_login)
-    except SSLError, e:
+    except (SSLError, URLError), e:
         #often triggered when Facebook is slow
-        warning_format = u'SSLError, often cause by Facebook slowdown, error %s'
-        warn_message = warning_format % e.message
+        warning_format = u'%s, often caused by Facebook slowdown, error %s'
+        warn_message = warning_format % (type(e), e.message)
         send_warning(warn_message, e=e)
         response = error_next_redirect(request,
                                        additional_params=dict(
