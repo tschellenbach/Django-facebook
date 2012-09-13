@@ -91,7 +91,6 @@ class UserConnectViewTest(FacebookTest):
         django_facebook.connect.connect_user
         '''
         user = User.objects.all()[:1][0]
-        register_action = CONNECT_ACTIONS.REGISTER
         url = reverse('facebook_connect')
 
         #see if the basics don't give errors
@@ -152,6 +151,31 @@ class UserConnectViewTest(FacebookTest):
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context)
             assert response.template.name in facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE or response.template.name == facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE
+
+    def test_slow_connect(self):
+        '''
+        Test if we can do logins
+        django_facebook.connect.connect_user
+        '''
+        user = User.objects.all()[:1][0]
+        url = reverse('facebook_connect')
+
+        #test super slow facebook
+        from ssl import SSLError
+        from mock import Mock
+        error = SSLError()
+        with patch('django_facebook.views.FacebookUserConverter') as converter:
+            instance = converter.return_value
+            instance.is_authenticated = Mock(side_effect=error)
+            
+            post_data = dict(access_token='short_username',
+                             next='%s?loggggg=1' % url, facebook_login=1)
+            response = self.client.post(url, post_data, follow=True)
+            
+            #assert equal checks
+            self.assertEqual(instance.is_authenticated.call_count, 1)
+            self.assertTrue(response.context)
+            assert '?loggggg=1' in response.redirect_chain[0][0]
 
 
 class UserConnectTest(FacebookTest):

@@ -102,6 +102,17 @@ def response_redirect(redirect_url, canvas=False):
     return HttpResponseRedirect(redirect_url)
 
 
+def error_next_redirect(request, default='/', additional_params=None, next_key=None, redirect_url=None, canvas=False):
+    '''
+    Short cut for an error next redirect
+    '''
+    if not next_key:
+        next_key = ['error_next', 'next']
+    
+    redirect = next_redirect(request, default, additional_params, next_key, redirect_url, canvas)
+    return redirect
+
+
 def next_redirect(request, default='/', additional_params=None,
                   next_key='next', redirect_url=None, canvas=False):
     from django_facebook import settings as facebook_settings
