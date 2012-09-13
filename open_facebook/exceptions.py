@@ -93,8 +93,8 @@ class AliasException(OpenFacebookException):
     instead of a 404....
     '''
     codes = 803
-    
-    
+
+
 class ParseException(OpenFacebookException):
     '''
     Anything preventing us from parsing the Facebook response
