@@ -194,31 +194,6 @@ def disconnect(request):
     return response
 
 
-def connect_async_ajax(request):
-    '''
-    Not yet implemented:
-    The idea is to run the entire connect flow on the background using celery
-    Freeing up webserver resources, when facebook has issues
-    '''
-    from django_facebook import tasks as facebook_tasks
-    graph = get_persistent_graph(request)
-    output = {}
-    if graph:
-        FacebookUserConverter(graph)
-        task = facebook_tasks.async_connect_user(request, graph)
-        output['task_id'] = task.id
-    from open_facebook.utils import json
-    json_dump = json.dumps(output)
-    return HttpResponse(json_dump)
-
-
-def poll_connect_task(request, task_id):
-    '''
-    Not yet implemented
-    '''
-    pass
-
-
 @facebook_required_lazy(canvas=True)
 def canvas(request):
     '''
@@ -232,30 +207,3 @@ def canvas(request):
     context['likes'] = likes
 
     return render_to_response('django_facebook/canvas.html', context)
-
-
-@facebook_required_lazy(canvas=True)
-def page_tab(request):
-    '''
-    Example of a canvas page.
-    Canvas pages require redirects to work using javascript instead of http headers
-    The facebook required and facebook required lazy decorator abstract this away
-    '''
-    context = RequestContext(request)
-    facebook = require_persistent_graph(request)
-    likes = facebook.get('me/likes')['data']
-    context['likes'] = likes
-    from user.models import FacebookPageTab
-
-    signed_request = request.REQUEST.get('signed_request')
-
-    data = facebook.prefetched_data
-    page_id = data['page']['id']
-    defaults = dict(created_by_user=data['user_id'])
-    tab, created = FacebookPageTab.objects.get_or_create(
-        page_id=page_id, defaults=defaults)
-    context['facebook'] = facebook
-
-    raise Exception(tab)
-
-    return render_to_response('django_facebook/page_tab.html', context)
