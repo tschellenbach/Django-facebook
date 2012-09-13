@@ -167,11 +167,11 @@ class UserConnectViewTest(FacebookTest):
         with patch('django_facebook.views.FacebookUserConverter') as converter:
             instance = converter.return_value
             instance.is_authenticated = Mock(side_effect=error)
-            
+
             post_data = dict(access_token='short_username',
                              next='%s?loggggg=1' % url, facebook_login=1)
             response = self.client.post(url, post_data, follow=True)
-            
+
             #assert equal checks
             self.assertEqual(instance.is_authenticated.call_count, 1)
             self.assertTrue(response.context)

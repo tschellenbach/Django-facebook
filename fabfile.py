@@ -7,7 +7,7 @@ def publish(validate='yes'):
     '''
     if validate == 'yes':
         validate()
-    
+
     local('git push')
 
     from django_facebook import __version__
@@ -21,8 +21,8 @@ def publish(validate='yes'):
 def validate():
     local('pep8 --exclude=migrations --ignore=E501,E225 django_facebook open_facebook')
     local('facebook_example\manage.py test django_facebook')
-    
-    
+
+
 def clean():
     local('autopep8 -i *.py')
     local('autopep8 -i django_facebook/*.py')

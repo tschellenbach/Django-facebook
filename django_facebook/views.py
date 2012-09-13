@@ -83,11 +83,11 @@ def connect(request):
     if not context.get('FACEBOOK_APP_ID'):
         message = 'Please specify a Facebook app id and ensure the context processor is enabled'
         raise ValueError(message)
-    
+
     #hide the connect page, convenient for testing with new users in production though
     if not facebook_login and not settings.DEBUG and facebook_settings.FACEBOOK_HIDE_CONNECT_TEST:
         raise Http404('not showing the connect page')
-    
+
     try:
         response = _connect(request, facebook_login)
     except SSLError, e:
@@ -96,9 +96,10 @@ def connect(request):
         warn_message = warning_format % e.message
         send_warning(warn_message, e=e)
         response = error_next_redirect(request,
-            additional_params=dict(fb_error_or_cancel=1)
-        )
-    
+                                       additional_params=dict(
+                                           fb_error_or_cancel=1)
+                                       )
+
     return response
 
 
@@ -161,7 +162,7 @@ def _connect(request, facebook_login):
                         to, args, kwargs = response
                         response = redirect(to, *args, **kwargs)
                     return response
-        
+
         #either redirect to error next or raise an error (caught by the decorator and going into a retry
         if not authenticated:
             if 'attempt' in request.GET:

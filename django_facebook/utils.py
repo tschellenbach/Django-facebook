@@ -108,8 +108,9 @@ def error_next_redirect(request, default='/', additional_params=None, next_key=N
     '''
     if not next_key:
         next_key = ['error_next', 'next']
-    
-    redirect = next_redirect(request, default, additional_params, next_key, redirect_url, canvas)
+
+    redirect = next_redirect(
+        request, default, additional_params, next_key, redirect_url, canvas)
     return redirect
 
 
