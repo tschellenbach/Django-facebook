@@ -193,7 +193,10 @@ class UserConnectTest(FacebookTest):
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
         
     def test_parallel_register(self):
-        #going for a register, connect and login
+        '''
+        Adding some testing for the case when one person tries to register
+        multiple times in the same second
+        '''
         graph = get_facebook_graph(access_token='short_username')
         FacebookUserConverter(graph)
         action, user = connect_user(self.request, facebook_graph=graph)
@@ -202,9 +205,11 @@ class UserConnectTest(FacebookTest):
         self.request.user.is_authenticated = lambda: False
         with patch('django_facebook.connect.authenticate') as patched:
             return_sequence = [user, None]
+            
             def side(*args, **kwargs):
                 value = return_sequence.pop()
                 return value
+            
             patched.side_effect = side
             with patch('django_facebook.connect._register_user') as patched_register:
                 patched_register.side_effect = facebook_exceptions.AlreadyRegistered('testing parallel registers')
