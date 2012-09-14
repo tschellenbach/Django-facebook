@@ -157,12 +157,16 @@ def _update_access_token(user, graph):
     profile = user.get_profile()
     #store the access token for later usage if the profile model supports it
     if hasattr(profile, 'access_token'):
-        # only update the access token if it is long lived or we are set to store all
-        if not graph.expires or facebook_settings.FACEBOOK_STORE_ALL_ACCESS_TOKENS:
-            # and not equal to the current token
-            if graph.access_token != profile.access_token:
-                profile.access_token = graph.access_token
-                profile.save()
+        # update if not equal to the current token
+        new_token = graph.access_token != profile.access_token
+        token_message = 'a new' if new_token else 'the same'
+        logger.info('found %s token', token_message)
+        if new_token:
+            logger.info('access token changed, updating now')
+            profile.access_token = graph.access_token
+            profile.save()
+            #see if we can extend the access token
+            profile.extend_access_token()
 
 
 def _register_user(request, facebook, profile_callback=None,

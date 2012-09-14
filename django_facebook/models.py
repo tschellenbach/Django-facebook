@@ -79,6 +79,7 @@ class BaseFacebookProfileModel(models.Model):
 
         The token can be extended multiple times, supposedly on every visit
         '''
+        logger.info('extending access token for user %s', self.user)
         results = None
         if facebook_settings.FACEBOOK_CELERY_TOKEN_EXTEND:
             from django_facebook import tasks
@@ -90,9 +91,16 @@ class BaseFacebookProfileModel(models.Model):
     def _extend_access_token(self, access_token):
         from open_facebook.api import FacebookAuthorization
         results = FacebookAuthorization.extend_access_token(access_token)
-        access_token, expires = results['access_token'], results['expires']
-        self.access_token = access_token
-        self.save()
+        access_token, expires = results['access_token'], int(results['expires'])
+        new_token = access_token != self.access_token
+        message = 'a new' if new_token else 'the same'
+        log_format = 'Facebook provided %s token, which expires at %s'
+        expires_delta = datetime.timedelta(seconds=expires)
+        logger.info(log_format, message, expires_delta)
+        if new_token:
+            logger.info('Saving the new access token')
+            self.access_token = access_token
+            self.save()
         return results
 
     def get_offline_graph(self):

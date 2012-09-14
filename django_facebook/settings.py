@@ -32,8 +32,6 @@ FACEBOOK_CELERY_TOKEN_EXTEND = getattr(
     settings, 'FACEBOOK_CELERY_TOKEN_EXTEND', False)
 
 FACEBOOK_DEBUG_REDIRECTS = getattr(settings, 'FACEBOOK_DEBUG_REDIRECTS', False)
-FACEBOOK_STORE_ALL_ACCESS_TOKENS = getattr(
-    settings, 'FACEBOOK_STORE_ALL_ACCESS_TOKENS', False)
 
 #READ only mode, convenient when doing load testing etc.
 FACEBOOK_READ_ONLY = getattr(settings, 'FACEBOOK_READ_ONLY', False)
