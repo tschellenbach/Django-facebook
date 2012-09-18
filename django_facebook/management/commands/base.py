@@ -15,8 +15,8 @@ class CustomBaseCommand(BaseCommand):
     '''
     Management command with a convenient self.log.info shortcut allowing for
     easy logging
-    
-    Listens to the verbosity command given to the management command 
+
+    Listens to the verbosity command given to the management command
     '''
     def __init__(self, session=None):
         self._session = session
