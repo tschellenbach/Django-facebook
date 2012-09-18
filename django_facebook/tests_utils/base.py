@@ -27,7 +27,7 @@ class FacebookTest(TestCase):
     Normal Facebook tests run against a fake API
     '''
     def setUp(self):
-        from django_facebook.tests_utils.mock_official_sdk import MockFacebookAPI, MockFacebookAuthorization 
+        from django_facebook.tests_utils.mock_official_sdk import MockFacebookAPI, MockFacebookAuthorization
         from open_facebook import api
         import open_facebook
         api.OpenFacebook = MockFacebookAPI
