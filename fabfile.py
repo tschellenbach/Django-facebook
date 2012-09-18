@@ -1,4 +1,7 @@
-from fabric.api import local
+from fabric.api import local, cd
+from facebook_example.settings import BASE_ROOT
+import os
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_ROOT, '../'))
 
 
 def publish(test='yes'):
@@ -19,8 +22,9 @@ def publish(test='yes'):
 
 
 def validate():
-    local('pep8 --exclude=migrations --ignore=E501,E225 django_facebook open_facebook')
-    local('facebook_example\manage.py test django_facebook')
+    with cd(PROJECT_ROOT):
+        local('pep8 --exclude=migrations --ignore=E501,E225 django_facebook open_facebook')
+        local('facebook_example\manage.py test django_facebook')
 
 
 def clean():

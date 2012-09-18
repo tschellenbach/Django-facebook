@@ -15,12 +15,12 @@ MANAGERS = ADMINS
 # Database config
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'django_fb_test', # Or path to database file if using sqlite3.
-        'USER': '', # Not used with sqlite3.
-        'PASSWORD': '', # Not used with sqlite3.
-        'HOST': '', # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '', # Set to empty string for default. Not used with sqlite3.
+        'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'django_fb_test',  # Or path to database file if using sqlite3.
+        'USER': '',  # Not used with sqlite3.
+        'PASSWORD': '',  # Not used with sqlite3.
+        'HOST': '',  # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',  # Set to empty string for default. Not used with sqlite3.
     }
 }
 
@@ -52,7 +52,6 @@ USE_L10N = True
 MEDIA_ROOT = os.path.join(BASE_ROOT, 'media/')
 
 
-
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
@@ -79,7 +78,7 @@ STATICFILES_DIRS = ()
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -89,7 +88,7 @@ MODE = 'standalone'
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+    #     'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -133,7 +132,8 @@ FACEBOOK_STORE_LIKES = True
 FACEBOOK_STORE_FRIENDS = True
 FACEBOOK_LOGIN_DEFAULT_REDIRECT = '/facebook/connect/'
 
-AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend', 'django_facebook.auth_backends.FacebookBackend',)
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',
+                           'django_facebook.auth_backends.FacebookBackend',)
 AUTH_PROFILE_MODULE = 'member.UserProfile'
 STATIC_URL = '/static/'
 ACCOUNT_ACTIVATION_DAYS = 10
@@ -162,23 +162,23 @@ LOGGING = {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler'
         },
-        'console':{
-            'level':'DEBUG',
-            'class':'logging.StreamHandler',
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
         },
     },
     'loggers': {
-        'open_facebook':{
+        'open_facebook': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'django_facebook':{
+        'django_facebook': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        'django.request':{
+        'django.request': {
             'handlers': ['console'],
             'level': 'ERROR',
             'propagate': True,
