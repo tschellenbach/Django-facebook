@@ -49,7 +49,7 @@ def retry_open_graph_share_for_user(modeladmin, request, queryset):
     users = []
     for share in queryset:
         users.append(share.user)
-        
+
     users = list(set(users))
     for user in users:
         tasks.retry_open_graph_shares_for_user(user)
