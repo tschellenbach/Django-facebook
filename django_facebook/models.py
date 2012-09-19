@@ -205,7 +205,7 @@ class BaseModelMetaclass(ModelBase):
 
         app_label = super_new.__module__.split('.')[-2]
         db_table = '%s_%s' % (app_label, module_name)
-        
+
         django_default = '%s_%s' % (app_label, name.lower())
         if not getattr(super_new._meta, 'proxy', False):
             db_table_is_default = django_default == super_new._meta.db_table
@@ -300,7 +300,7 @@ class OpenGraphShare(BaseModel):
         share.set_share_dict(kwargs)
         share.save()
         result = share.send()
-        
+
     Using this model has the advantage that it allows us to
     - remove open graph shares (since we store the Facebook id)
     - retry open graph shares, which is handy in case of
@@ -330,11 +330,11 @@ class OpenGraphShare(BaseModel):
     #only written if we actually succeed
     share_id = models.CharField(blank=True, null=True, max_length=255)
     completed_at = models.DateTimeField(blank=True, null=True)
-    
+
     #updated at and created at, last one needs an index
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    
+
     class Meta:
         db_table = facebook_settings.FACEBOOK_OG_SHARE_DB_TABLE
 

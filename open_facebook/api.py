@@ -112,7 +112,7 @@ class FacebookConnection(object):
                     # Facebook sents error codes for many of their flows
                     # we still want the json to allow for proper handling
                     if hasattr(e, 'code') and e.code == 500:
-                        
+
                         raise urllib2.URLError('Facebook is down')
                     if 'http error' in str(e).lower():
                         response_file = e

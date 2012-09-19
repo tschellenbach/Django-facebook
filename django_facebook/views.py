@@ -171,7 +171,8 @@ def _connect(request, facebook_login):
             else:
                 logger.info('Facebook authentication needed for connect, '
                             'raising an error')
-                raise open_facebook_exceptions.OpenFacebookException('please authenticate')
+                raise open_facebook_exceptions.OpenFacebookException(
+                    'please authenticate')
 
         #for CONNECT and LOGIN we simple redirect to the next page
         return next_redirect(request, default=facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT)
