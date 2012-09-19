@@ -3,6 +3,7 @@ from django.core.cache import cache
 from django.db import models
 import operator
 import random
+import datetime
 
 
 class FacebookUserManager(models.Manager):
@@ -55,3 +56,19 @@ class FacebookUserManager(models.Manager):
             random_facebook_users = random.sample(non_members, random_limit)
 
         return random_facebook_users
+
+
+class OpenGraphShareManager(models.Manager):
+    def failed(self):
+        qs = self.filter(completed_at__isnull=True)
+        return qs
+    
+    def recently_failed(self):
+        from django_facebook import settings as facebook_settings
+        now = datetime.datetime.today()
+        recent = now - facebook_settings.FACEBOOK_OG_SHARE_RETRY_DAYS
+        failed = self.failed()
+        recently_failed = failed.filter(created_at__gte=recent)
+        return recently_failed
+    
+    

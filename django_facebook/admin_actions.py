@@ -40,5 +40,5 @@ def retry_facebook_invite(modeladmin, request, queryset):
 
 def retry_open_graph_share(modeladmin, request, queryset):
     for open_graph_share in queryset:
-        open_graph_share.send()
+        open_graph_share.retry()
         messages.info(request, 'resent share %s' % open_graph_share.id)

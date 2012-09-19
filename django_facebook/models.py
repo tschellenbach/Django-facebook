@@ -93,15 +93,22 @@ class BaseFacebookProfileModel(models.Model):
         results = FacebookAuthorization.extend_access_token(access_token)
         access_token, expires = results['access_token'], int(
             results['expires'])
-        new_token = access_token != self.access_token
-        message = 'a new' if new_token else 'the same'
+        old_token = self.access_token
+        token_changed = access_token != old_token
+        message = 'a new' if token_changed else 'the same'
         log_format = 'Facebook provided %s token, which expires at %s'
         expires_delta = datetime.timedelta(seconds=expires)
         logger.info(log_format, message, expires_delta)
-        if new_token:
+        if token_changed:
             logger.info('Saving the new access token')
             self.access_token = access_token
             self.save()
+            
+        from django_facebook.signals import facebook_token_extend_finished
+        facebook_token_extend_finished.send(sender=self, profile=self,
+            token_changed=token_changed, old_token=old_token
+        )
+            
         return results
 
     def get_offline_graph(self):
@@ -310,6 +317,8 @@ class OpenGraphShare(BaseModel):
       - Facebook outages (Facebook often has minor interruptions, retry in 15m,
         for max facebook_settings.FACEBOOK_OG_SHARE_RETRIES)
     '''
+    objects = model_managers.OpenGraphShareManager()
+    
     from django.contrib.auth.models import User
     user = models.ForeignKey(User)
 
@@ -365,7 +374,7 @@ class OpenGraphShare(BaseModel):
                 result = graph.set(graph_location, **share_dict)
                 share_id = result.get('id')
                 if not share_id:
-                    error_message = 'No id in facebook response, found %s for url %s with data %s' % (result, graph_location, share_dict)
+                    error_message = 'No id in Facebook response, found %s for url %s with data %s' % (result, graph_location, share_dict)
                     logger.error(error_message)
                     raise OpenFacebookException(error_message)
                 self.share_id = share_id
@@ -384,6 +393,19 @@ class OpenGraphShare(BaseModel):
             self.error_message = 'user not enabled'
             self.save()
 
+        return result
+    
+    def retry(self, graph=None, reset_retries=False):
+        if self.completed_at:
+            raise ValueError('You can\'t retry completed shares')
+        
+        if reset_retries:
+            self.retry_count = 0
+        #handle the case where self.retry_count = None
+        self.retry_count = self.retry_count + 1 if self.retry_count else 1
+            
+        #actually retry now
+        result = self.send(graph=graph)
         return result
 
     def set_share_dict(self, share_dict):

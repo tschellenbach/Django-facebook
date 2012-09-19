@@ -166,6 +166,7 @@ def _update_access_token(user, graph):
             profile.access_token = graph.access_token
             profile.save()
             #see if we can extend the access token
+            #this runs in a task, after extending the token we fire an event
             profile.extend_access_token()
 
 

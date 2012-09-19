@@ -22,3 +22,6 @@ user_registered = Signal(providing_args=["user", "request"])
 
 # A user has activated his or her account.
 user_activated = Signal(providing_args=["user", "request"])
+
+# A new user has registered.
+facebook_token_extend_finished = Signal(providing_args=["user", "request"])

@@ -97,13 +97,34 @@ def get_and_store_friends(user, facebook):
             'get_and_store_friends failed for %s with error %s', user.id, e)
 
 
-@task.task()
-def async_connect_user(request, graph):
+@task.task(ignore_result=True)
+def retry_open_graph_share(share, reset_retries=False):
     '''
-    Runs the whole connect flow in the background.
-    Saving your webservers from facebook fluctuations
+    We will retry open graph shares after 15m to make sure we dont miss out on any
+    shares if Facebook is having a minor outage
+    '''
+    logger.info('retrying open graph share %s', share)
+    share.retry(reset_retries=reset_retries)
+    
+    
+@task.task(ignore_result=True)
+def retry_open_graph_shares_for_user(user):
+    '''
+    We retry the open graph shares for a user when he gets a new access token
+    '''
+    from django_facebook.models import OpenGraphShare
+    logger.info('retrying shares for user %s', user)
+    shares = OpenGraphShare.objects.recently_failed().filter(user=user)
+    
+    for share in shares:
+        retry_open_graph_share(share, reset_retries=True)
 
-    Currently this has not yet been implemented.
-    It will be possible to run this command 1-N times
-    '''
-    pass
+
+def token_extended_connect(sender, profile, token_changed, old_token):
+    user = profile.user
+    retry_open_graph_shares_for_user.delay(user, countdown=60)
+    
+from django_facebook.signals import facebook_token_extend_finished
+facebook_token_extend_finished.connect(token_extended_connect)
+
+
