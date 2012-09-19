@@ -103,12 +103,12 @@ class BaseFacebookProfileModel(models.Model):
             logger.info('Saving the new access token')
             self.access_token = access_token
             self.save()
-            
+
         from django_facebook.signals import facebook_token_extend_finished
         facebook_token_extend_finished.send(sender=self, profile=self,
-            token_changed=token_changed, old_token=old_token
-        )
-            
+                                            token_changed=token_changed, old_token=old_token
+                                            )
+
         return results
 
     def get_offline_graph(self):
@@ -318,7 +318,7 @@ class OpenGraphShare(BaseModel):
         for max facebook_settings.FACEBOOK_OG_SHARE_RETRIES)
     '''
     objects = model_managers.OpenGraphShareManager()
-    
+
     from django.contrib.auth.models import User
     user = models.ForeignKey(User)
 
@@ -394,16 +394,16 @@ class OpenGraphShare(BaseModel):
             self.save()
 
         return result
-    
+
     def retry(self, graph=None, reset_retries=False):
         if self.completed_at:
             raise ValueError('You can\'t retry completed shares')
-        
+
         if reset_retries:
             self.retry_count = 0
         #handle the case where self.retry_count = None
         self.retry_count = self.retry_count + 1 if self.retry_count else 1
-            
+
         #actually retry now
         result = self.send(graph=graph)
         return result

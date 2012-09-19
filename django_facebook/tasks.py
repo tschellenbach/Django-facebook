@@ -105,8 +105,8 @@ def retry_open_graph_share(share, reset_retries=False):
     '''
     logger.info('retrying open graph share %s', share)
     share.retry(reset_retries=reset_retries)
-    
-    
+
+
 @task.task(ignore_result=True)
 def retry_open_graph_shares_for_user(user):
     '''
@@ -115,7 +115,7 @@ def retry_open_graph_shares_for_user(user):
     from django_facebook.models import OpenGraphShare
     logger.info('retrying shares for user %s', user)
     shares = OpenGraphShare.objects.recently_failed().filter(user=user)
-    
+
     for share in shares:
         retry_open_graph_share(share, reset_retries=True)
 
@@ -123,8 +123,6 @@ def retry_open_graph_shares_for_user(user):
 def token_extended_connect(sender, profile, token_changed, old_token):
     user = profile.user
     retry_open_graph_shares_for_user.delay(user, countdown=60)
-    
+
 from django_facebook.signals import facebook_token_extend_finished
 facebook_token_extend_finished.connect(token_extended_connect)
-
-

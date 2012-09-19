@@ -62,7 +62,7 @@ class OpenGraphShareManager(models.Manager):
     def failed(self):
         qs = self.filter(completed_at__isnull=True)
         return qs
-    
+
     def recently_failed(self):
         from django_facebook import settings as facebook_settings
         now = datetime.datetime.today()
@@ -70,5 +70,3 @@ class OpenGraphShareManager(models.Manager):
         failed = self.failed()
         recently_failed = failed.filter(created_at__gte=recent)
         return recently_failed
-    
-    
