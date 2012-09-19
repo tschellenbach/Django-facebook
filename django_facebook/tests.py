@@ -17,6 +17,7 @@ from mock import Mock, patch
 from open_facebook.api import FacebookConnection, FacebookAuthorization
 from open_facebook.exceptions import FacebookSSLError, FacebookURLError
 import logging
+import mock
 
 
 logger = logging.getLogger(__name__)
@@ -81,7 +82,6 @@ class UserConnectViewTest(FacebookTest):
                              next='%s?register=1' % url, facebook_login=1)
             response = self.client.post(url, post_data, follow=True)
             self.assertEqual(wrapped_connect.call_count, 1)
-            print response.redirect_chain
             self.assertIn('register', response.redirect_chain[0][0])
             self.assertEqual(response.status_code, 200)
 
@@ -144,6 +144,55 @@ class UserConnectViewTest(FacebookTest):
                 self.assertEqual(instance.is_authenticated.call_count, 1)
                 self.assertTrue(response.context)
                 assert '?loggggg=1' in response.redirect_chain[0][0]
+
+
+class OpenGraphShareTest(FacebookTest):
+    fixtures = ['users.json']
+    
+    def test_follow_og_share(self):
+        from django_facebook.models import OpenGraphShare
+        user_url = 'http://www.fashiolista.com/style/neni/'
+        kwargs = dict(item=user_url)
+        user = User.objects.all()[:1][0]
+        from django.contrib.contenttypes.models import ContentType
+        love_content_type = ContentType.objects.get(app_label='auth', model='user')
+        share = OpenGraphShare.objects.create(
+            user_id=user.id,
+            action_domain='fashiolista:follow',
+            content_type=love_content_type,
+            object_id=user.id,
+        )
+        share.set_share_dict(kwargs)
+        share.save()
+        share.send()
+
+    def test_follow_og_share_error(self):
+        from django_facebook.models import OpenGraphShare
+        user_url = 'http://www.fashiolista.com/style/neni/'
+        kwargs = dict(item=user_url)
+        user = User.objects.all()[:1][0]
+        profile = user.get_profile()
+        profile.facebook_open_graph = True
+        profile.save()
+        
+        from django.contrib.contenttypes.models import ContentType
+        love_content_type = ContentType.objects.get(app_label='auth', model='user')
+        share = OpenGraphShare.objects.create(
+            user_id=user.id,
+            facebook_user_id=13123123,
+            action_domain='fashiolista:follow',
+            content_type=love_content_type,
+            object_id=user.id,
+        )
+        share.set_share_dict(kwargs)
+        share.save()
+        from open_facebook.exceptions import FacebookUnreachable
+        with mock.patch('open_facebook.api.OpenFacebook') as mocked:
+            instance = mocked.return_value
+            instance.set = Mock(side_effect=FacebookUnreachable('broken'))
+            share.send(graph=instance)
+            self.assertEqual(share.error_message, 'broken')
+            self.assertFalse(share.completed_at)
 
 
 class UserConnectTest(FacebookTest):

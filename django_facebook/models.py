@@ -34,6 +34,7 @@ class BaseFacebookProfileModel(models.Model):
     gender = models.CharField(max_length=1, choices=(
         ('m', 'Male'), ('f', 'Female')), blank=True, null=True)
     raw_data = models.TextField(blank=True, null=True)
+    facebook_open_graph = models.BooleanField(default=True, help_text='Determines if this user want to share via open graph')
 
     def __unicode__(self):
         return self.user.__unicode__()
@@ -343,7 +344,7 @@ class OpenGraphShare(BaseModel):
             self.facebook_user_id = self.user.get_profile().facebook_id
         return models.Model.save(self, *args, **kwargs)
 
-    def send(self):
+    def send(self, graph=None):
         result = None
         #update the last attempt
         self.last_attempt = datetime.datetime.now()
@@ -351,7 +352,7 @@ class OpenGraphShare(BaseModel):
 
         #see if the graph is enabled
         profile = self.user.get_profile()
-        graph = profile.get_offline_graph()
+        graph = graph or profile.get_offline_graph()
         user_enabled = profile.facebook_open_graph and self.facebook_user_id
 
         #start sharing
@@ -372,6 +373,7 @@ class OpenGraphShare(BaseModel):
                 self.completed_at = datetime.datetime.now()
                 self.save()
             except OpenFacebookException, e:
+                logger.error('Open graph share failed, writing message %s' % e.message)
                 self.error_message = unicode(e)
                 self.save()
         elif not graph:
@@ -384,12 +386,12 @@ class OpenGraphShare(BaseModel):
         return result
 
     def set_share_dict(self, share_dict):
-        share_dict_string = json.encode(share_dict)
+        share_dict_string = json.dumps(share_dict)
         self.share_dict = share_dict_string
 
     def get_share_dict(self):
         share_dict_string = self.share_dict
-        share_dict = json.decode(share_dict_string)
+        share_dict = json.loads(share_dict_string)
         return share_dict
 
 
