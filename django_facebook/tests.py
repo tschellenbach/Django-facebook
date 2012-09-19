@@ -2,7 +2,8 @@ from __future__ import with_statement
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.urlresolvers import reverse
 from django.test.client import Client
-from django_facebook import settings as facebook_settings, signals
+from django_facebook import exceptions as facebook_exceptions, \
+    settings as facebook_settings, signals
 from django_facebook.api import get_facebook_graph, FacebookUserConverter, \
     get_persistent_graph
 from django_facebook.auth_backends import FacebookBackend
@@ -12,13 +13,10 @@ from django_facebook.tests_utils.base import FacebookTest, LiveFacebookTest, \
     RequestMock
 from django_facebook.utils import cleanup_oauth_url, get_profile_class
 from functools import partial
+from mock import Mock, patch
 from open_facebook.api import FacebookConnection, FacebookAuthorization
+from open_facebook.exceptions import FacebookSSLError, FacebookURLError
 import logging
-from mock import patch
-from mock import Mock
-from ssl import SSLError
-from urllib2 import URLError
-from django_facebook import exceptions as facebook_exceptions
 
 
 logger = logging.getLogger(__name__)
@@ -134,7 +132,7 @@ class UserConnectViewTest(FacebookTest):
         url = reverse('facebook_connect')
 
         #test super slow Facebook
-        errors = [SSLError(), URLError(
+        errors = [FacebookSSLError(), FacebookURLError(
             '<urlopen error _ssl.c:489: The handshake operation timed out>')]
         for error in errors:
             with patch('django_facebook.views.FacebookUserConverter') as converter:
