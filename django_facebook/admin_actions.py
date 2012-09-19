@@ -42,3 +42,14 @@ def retry_open_graph_share(modeladmin, request, queryset):
     for open_graph_share in queryset:
         open_graph_share.retry()
         messages.info(request, 'resent share %s' % open_graph_share.id)
+
+
+def retry_open_graph_share_for_user(modeladmin, request, queryset):
+    from django_facebook import tasks
+    users = []
+    for share in queryset:
+        users.append(share.user)
+        
+    users = list(set(users))
+    for user in users:
+        tasks.retry_open_graph_shares_for_user(user)
