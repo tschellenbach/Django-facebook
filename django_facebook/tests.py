@@ -148,14 +148,15 @@ class UserConnectViewTest(FacebookTest):
 
 class OpenGraphShareTest(FacebookTest):
     fixtures = ['users.json']
-    
+
     def test_follow_og_share(self):
         from django_facebook.models import OpenGraphShare
         user_url = 'http://www.fashiolista.com/style/neni/'
         kwargs = dict(item=user_url)
         user = User.objects.all()[:1][0]
         from django.contrib.contenttypes.models import ContentType
-        love_content_type = ContentType.objects.get(app_label='auth', model='user')
+        love_content_type = ContentType.objects.get(
+            app_label='auth', model='user')
         share = OpenGraphShare.objects.create(
             user_id=user.id,
             action_domain='fashiolista:follow',
@@ -174,9 +175,10 @@ class OpenGraphShareTest(FacebookTest):
         profile = user.get_profile()
         profile.facebook_open_graph = True
         profile.save()
-        
+
         from django.contrib.contenttypes.models import ContentType
-        love_content_type = ContentType.objects.get(app_label='auth', model='user')
+        love_content_type = ContentType.objects.get(
+            app_label='auth', model='user')
         share = OpenGraphShare.objects.create(
             user_id=user.id,
             facebook_user_id=13123123,

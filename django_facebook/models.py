@@ -373,7 +373,8 @@ class OpenGraphShare(BaseModel):
                 self.completed_at = datetime.datetime.now()
                 self.save()
             except OpenFacebookException, e:
-                logger.error('Open graph share failed, writing message %s' % e.message)
+                logger.error(
+                    'Open graph share failed, writing message %s' % e.message)
                 self.error_message = unicode(e)
                 self.save()
         elif not graph:
