@@ -62,3 +62,20 @@ FACEBOOK_LOGIN_DEFAULT_REDIRECT = getattr(
 # Force profile update every login
 FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = getattr(
     settings, 'FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN', False)
+
+
+#Retry an open graph share 6 times (once every 15 minutes)
+FACEBOOK_OG_SHARE_RETRIES = getattr(settings, 'FACEBOOK_OG_SHARE_RETRIES', 6)
+#Retry a failed open graph share (when we have an updated token) for this number of days
+FACEBOOK_OG_SHARE_RETRY_DAYS = getattr(settings, 'FACEBOOK_OG_SHARE_RETRY_DAYS', 7)
+FACEBOOK_OG_SHARE_DB_TABLE = getattr(settings, 'FACEBOOK_OG_SHARE_DB_TABLE', None)
+
+
+
+
+# Force profile update every login
+FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = getattr(
+    settings, 'FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN', False)
+
+
+

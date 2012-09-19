@@ -19,7 +19,7 @@ from django_facebook.utils import next_redirect, get_registration_backend,\
 from django_facebook.decorators import (facebook_required,
                                         facebook_required_lazy)
 from open_facebook.utils import send_warning
-from open_facebook.exceptions import OpenFacebookException
+from open_facebook import exceptions as open_facebook_exceptions
 from django.shortcuts import redirect
 from ssl import SSLError
 from urllib2 import URLError
@@ -91,7 +91,7 @@ def connect(request):
 
     try:
         response = _connect(request, facebook_login)
-    except (SSLError, URLError), e:
+    except open_facebook_exceptions.FacebookUnreachable, e:
         #often triggered when Facebook is slow
         warning_format = u'%s, often caused by Facebook slowdown, error %s'
         warn_message = warning_format % (type(e), e.message)
@@ -171,7 +171,7 @@ def _connect(request, facebook_login):
             else:
                 logger.info('Facebook authentication needed for connect, '
                             'raising an error')
-                raise OpenFacebookException('please authenticate')
+                raise open_facebook_exceptions.OpenFacebookException('please authenticate')
 
         #for CONNECT and LOGIN we simple redirect to the next page
         return next_redirect(request, default=facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT)

@@ -1,15 +1,14 @@
-from django_facebook import settings as facebook_settings
-from django.core.urlresolvers import reverse
-from django_facebook import model_managers
 from django.conf import settings
-from django.db import models
-import os
-import datetime
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-import logging
-from open_facebook.utils import json, camel_to_underscore
+from django.core.urlresolvers import reverse
+from django.db import models
 from django.db.models.base import ModelBase
+from django_facebook import model_managers, settings as facebook_settings
+from open_facebook.utils import json, camel_to_underscore
+import datetime
+import logging
+import os
 import sys
 logger = logging.getLogger(__name__)
 
@@ -203,12 +202,16 @@ class BaseModelMetaclass(ModelBase):
     def __new__(cls, name, bases, attrs):
         super_new = ModelBase.__new__(cls, name, bases, attrs)
         module_name = camel_to_underscore(name)
-        model_module = sys.modules[cls.__module__]
 
         app_label = super_new.__module__.split('.')[-2]
         db_table = '%s_%s' % (app_label, module_name)
+        
+        django_default = '%s_%s' % (app_label, name.lower())
         if not getattr(super_new._meta, 'proxy', False):
-            super_new._meta.db_table = db_table
+            db_table_is_default = django_default == super_new._meta.db_table
+            #Don't overwrite when people customize the db_table
+            if db_table_is_default:
+                super_new._meta.db_table = db_table
 
         return super_new
 
@@ -277,9 +280,9 @@ class CreatedAtAbstractBase(BaseModel):
         abstract = True
 
 
-class OpenGraphShare(CreatedAtAbstractBase):
+class OpenGraphShare(BaseModel):
     '''
-    Object for tracking all shares to facebook
+    Object for tracking all shares to Facebook
     Used for statistics and evaluating how things are going
 
     I recommend running this in a task
@@ -297,6 +300,14 @@ class OpenGraphShare(CreatedAtAbstractBase):
         share.set_share_dict(kwargs)
         share.save()
         result = share.send()
+        
+    Using this model has the advantage that it allows us to
+    - remove open graph shares (since we store the Facebook id)
+    - retry open graph shares, which is handy in case of
+      - updated access tokens (retry all shares from this user in the last
+        facebook_settings.FACEBOOK_OG_SHARE_RETRY_DAYS)
+      - Facebook outages (Facebook often has minor interruptions, retry in 15m,
+        for max facebook_settings.FACEBOOK_OG_SHARE_RETRIES)
     '''
     from django.contrib.auth.models import User
     user = models.ForeignKey(User)
@@ -312,11 +323,20 @@ class OpenGraphShare(CreatedAtAbstractBase):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
     #completion data
-    completed_at = models.DateTimeField(blank=True, null=True)
     error_message = models.TextField(blank=True, null=True)
     last_attempt = models.DateTimeField(
         blank=True, null=True, auto_now_add=True)
+    retry_count = models.IntegerField(blank=True, null=True)
+    #only written if we actually succeed
     share_id = models.CharField(blank=True, null=True, max_length=255)
+    completed_at = models.DateTimeField(blank=True, null=True)
+    
+    #updated at and created at, last one needs an index
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    
+    class Meta:
+        db_table = facebook_settings.FACEBOOK_OG_SHARE_DB_TABLE
 
     def save(self, *args, **kwargs):
         if self.user and not self.facebook_user_id:
