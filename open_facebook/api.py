@@ -40,6 +40,7 @@ import logging
 import urllib
 import urllib2
 from django_facebook.utils import to_int
+import ssl
 logger = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT = 8
@@ -111,6 +112,7 @@ class FacebookConnection(object):
                     # Facebook sents error codes for many of their flows
                     # we still want the json to allow for proper handling
                     if hasattr(e, 'code') and e.code == 500:
+                        
                         raise urllib2.URLError('Facebook is down')
                     if 'http error' in str(e).lower():
                         response_file = e
@@ -118,12 +120,14 @@ class FacebookConnection(object):
                         raise
                 response = response_file.read().decode('utf8')
                 break
-            except (urllib2.HTTPError, urllib2.URLError), e:
-                logger.warn('facebook encountered a timeout or error %s',
-                            unicode(e))
+            except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError), e:
+                #These are often temporary errors, so we will retry before failing
+                error_format = 'Facebook encountered a timeout or error %s'
+                logger.warn(error_format, unicode(e))
                 attempts -= 1
                 if not attempts:
-                    raise
+                    #if we have no more attempts actually raise the error
+                    raise facebook_exceptions.convert_unreachable_exception(e)
             finally:
                 if response_file:
                     response_file.close()
