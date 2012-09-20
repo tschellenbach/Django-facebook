@@ -122,6 +122,7 @@ def retry_open_graph_shares_for_user(user):
 
 def token_extended_connect(sender, profile, token_changed, old_token, **kwargs):
     user = profile.user
+    #make sure we don't have troubles caused by replication lag
     retry_open_graph_shares_for_user.delay(user, countdown=60)
 
 from django_facebook.signals import facebook_token_extend_finished

@@ -159,6 +159,7 @@ class OpenGraphShareTest(FacebookTest):
             app_label='auth', model='user')
         share = OpenGraphShare.objects.create(
             user_id=user.id,
+            facebook_user_id=13123123,
             action_domain='fashiolista:follow',
             content_type=love_content_type,
             object_id=user.id,
