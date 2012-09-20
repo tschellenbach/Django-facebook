@@ -111,6 +111,7 @@ class FacebookConnection(object):
                 except (urllib2.HTTPError,), e:
                     # Facebook sents error codes for many of their flows
                     # we still want the json to allow for proper handling
+                    logger.warn('FB request, error type %s, code %s', type(e), getattr(e, 'code', None))
                     if hasattr(e, 'code') and e.code == 500:
 
                         raise urllib2.URLError('Facebook is down')

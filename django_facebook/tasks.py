@@ -120,7 +120,7 @@ def retry_open_graph_shares_for_user(user):
         retry_open_graph_share(share, reset_retries=True)
 
 
-def token_extended_connect(sender, profile, token_changed, old_token):
+def token_extended_connect(sender, profile, token_changed, old_token, **kwargs):
     user = profile.user
     retry_open_graph_shares_for_user.delay(user, countdown=60)
 
