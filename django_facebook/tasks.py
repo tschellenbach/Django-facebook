@@ -116,7 +116,7 @@ def retry_open_graph_shares_for_user(user):
     shares = OpenGraphShare.objects.recently_failed().filter(user=user)[:1000]
     shares = list(shares)
     logger.info('retrying %s shares for user %s', len(shares), user)
-    
+
     for share in shares:
         retry_open_graph_share(share, reset_retries=True)
 

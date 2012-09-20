@@ -66,7 +66,8 @@ class OpenGraphShareManager(models.Manager):
     def recently_failed(self):
         from django_facebook import settings as facebook_settings
         now = datetime.datetime.today()
-        recent_delta = datetime.timedelta(days=facebook_settings.FACEBOOK_OG_SHARE_RETRY_DAYS)
+        recent_delta = datetime.timedelta(
+            days=facebook_settings.FACEBOOK_OG_SHARE_RETRY_DAYS)
         recent = now - recent_delta
         failed = self.failed()
         recently_failed = failed.filter(created_at__gte=recent)
