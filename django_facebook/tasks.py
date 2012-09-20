@@ -113,9 +113,10 @@ def retry_open_graph_shares_for_user(user):
     We retry the open graph shares for a user when he gets a new access token
     '''
     from django_facebook.models import OpenGraphShare
-    logger.info('retrying shares for user %s', user)
-    shares = OpenGraphShare.objects.recently_failed().filter(user=user)
-
+    shares = OpenGraphShare.objects.recently_failed().filter(user=user)[:1000]
+    shares = list(shares)
+    logger.info('retrying %s shares for user %s', len(shares), user)
+    
     for share in shares:
         retry_open_graph_share(share, reset_retries=True)
 
