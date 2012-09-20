@@ -144,7 +144,7 @@ def _connect(request, facebook_login):
                         context_instance=context,
                     )
                 except facebook_exceptions.AlreadyConnectedError, e:
-                    user_ids = [u.id for u in e.users]
+                    user_ids = [u.user_id for u in e.users]
                     ids_string = ','.join(map(str, user_ids))
                     return error_next_redirect(
                         request,
