@@ -11,6 +11,14 @@ class Migration(SchemaMigration):
         # Adding field 'OpenGraphShare.retry_count'
         db.add_column('django_facebook_open_graph_share', 'retry_count', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True), keep_default=False)
 
+        db.alter_column('django_facebook_facebookprofile', 'about_me', self.gf('django.db.models.fields.TextField')(blank=True, null=True))
+        db.alter_column('django_facebook_facebookprofile', 'access_token', self.gf('django.db.models.fields.TextField')(blank=True, null=True))
+        db.alter_column('django_facebook_facebookprofile', 'facebook_name', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True, null=True))
+        db.alter_column('django_facebook_facebookprofile', 'facebook_profile_url', self.gf('django.db.models.fields.TextField')(blank=True, null=True))
+        db.alter_column('django_facebook_facebookprofile', 'website_url', self.gf('django.db.models.fields.TextField')(blank=True, null=True))
+        db.alter_column('django_facebook_facebookprofile', 'blog_url', self.gf('django.db.models.fields.TextField')(blank=True, null=True))
+        db.alter_column('django_facebook_facebookprofile', 'raw_data', self.gf('django.db.models.fields.TextField')(blank=True, null=True))
+
         # Adding index on 'OpenGraphShare', fields ['created_at']
         db.create_index('django_facebook_open_graph_share', ['created_at'])
 
@@ -20,6 +28,14 @@ class Migration(SchemaMigration):
         
         # Removing index on 'OpenGraphShare', fields ['created_at']
         db.delete_index('django_facebook_open_graph_share', ['created_at'])
+
+        db.alter_column('django_facebook_facebookprofile', 'about_me', self.gf('django.db.models.fields.TextField')(blank=True))
+        db.alter_column('django_facebook_facebookprofile', 'access_token', self.gf('django.db.models.fields.TextField')(blank=True))
+        db.alter_column('django_facebook_facebookprofile', 'facebook_name', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True))
+        db.alter_column('django_facebook_facebookprofile', 'facebook_profile_url', self.gf('django.db.models.fields.TextField')(blank=True))
+        db.alter_column('django_facebook_facebookprofile', 'website_url', self.gf('django.db.models.fields.TextField')(blank=True))
+        db.alter_column('django_facebook_facebookprofile', 'blog_url', self.gf('django.db.models.fields.TextField')(blank=True))
+        db.alter_column('django_facebook_facebookprofile', 'raw_data', self.gf('django.db.models.fields.TextField')(blank=True))
 
         # Deleting field 'OpenGraphShare.retry_count'
         db.delete_column('django_facebook_open_graph_share', 'retry_count')
