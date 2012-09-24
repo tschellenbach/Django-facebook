@@ -9,7 +9,6 @@ from open_facebook.utils import json, camel_to_underscore
 import datetime
 import logging
 import os
-import sys
 logger = logging.getLogger(__name__)
 
 
@@ -382,7 +381,7 @@ class OpenGraphShare(BaseModel):
                 self.completed_at = datetime.datetime.now()
                 self.save()
             except OpenFacebookException, e:
-                logger.error(
+                logger.warn(
                     'Open graph share failed, writing message %s' % e.message)
                 self.error_message = unicode(e)
                 self.save()
