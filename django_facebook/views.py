@@ -69,7 +69,6 @@ def image_upload(request):
 
 
 @csrf_exempt
-@replication_safe
 @facebook_required_lazy(extra_params=dict(facebook_login='1'))
 def connect(request):
     '''
