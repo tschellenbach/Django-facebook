@@ -90,13 +90,12 @@ class BaseFacebookProfileModel(models.Model):
     def _extend_access_token(self, access_token):
         from open_facebook.api import FacebookAuthorization
         results = FacebookAuthorization.extend_access_token(access_token)
-        access_token, expires = results['access_token'], int(
-            results['expires'])
+        access_token = results['access_token']
         old_token = self.access_token
         token_changed = access_token != old_token
         message = 'a new' if token_changed else 'the same'
         log_format = 'Facebook provided %s token, which expires at %s'
-        expires_delta = datetime.timedelta(seconds=expires)
+        expires_delta = datetime.timedelta(days=60)
         logger.info(log_format, message, expires_delta)
         if token_changed:
             logger.info('Saving the new access token')
