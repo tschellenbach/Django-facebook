@@ -183,23 +183,6 @@ class FacebookProfile(FacebookProfileModel):
     user = models.OneToOneField('auth.User')
 
 
-if settings.AUTH_PROFILE_MODULE == 'django_facebook.FacebookProfile':
-    '''
-    If we are using the django facebook profile model, create the model
-    and connect it to the user create signal
-    '''
-
-    from django.contrib.auth.models import User
-    from django.db.models.signals import post_save
-
-    #Make sure we create a FacebookProfile when creating a User
-    def create_facebook_profile(sender, instance, created, **kwargs):
-        if created:
-            FacebookProfile.objects.create(user=instance)
-
-    post_save.connect(create_facebook_profile, sender=User)
-
-
 class BaseModelMetaclass(ModelBase):
     '''
     Cleaning up the table naming conventions
