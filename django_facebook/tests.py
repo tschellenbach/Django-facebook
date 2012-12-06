@@ -122,11 +122,10 @@ class UserConnectViewTest(FacebookTest):
             self.assertEqual(wrapped_connect.call_count, 1)
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context)
-            template_matched = False
-	    for template in response.template:
-		if template.name in facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE or template.name == facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE:
-		    template_matched = True
-                assert template_matched == True
+            for template in response.template:
+                if template.name in facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE or template.name == facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE:
+                    template_matched = True
+                    assert template_matched == True
 
     def test_slow_connect(self):
         '''
