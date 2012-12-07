@@ -371,7 +371,7 @@ class FacebookAuthorization(FacebookConnection):
         return test_user
 
     @classmethod
-    def get_or_create_test_user(cls, app_access_token, permissions=None):
+    def get_or_create_test_user(cls, app_access_token, name=None, permissions=None, force_create=False):
         '''
         There is no supported way of get or creating a test user
         However
@@ -384,14 +384,15 @@ class FacebookAuthorization(FacebookConnection):
 
         '''
         if not permissions:
-            permissions = ['read_stream', 'publish_stream',
+            permissions = ['read_stream', 'publish_stream', 'publish_actions',
                            'user_photos,offline_access']
         if isinstance(permissions, list):
             permissions = ','.join(permissions)
 
         #hacking the permissions into the name of the test user
-        name = 'Permissions %s' % permissions.replace(
+        default_name = 'Permissions %s' % permissions.replace(
             ',', ' ').replace('_', '')
+        name = name or default_name
 
         #retrieve all test users
         test_users = cls.get_test_users(app_access_token)
@@ -404,6 +405,10 @@ class FacebookAuthorization(FacebookConnection):
                              ','.join(user_ids))
         users_dict = dict([(u['name'], u['uid']) for u in users])
         user_id = users_dict.get(name)
+
+        if force_create and user_id:
+            cls.delete_test_user(app_access_token, user_id)
+            user_id = None
 
         if user_id:
             #we found our user, extend the data a bit

@@ -116,6 +116,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     #'registration', The default is now not to use django registration
     'django_facebook',
+    'open_facebook',
     'member',
     'south',
     # Uncomment the next line to enable the admin:
