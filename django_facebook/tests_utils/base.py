@@ -30,14 +30,22 @@ class FacebookTest(TestCase):
         from django_facebook.tests_utils.mock_official_sdk import MockFacebookAPI, MockFacebookAuthorization
         from open_facebook import api
         import open_facebook
-        api.OpenFacebook = MockFacebookAPI
-        api.FacebookAuthorization = MockFacebookAuthorization
-        open_facebook.OpenFacebook = MockFacebookAPI
-        open_facebook.FacebookAuthorization = MockFacebookAuthorization
+        
+        self.originalAPI = open_facebook.OpenFacebook
+        self.originalAuthorization = open_facebook.FacebookAuthorization
+        
+        open_facebook.OpenFacebook = api.OpenFacebook = MockFacebookAPI
+        open_facebook.FacebookAuthorization = api.FacebookAuthorization = MockFacebookAuthorization
 
         rf = RequestMock()
         self.request = rf.get('/')
         self.client = Client()
+        
+    def tearDown(self):
+        from open_facebook import api
+        import open_facebook
+        open_facebook.OpenFacebook = api.OpenFacebook = self.originalAPI
+        open_facebook.FacebookAuthorization = api.FacebookAuthorization = self.originalAuthorization
 
 
 class LiveFacebookTest(TestCase):
