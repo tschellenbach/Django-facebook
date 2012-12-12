@@ -15,27 +15,31 @@ TEST_USER_DICT = {
 }
 TEST_USER_NAMES = [v['name'] for k, v in TEST_USER_DICT.items()]
 
+TEST_USER_OBJECTS = None
+
 
 def setup_users():
     '''
     Since this is soo slow we only do this once for all tests
     '''
-    user_objects = {}
-    app_token = FacebookAuthorization.get_app_access_token()
-    for user_slug, user_dict in TEST_USER_DICT.items():
-        test_user = FacebookAuthorization.get_or_create_test_user(
-            app_token, name=user_dict[
-                'name'], force_create=TEST_USER_FORCE_CREATE,
-            permissions=user_dict.get('permissions')
-        )
-        user_objects[user_slug] = test_user
-    return user_objects
-
-TEST_USER_OBJECTS = setup_users()
+    global TEST_USER_OBJECTS
+    if TEST_USER_OBJECTS is None:
+        user_objects = {}
+        app_token = FacebookAuthorization.get_app_access_token()
+        for user_slug, user_dict in TEST_USER_DICT.items():
+            test_user = FacebookAuthorization.get_or_create_test_user(
+                app_token, name=user_dict[
+                    'name'], force_create=TEST_USER_FORCE_CREATE,
+                permissions=user_dict.get('permissions')
+            )
+            user_objects[user_slug] = test_user
+        TEST_USER_OBJECTS = user_objects
+    return TEST_USER_OBJECTS
 
 
 class OpenFacebookTest(unittest.TestCase):
     def setUp(self):
+        setup_users()
         for user_slug, user_object in TEST_USER_OBJECTS.items():
             setattr(self, user_slug, user_object)
 

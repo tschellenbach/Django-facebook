@@ -86,7 +86,8 @@ class FacebookConnection(object):
         post_request = (post_data is not None or 'method=post' in url)
 
         if post_request and facebook_settings.FACEBOOK_READ_ONLY:
-            response = dict(id=123456789)
+            logger.info('running in readonly mode')
+            response = dict(id=123456789, setting_read_only=True)
             return response
 
         opener = urllib2.build_opener()
@@ -355,6 +356,7 @@ class FacebookAuthorization(FacebookConnection):
         default_name = 'Permissions %s' % permissions.replace(
             ',', ' ').replace('_', '')
         name = name or default_name
+
         kwargs = {
             'access_token': app_access_token,
             'installed': True,
@@ -407,7 +409,8 @@ class FacebookAuthorization(FacebookConnection):
         user_id = users_dict.get(name)
 
         if force_create and user_id:
-            cls.delete_test_user(app_access_token, user_id)
+            test_user_data = user_id_dict[user_id]
+            cls.delete_test_user(test_user_data['access_token'], user_id)
             user_id = None
 
         if user_id:

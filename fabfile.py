@@ -24,8 +24,7 @@ def publish(test='yes'):
 def validate():
     with cd(PROJECT_ROOT):
         local('pep8 --exclude=migrations --ignore=E501,E225 django_facebook open_facebook')
-        local('facebook_example\manage.py test open_facebook')
-        local('facebook_example\manage.py test django_facebook')
+        local('facebook_example\manage.py test open_facebook django_facebook')
 
 
 def clean():
