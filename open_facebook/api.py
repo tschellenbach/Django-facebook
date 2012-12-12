@@ -409,6 +409,8 @@ class FacebookAuthorization(FacebookConnection):
         user_id = users_dict.get(name)
 
         if force_create and user_id:
+            #we need the users access_token, the app access token doesn't
+            #always work, seems to be a bug in the Facebook api
             test_user_data = user_id_dict[user_id]
             cls.delete_test_user(test_user_data['access_token'], user_id)
             user_id = None
