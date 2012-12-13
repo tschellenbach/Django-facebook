@@ -22,17 +22,22 @@ def setup_users():
     '''
     Since this is soo slow we only do this once for all tests
     '''
+    #caching because these apis are just too damn slow for test driven development
+    from django.core.cache import cache
     global TEST_USER_OBJECTS
     if TEST_USER_OBJECTS is None:
-        user_objects = {}
-        app_token = FacebookAuthorization.get_app_access_token()
-        for user_slug, user_dict in TEST_USER_DICT.items():
-            test_user = FacebookAuthorization.get_or_create_test_user(
-                app_token, name=user_dict[
-                    'name'], force_create=TEST_USER_FORCE_CREATE,
-                permissions=user_dict.get('permissions')
-            )
-            user_objects[user_slug] = test_user
+        user_objects = cache.get('test_user_objects')
+        if not user_objects:
+            user_objects = {}
+            app_token = FacebookAuthorization.get_app_access_token()
+            for user_slug, user_dict in TEST_USER_DICT.items():
+                test_user = FacebookAuthorization.get_or_create_test_user(
+                    app_token, name=user_dict[
+                        'name'], force_create=TEST_USER_FORCE_CREATE,
+                    permissions=user_dict.get('permissions')
+                )
+                user_objects[user_slug] = test_user
+            cache.set('test_user_objects', user_objects, 60 * 5)
         TEST_USER_OBJECTS = user_objects
     return TEST_USER_OBJECTS
 
