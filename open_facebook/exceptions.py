@@ -147,3 +147,14 @@ def convert_unreachable_exception(e, error_format='Facebook is unreachable %s'):
     error_message = error_format % e.message
     exception = exception_class(error_message)
     return exception
+
+
+def get_exception_classes():
+    from open_facebook import exceptions as facebook_exceptions
+    all_exceptions = dir(facebook_exceptions)
+    classes = [getattr(facebook_exceptions, e, None) for e in all_exceptions]
+    exception_classes = [e for e in classes if getattr(
+            e, 'codes', None) and issubclass(
+                e, OpenFacebookException)]
+    return exception_classes
+

@@ -41,6 +41,7 @@ import urllib
 import urllib2
 from django_facebook.utils import to_int
 import ssl
+import re
 logger = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT = 8
@@ -157,29 +158,20 @@ class FacebookConnection(object):
         return parsed_response
 
     @classmethod
-    def raise_error(self, error_type, message):
+    def raise_error(cls, error_type, message):
         '''
-        Search for a corresponding error class and fall back to
-        open facebook exception
+        Lookup the best error class for the error and raise it
         '''
-        import re
+        default_error_class = facebook_exceptions.OpenFacebookException
         error_class = None
+        
+        #try to get error class by direct lookup
         if not isinstance(error_type, int):
             error_class = getattr(facebook_exceptions, error_type, None)
-        if error_class and not issubclass(error_class,
-                                          facebook_exceptions.OpenFacebookException):
+        if error_class and not issubclass(error_class, default_error_class):
             error_class = None
-        # map error classes to facebook error ids
-        # define a string to match a single error,
-        # use ranges for complexer cases
-        # also see http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
-        classes = [getattr(facebook_exceptions, e, None)
-                   for e in dir(facebook_exceptions)]
-        exception_classes = [e for e in classes if getattr(
-            e, 'codes', None) and issubclass(
-                e, facebook_exceptions.OpenFacebookException)]
-        exception_classes.sort(key=lambda e: e.range())
-
+        
+        # map error classes to facebook error codes
         # find the error code
         error_code = None
         error_code_re = re.compile('\(#(\d+)\)')
@@ -187,27 +179,54 @@ class FacebookConnection(object):
         matching_groups = matches.groups() if matches else None
         if matching_groups:
             error_code = to_int(matching_groups[0]) or None
+        # also see http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
+        logger.info('Trying to match error code %s to error class', error_code)
+        
+        #lookup by error code takes precedence
+        matched_class = cls.match_error_code(error_code)
+        if matched_class:
+            error_class = matched_class
+        
+        #hack for missing parameters
+        if 'Missing' in message and 'parameter' in message:
+            error_class = facebook_exceptions.MissingParameter
 
+        #fallback to the default
+        if not error_class:
+            error_class = default_error_class
+            
+        logger.info('Matched error to class %s', error_class)
+
+        raise error_class(message)
+     
+    @classmethod
+    def get_sorted_exceptions(cls):
+        from open_facebook.exceptions import get_exception_classes
+        exception_classes = get_exception_classes()
+        exception_classes.sort(key=lambda e: e.range())
+        return exception_classes
+    
+    @classmethod
+    def match_error_code(cls, error_code):
+        '''
+        Return the right exception class for the error code
+        '''
+        exception_classes = cls.get_sorted_exceptions()
+        error_class = None
         for class_ in exception_classes:
             codes_list = class_.codes_list()
             # match the error class
             matching_error_class = None
             for code in codes_list:
-                if isinstance(code, basestring):
-                    # match on string
-                    key = code
-                    if key in message:
-                        matching_error_class = class_
-                        break
-                elif isinstance(code, tuple):
+                if isinstance(code, tuple):
                     start, stop = code
                     if error_code and start <= error_code <= stop:
                         matching_error_class = class_
-                        break
+                        logger.info('Matched error on code %s', code)
                 elif isinstance(code, (int, long)):
                     if int(code) == error_code:
                         matching_error_class = class_
-                        break
+                        logger.info('Matched error on code %s', code)
                 else:
                     raise(
                         ValueError, 'Dont know how to handle %s of '
@@ -216,14 +235,9 @@ class FacebookConnection(object):
             if matching_error_class:
                 error_class = matching_error_class
                 break
+        return error_class
 
-        if 'Missing' in message and 'parameter' in message:
-            error_class = facebook_exceptions.MissingParameter
 
-        if not error_class:
-            error_class = facebook_exceptions.OpenFacebookException
-
-        raise error_class(message)
 
 
 class FacebookAuthorization(FacebookConnection):

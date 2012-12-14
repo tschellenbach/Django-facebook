@@ -50,6 +50,18 @@ class OpenFacebookTest(unittest.TestCase):
 
 
 class TestErrorMapping(OpenFacebookTest):
+    
+    def test_syntax_error(self):
+        error_response = '''
+        {
+           'error': {
+               'message': 'Syntax error "Expected end of string instead of "?"." at character 14: third_party_id?access_token=AAABbPDnY390BAOZA22ugLfCyr2OGH0k82VJMPJRR8qxceV96nBra53R5ISiou7VOD9eBd21ZCzPZC5Vn1hWbVkY9Qvx9g8wl1NCmuL9vwZDZD',
+               'code': 2500,
+               'type': 'OAuthException'
+           }
+        }
+        '''
+        return
 
     def test_oauth_errors(self):
         expires_response = '''{
