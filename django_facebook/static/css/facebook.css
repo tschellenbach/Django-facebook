@@ -1,4 +1,3 @@
-
 #facebook_shade {
     position            : fixed;
     height              : 100%;
@@ -44,6 +43,6 @@
     top                 : 10px;
     width               : 16px;
     height              : 16px;
-    background          : url('../../static/images/facebook_close.png');
+    background          : url('../images/facebook_close.png');
     cursor              : pointer;
 }
