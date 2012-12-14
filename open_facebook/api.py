@@ -165,27 +165,20 @@ class FacebookConnection(object):
         default_error_class = facebook_exceptions.OpenFacebookException
         error_class = None
         
-        #try to get error class by direct lookup
-        if not isinstance(error_type, int):
-            error_class = getattr(facebook_exceptions, error_type, None)
-        if error_class and not issubclass(error_class, default_error_class):
-            error_class = None
-        
-        # map error classes to facebook error codes
-        # find the error code
-        error_code = None
-        error_code_re = re.compile('\(#(\d+)\)')
-        matches = error_code_re.match(message)
-        matching_groups = matches.groups() if matches else None
-        if matching_groups:
-            error_code = to_int(matching_groups[0]) or None
+        #get the error code
+        error_code = cls.get_code_from_message(message)
         # also see http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
         logger.info('Trying to match error code %s to error class', error_code)
         
         #lookup by error code takes precedence
-        matched_class = cls.match_error_code(error_code)
-        if matched_class:
-            error_class = matched_class
+        error_class = cls.match_error_code(error_code)
+        
+        #try to get error class by direct lookup
+        if not error_class:
+            if not isinstance(error_type, int):
+                error_class = getattr(facebook_exceptions, error_type, None)
+            if error_class and not issubclass(error_class, default_error_class):
+                error_class = None
         
         #hack for missing parameters
         if 'Missing' in message and 'parameter' in message:
@@ -198,6 +191,19 @@ class FacebookConnection(object):
         logger.info('Matched error to class %s', error_class)
 
         raise error_class(message)
+    
+    @classmethod
+    def get_code_from_message(cls, message):
+        # map error classes to facebook error codes
+        # find the error code
+        error_code = None
+        error_code_re = re.compile('\(#(\d+)\)')
+        matches = error_code_re.match(message)
+        matching_groups = matches.groups() if matches else None
+        if matching_groups:
+            error_code = to_int(matching_groups[0]) or None
+            
+        return error_code
      
     @classmethod
     def get_sorted_exceptions(cls):
