@@ -154,7 +154,6 @@ def get_exception_classes():
     all_exceptions = dir(facebook_exceptions)
     classes = [getattr(facebook_exceptions, e, None) for e in all_exceptions]
     exception_classes = [e for e in classes if getattr(
-            e, 'codes', None) and issubclass(
-                e, OpenFacebookException)]
+                         e, 'codes', None) and issubclass(
+                         e, OpenFacebookException)]
     return exception_classes
-

@@ -50,7 +50,7 @@ class OpenFacebookTest(unittest.TestCase):
 
 
 class TestErrorMapping(OpenFacebookTest):
-    
+
     def test_syntax_error(self):
         error_response = '''
         {
