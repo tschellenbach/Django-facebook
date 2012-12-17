@@ -3,6 +3,7 @@
 from open_facebook.api import *
 import unittest
 import logging
+import mock
 logger = logging.getLogger()
 from open_facebook.utils import json
 
@@ -26,8 +27,10 @@ def setup_users():
     from django.core.cache import cache
     global TEST_USER_OBJECTS
     if TEST_USER_OBJECTS is None:
-        user_objects = cache.get('test_user_objects')
+        key = 'test_user_objects'
+        user_objects = cache.get(key)
         if not user_objects:
+            logger.info('test user cache not found, rebuilding')
             user_objects = {}
             app_token = FacebookAuthorization.get_app_access_token()
             for user_slug, user_dict in TEST_USER_DICT.items():
@@ -37,7 +40,7 @@ def setup_users():
                     permissions=user_dict.get('permissions')
                 )
                 user_objects[user_slug] = test_user
-            cache.set('test_user_objects', user_objects, 60 * 5)
+            cache.set(key, user_objects, 60 * 60)
         TEST_USER_OBJECTS = user_objects
     return TEST_USER_OBJECTS
 
@@ -111,6 +114,22 @@ class TestErrorMapping(OpenFacebookTest):
             except open_facebook_exceptions.OAuthException, e:
                 oauth = True
             assert oauth, 'response %s didnt raise oauth error' % response
+            
+            
+class Test500Detection(OpenFacebookTest):
+    def test_500(self):
+        
+        graph = self.guy.graph()
+        
+        with mock.patch('urllib2.build_opener') as patched:
+            from urllib2 import HTTPError
+            
+            opener = mock.MagicMock()
+            opener.open.side_effect = Exception('test')
+            
+            patched.return_value = opener
+            print 'testsetup', id(opener.open)
+            graph.get('me')
 
 
 class TestPublishing(OpenFacebookTest):

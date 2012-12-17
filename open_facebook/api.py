@@ -108,9 +108,12 @@ class FacebookConnection(object):
                 try:
                     # For older python versions you could leave out the timeout
                     # response_file = opener.open(url, post_string)
+                    print opener.open, opener.open.side_effect
                     response_file = opener.open(url, post_string,
                                                 timeout=timeout)
+                    print 'no/'
                 except (urllib2.HTTPError,), e:
+                    
                     # Facebook sents error codes for many of their flows
                     # we still want the json to allow for proper handling
                     logger.warn('FB request, error type %s, code %s',

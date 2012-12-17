@@ -191,3 +191,17 @@ def camel_to_underscore(name):
     for c in string.ascii_uppercase:
         name = name.replace(c, '_%c' % c)
     return name.strip('_').lower()
+
+
+def is_json(content):
+    '''
+    Unfortunately facebook returns 500s which mean they are down
+    Or 500s with a nice error message because you use open graph wrong
+    
+    So we have to figure out which is which :)
+    '''
+    is_json = False
+    if content.startswith('{') and content.endswith('}'):
+        is_json = True
+    return is_json
+
