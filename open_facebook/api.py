@@ -106,7 +106,8 @@ class FacebookConnection(object):
                     django_statsd.start('facebook.%s' % path)
 
                 try:
-                    response_file = opener.open(url, post_string, timeout=timeout)
+                    response_file = opener.open(
+                        url, post_string, timeout=timeout)
                     response = response_file.read().decode('utf8')
                 except (urllib2.HTTPError,), e:
                     response_file = e
@@ -119,7 +120,8 @@ class FacebookConnection(object):
                     server_error = cls.is_server_error(e, response)
                     if server_error:
                         #trigger a retry
-                        raise urllib2.URLError('Facebook is down %s' % response)
+                        raise urllib2.URLError(
+                            'Facebook is down %s' % response)
                 break
             except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError), e:
                 #These are often temporary errors, so we will retry before failing
@@ -153,7 +155,7 @@ class FacebookConnection(object):
                                 parsed_response['error_msg'])
 
         return parsed_response
-    
+
     @classmethod
     def is_server_error(cls, e, response):
         '''
@@ -166,11 +168,11 @@ class FacebookConnection(object):
         server_error = False
         if hasattr(e, 'code') and e.code == 500:
             server_error = True
-            
+
         #if it looks like json, facebook is probably not down
         if is_json(response):
             server_error = False
-            
+
         return server_error
 
     @classmethod
