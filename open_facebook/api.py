@@ -117,7 +117,6 @@ class FacebookConnection(object):
                     logger.warn(msg_format, type(e), getattr(e, 'code', None))
                     #detect if its a server or application error
                     server_error = cls.is_server_error(e, response)
-                    print response, server_error
                     if server_error:
                         #trigger a retry
                         raise urllib2.URLError('Facebook is down %s' % response)
