@@ -70,7 +70,7 @@ class OpenGraphShareAdmin(admin.ModelAdmin):
                     'completed_at', 'error_message']
     actions = [admin_actions.retry_open_graph_share,
                admin_actions.retry_open_graph_share_for_user]
-    
+
     def view_share(self, instance):
         share_id = instance.share_id
         url_format = 'https://developers.facebook.com/tools/explorer/%s/?method=GET&path=%s%%2F'
@@ -78,7 +78,7 @@ class OpenGraphShareAdmin(admin.ModelAdmin):
         template = '<a href="%s">%s</a>' % (url, share_id)
         return template
     view_share.allow_tags = True
-    
+
 
 if settings.AUTH_PROFILE_MODULE == 'django_facebook.FacebookProfile':
     admin.site.register(models.FacebookProfile, FacebookProfileAdmin)
