@@ -338,6 +338,8 @@ class OpenGraphShare(BaseModel):
     #only written if we actually succeed
     share_id = models.CharField(blank=True, null=True, max_length=255)
     completed_at = models.DateTimeField(blank=True, null=True)
+    #tracking removals
+    removed_at = models.DateTimeField(blank=True, null=True)
 
     #updated at and created at, last one needs an index
     updated_at = models.DateTimeField(auto_now=True)
@@ -392,6 +394,17 @@ class OpenGraphShare(BaseModel):
             self.save()
 
         return result
+
+    def remove(self, graph=None):
+        if not self.share_id:
+            raise ValueError('Can only delete shares which have an id')
+        #see if the graph is enabled
+        profile = self.user.get_profile()
+        graph = graph or profile.get_offline_graph()
+
+        response = graph.delete(self.share_id)
+        self.removed_at = datetime.datetime.now()
+        self.save()
 
     def retry(self, graph=None, reset_retries=False):
         if self.completed_at:

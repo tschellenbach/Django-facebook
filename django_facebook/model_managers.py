@@ -4,6 +4,9 @@ from django.db import models
 import operator
 import random
 import datetime
+from django.contrib.contenttypes.models import ContentType
+import logging
+logger = logging.getLogger(__name__)
 
 
 class FacebookUserManager(models.Manager):
@@ -72,3 +75,27 @@ class OpenGraphShareManager(models.Manager):
         failed = self.failed()
         recently_failed = failed.filter(created_at__gte=recent)
         return recently_failed
+
+    def shares_for_instance(self, instance, user):
+        content_type = ContentType.objects.get_for_model(instance)
+        shares = self.filter(
+            user=user,
+            object_id=instance.id,
+            content_type=content_type,
+            completed_at__isnull=False,
+            removed_at__isnull=True,
+        )
+        return shares
+
+    def remove_shares_for_instance(self, content_object, user):
+        '''
+        Removes all shares for this content_object and user combination
+        '''
+        shares = self.shares_for_instance(content_object, user)
+        shares = shares.filter(
+            completed_at__isnull=False, removed_at__isnull=True)
+        shares = list(shares[:1000])
+        logger.info('found %s shares to remove', len(shares))
+        for share in shares:
+            logger.info('removed share %s', share)
+            share.remove()
