@@ -200,8 +200,10 @@ def is_json(content):
     
     So we have to figure out which is which :)
     '''
-    is_json = False
-    if content.startswith('{') and content.endswith('}'):
+    try:
+        json.loads(content)
         is_json = True
+    except:
+        is_json = False
     return is_json
 
