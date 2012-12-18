@@ -106,26 +106,21 @@ class FacebookConnection(object):
                     django_statsd.start('facebook.%s' % path)
 
                 try:
-                    # For older python versions you could leave out the timeout
-                    # response_file = opener.open(url, post_string)
-                    print opener.open, opener.open.side_effect
-                    response_file = opener.open(url, post_string,
-                                                timeout=timeout)
-                    print 'no/'
+                    response_file = opener.open(url, post_string, timeout=timeout)
+                    response = response_file.read().decode('utf8')
                 except (urllib2.HTTPError,), e:
-                    
+                    response_file = e
+                    response = response_file.read().decode('utf8')
                     # Facebook sents error codes for many of their flows
                     # we still want the json to allow for proper handling
-                    logger.warn('FB request, error type %s, code %s',
-                                type(e), getattr(e, 'code', None))
-                    if hasattr(e, 'code') and e.code == 500:
-
-                        raise urllib2.URLError('Facebook is down')
-                    if 'http error' in str(e).lower():
-                        response_file = e
-                    else:
-                        raise
-                response = response_file.read().decode('utf8')
+                    msg_format = 'FB request, error type %s, code %s'
+                    logger.warn(msg_format, type(e), getattr(e, 'code', None))
+                    #detect if its a server or application error
+                    server_error = cls.is_server_error(e, response)
+                    print response, server_error
+                    if server_error:
+                        #trigger a retry
+                        raise urllib2.URLError('Facebook is down %s' % response)
                 break
             except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError), e:
                 #These are often temporary errors, so we will retry before failing
@@ -159,6 +154,25 @@ class FacebookConnection(object):
                                 parsed_response['error_msg'])
 
         return parsed_response
+    
+    @classmethod
+    def is_server_error(cls, e, response):
+        '''
+        Checks an HTTPError to see if Facebook is down or we are using the
+        API in the wrong way
+        Facebook doesn't clearly distinquish between the two, so this is a bit
+        of a hack
+        '''
+        from open_facebook.utils import is_json
+        server_error = False
+        if hasattr(e, 'code') and e.code == 500:
+            server_error = True
+            
+        #if it looks like json, facebook is probably not down
+        if is_json(response):
+            server_error = False
+            
+        return server_error
 
     @classmethod
     def raise_error(cls, error_type, message):

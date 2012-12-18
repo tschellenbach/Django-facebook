@@ -118,18 +118,32 @@ class TestErrorMapping(OpenFacebookTest):
             
 class Test500Detection(OpenFacebookTest):
     def test_500(self):
+        '''
+        Facebook errors often look like 500s
+        Its a silly system, but we need to support it
         
+        '''
+        from StringIO import StringIO
         graph = self.guy.graph()
         
         with mock.patch('urllib2.build_opener') as patched:
             from urllib2 import HTTPError
             
             opener = mock.MagicMock()
-            opener.open.side_effect = Exception('test')
+            response = StringIO('''{
+              "error": {
+                "type": "OAuthException",
+                "message": "Error validating access token: USER_ID has not authorized application APP_ID"
+              }
+            }''')
+            opener.open.side_effect = HTTPError('bla', 500, 'bla', 'bla', response)
             
             patched.return_value = opener
-            print 'testsetup', id(opener.open)
-            graph.get('me')
+            
+            def make_request():
+                graph.get('me')
+                
+            self.assertRaises(facebook_exceptions.OAuthException, make_request)
 
 
 class TestPublishing(OpenFacebookTest):
