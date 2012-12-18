@@ -349,7 +349,7 @@ class OpenGraphShare(BaseModel):
     def save(self, *args, **kwargs):
         if self.user and not self.facebook_user_id:
             self.facebook_user_id = self.user.get_profile().facebook_id
-        return models.Model.save(self, *args, **kwargs)
+        return BaseModel.save(self, *args, **kwargs)
 
     def send(self, graph=None):
         result = None
