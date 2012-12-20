@@ -593,7 +593,7 @@ class FacebookUserConverter(object):
                 gender = None
                 if f.get('sex'):
                     gender = gender_map[f.get('sex')]
-		rawdata = json.dumps(f)
+                rawdata = json.dumps(f)
                 default_dict[str(f['id'])] = dict(name=name, gender=gender, raw_data=rawdata)
             id_field = 'facebook_id'
 

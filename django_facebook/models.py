@@ -150,9 +150,6 @@ class FacebookUser(models.Model):
         ('F', 'female'), ('M', 'male')), blank=True, null=True, max_length=1)
     raw_data = models.TextField(blank=True, null=True)
 
-
-
-
     objects = model_managers.FacebookUserManager()
 
     class Meta:
