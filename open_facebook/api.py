@@ -35,24 +35,20 @@ Currently that would be a bad idea though because of maintenance
 from django.http import QueryDict
 from django_facebook import settings as facebook_settings
 from open_facebook import exceptions as facebook_exceptions
-from open_facebook.utils import json, encode_params, send_warning, memoized
+from open_facebook.utils import json, encode_params, send_warning, memoized, \
+    stop_statsd, start_statsd
 import logging
 import urllib
 import urllib2
 from django_facebook.utils import to_int
 import ssl
 import re
+from urlparse import urlparse
 logger = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT = 8
-#two retries was too little, sometimes facebook is a bit flaky
+# two retries was too little, sometimes facebook is a bit flaky
 REQUEST_ATTEMPTS = 3
-
-
-try:
-    import django_statsd
-except ImportError:
-    django_statsd = None
 
 
 class FacebookConnection(object):
@@ -83,6 +79,11 @@ class FacebookConnection(object):
         request the given url and parse it as json
         urllib2 raises errors on different status codes so use a try except
         '''
+        # change fb__explicitly_shared to fb:explicitly_shared
+        if post_data:
+            post_data = dict(
+                (k.replace('__', ':'), v) for k, v in post_data.items())
+
         logger.info('requesting url %s with post data %s', url, post_data)
         post_request = (post_data is not None or 'method=post' in url)
 
@@ -91,19 +92,22 @@ class FacebookConnection(object):
             response = dict(id=123456789, setting_read_only=True)
             return response
 
+        # nicely identify ourselves before sending the request
         opener = urllib2.build_opener()
         opener.addheaders = [('User-agent', 'Open Facebook Python')]
-        # give it a few shots, connection is buggy at times
 
-        path = url.split('?', 1)[0].rsplit('/', 1)[-1].replace('.', '_')
+        # get the statsd path to track response times with
+        path = urlparse(url).path
+        statsd_path = path.replace('.', '_')
+
+        # give it a few shots, connection is buggy at times
         while attempts:
             response_file = None
             encoded_params = encode_params(post_data) if post_data else None
             post_string = (urllib.urlencode(encoded_params)
                            if post_data else None)
             try:
-                if django_statsd:
-                    django_statsd.start('facebook.%s' % path)
+                start_statsd('facebook.%s' % statsd_path)
 
                 try:
                     response_file = opener.open(
@@ -116,26 +120,25 @@ class FacebookConnection(object):
                     # we still want the json to allow for proper handling
                     msg_format = 'FB request, error type %s, code %s'
                     logger.warn(msg_format, type(e), getattr(e, 'code', None))
-                    #detect if its a server or application error
+                    # detect if its a server or application error
                     server_error = cls.is_server_error(e, response)
                     if server_error:
-                        #trigger a retry
+                        # trigger a retry
                         raise urllib2.URLError(
                             'Facebook is down %s' % response)
                 break
             except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError), e:
-                #These are often temporary errors, so we will retry before failing
+                # These are often temporary errors, so we will retry before failing
                 error_format = 'Facebook encountered a timeout or error %s'
                 logger.warn(error_format, unicode(e))
                 attempts -= 1
                 if not attempts:
-                    #if we have no more attempts actually raise the error
+                    # if we have no more attempts actually raise the error
                     raise facebook_exceptions.convert_unreachable_exception(e)
             finally:
                 if response_file:
                     response_file.close()
-                if django_statsd:
-                    django_statsd.stop('facebook.%s' % path)
+                stop_statsd('facebook.%s' % statsd_path)
 
         try:
             parsed_response = json.loads(response)
@@ -169,7 +172,7 @@ class FacebookConnection(object):
         if hasattr(e, 'code') and e.code == 500:
             server_error = True
 
-        #if it looks like json, facebook is probably not down
+        # if it looks like json, facebook is probably not down
         if is_json(response):
             server_error = False
 
@@ -183,26 +186,26 @@ class FacebookConnection(object):
         default_error_class = facebook_exceptions.OpenFacebookException
         error_class = None
 
-        #get the error code
+        # get the error code
         error_code = cls.get_code_from_message(message)
         # also see http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
         logger.info('Trying to match error code %s to error class', error_code)
 
-        #lookup by error code takes precedence
+        # lookup by error code takes precedence
         error_class = cls.match_error_code(error_code)
 
-        #try to get error class by direct lookup
+        # try to get error class by direct lookup
         if not error_class:
             if not isinstance(error_type, int):
                 error_class = getattr(facebook_exceptions, error_type, None)
             if error_class and not issubclass(error_class, default_error_class):
                 error_class = None
 
-        #hack for missing parameters
+        # hack for missing parameters
         if 'Missing' in message and 'parameter' in message:
             error_class = facebook_exceptions.MissingParameter
 
-        #fallback to the default
+        # fallback to the default
         if not error_class:
             error_class = default_error_class
 
@@ -255,7 +258,7 @@ class FacebookConnection(object):
                     raise(
                         ValueError, 'Dont know how to handle %s of '
                         'type %s' % (code, type(code)))
-            #tell about the happy news if we found something
+            # tell about the happy news if we found something
             if matching_error_class:
                 error_class = matching_error_class
                 break
@@ -401,7 +404,7 @@ class FacebookAuthorization(FacebookConnection):
             'permissions': permissions,
         }
         path = '%s/accounts/test-users' % facebook_settings.FACEBOOK_APP_ID
-        #add the test user data to the test user data class
+        # add the test user data to the test user data class
         test_user_data = cls.request(path, **kwargs)
         test_user_data['name'] = name
         test_user = TestUser(test_user_data)
@@ -427,17 +430,17 @@ class FacebookAuthorization(FacebookConnection):
         if isinstance(permissions, list):
             permissions = ','.join(permissions)
 
-        #hacking the permissions into the name of the test user
+        # hacking the permissions into the name of the test user
         default_name = 'Permissions %s' % permissions.replace(
             ',', ' ').replace('_', '')
         name = name or default_name
 
-        #retrieve all test users
+        # retrieve all test users
         test_users = cls.get_test_users(app_access_token)
         user_id_dict = dict([(int(u['id']), u) for u in test_users])
         user_ids = map(str, user_id_dict.keys())
 
-        #use fql to figure out their names
+        # use fql to figure out their names
         facebook = OpenFacebook(app_access_token)
         users = facebook.fql('SELECT uid, name FROM user WHERE uid in (%s)' %
                              ','.join(user_ids))
@@ -445,19 +448,19 @@ class FacebookAuthorization(FacebookConnection):
         user_id = users_dict.get(name)
 
         if force_create and user_id:
-            #we need the users access_token, the app access token doesn't
-            #always work, seems to be a bug in the Facebook api
+            # we need the users access_token, the app access token doesn't
+            # always work, seems to be a bug in the Facebook api
             test_user_data = user_id_dict[user_id]
             cls.delete_test_user(test_user_data['access_token'], user_id)
             user_id = None
 
         if user_id:
-            #we found our user, extend the data a bit
+            # we found our user, extend the data a bit
             test_user_data = user_id_dict[user_id]
             test_user_data['name'] = name
             test_user = TestUser(test_user_data)
         else:
-            #create the user
+            # create the user
             test_user = cls.create_test_user(
                 app_access_token, permissions, name)
 
@@ -467,7 +470,7 @@ class FacebookAuthorization(FacebookConnection):
     def get_test_users(cls, app_access_token):
         kwargs = dict(access_token=app_access_token)
         path = '%s/accounts/test-users' % facebook_settings.FACEBOOK_APP_ID
-        #retrieve all test users
+        # retrieve all test users
         response = cls.request(path, **kwargs)
         test_users = response['data']
         return test_users
@@ -477,13 +480,13 @@ class FacebookAuthorization(FacebookConnection):
         kwargs = dict(access_token=app_access_token, method='delete')
         path = '%s/' % test_user_id
 
-        #retrieve all test users
+        # retrieve all test users
         response = cls.request(path, **kwargs)
         return response
 
     @classmethod
     def delete_test_users(cls, app_access_token):
-        #retrieve all test users
+        # retrieve all test users
         test_users = cls.get_test_users(app_access_token)
         test_user_ids = [u['id'] for u in test_users]
         for test_user_id in test_user_ids:
@@ -616,7 +619,7 @@ class OpenFacebook(FacebookConnection):
 
         response = self.request(path, **kwargs)
 
-        #return only the data for backward compatability
+        # return only the data for backward compatability
         return response['data']
 
     def batch_fql(self, queries_dict):

@@ -4,6 +4,7 @@ from open_facebook.api import *
 import unittest
 import logging
 import mock
+import datetime
 logger = logging.getLogger()
 from open_facebook.utils import json
 
@@ -29,7 +30,7 @@ def setup_users():
     if TEST_USER_OBJECTS is None:
         key = 'test_user_objects'
         user_objects = cache.get(key)
-        if not user_objects:
+        if not user_objects or True:
             logger.info('test user cache not found, rebuilding')
             user_objects = {}
             app_token = FacebookAuthorization.get_app_access_token()
@@ -150,8 +151,10 @@ class Test500Detection(OpenFacebookTest):
 class TestPublishing(OpenFacebookTest):
     def test_wallpost(self):
         graph = self.thi.graph()
-        result = graph.set('me/feed', message='This should work')
+        now = datetime.datetime.now()
+        result = graph.set('me/feed', message='This should work %s' % now)
         self.assertTrue(result['id'])
+        graph.delete(result['id'])
 
         #we have no permissions, this should fail
         guy_graph = self.guy.graph()
@@ -171,6 +174,24 @@ class TestPublishing(OpenFacebookTest):
         #now try removing it
         remove_path = result['id']
         deleted = graph.delete(remove_path)
+
+    def test_og_adjust(self):
+        #perform an og follow
+        graph = self.thi.graph()
+        path = 'me/og.follows'
+        result = graph.set(path, profile=self.guy.id)
+        self.assertTrue(result['id'])
+
+        change_result = graph.set(result['id'], message='hello world')
+        assert change_result is True
+
+    def test_og_explicit_share(self):
+        #perform an og follow
+        graph = self.thi.graph()
+        path = 'me/og.follows'
+        result = graph.set(
+            path, profile=self.guy.id, fb__explicitly_shared='true')
+        self.assertTrue(result['id'])
 
 
 class TestOpenFacebook(OpenFacebookTest):

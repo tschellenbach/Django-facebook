@@ -307,6 +307,12 @@ class OpenGraphShare(BaseModel):
         share.save()
         result = share.send()
 
+    Advanced usage:
+        share.send()
+        share.update(message='Hello world')
+        share.remove()
+        share.retry()
+
     Using this model has the advantage that it allows us to
     - remove open graph shares (since we store the Facebook id)
     - retry open graph shares, which is handy in case of
@@ -395,6 +401,25 @@ class OpenGraphShare(BaseModel):
 
         return result
 
+    def update(self, data, graph=None):
+        '''
+        Update the share with the given data
+        '''
+        result = None
+        profile = self.user.get_profile()
+        graph = graph or profile.get_offline_graph()
+
+        #update the share dict so a retry will do the right thing
+        #just in case we fail the first time
+        shared = self.update_share_dict(data)
+        self.save()
+
+        #broadcast the change to facebook
+        if self.share_id:
+            result = graph.set(self.share_id, **shared)
+
+        return result
+
     def remove(self, graph=None):
         if not self.share_id:
             raise ValueError('Can only delete shares which have an id')
@@ -427,6 +452,12 @@ class OpenGraphShare(BaseModel):
         share_dict_string = self.share_dict
         share_dict = json.loads(share_dict_string)
         return share_dict
+
+    def update_share_dict(self, share_dict):
+        old_share_dict = self.get_share_dict()
+        old_share_dict.update(share_dict)
+        self.set_share_dict(old_share_dict)
+        return old_share_dict
 
 
 class FacebookInvite(CreatedAtAbstractBase):
