@@ -67,7 +67,7 @@ facebook_profile.short_description = 'Profile'
 class OpenGraphShareAdmin(admin.ModelAdmin):
     raw_id_fields = ['user']
     list_display = ['user', 'action_domain', facebook_profile, 'view_share',
-                    'completed_at', 'error_message']
+                    'completed_at', 'removed_at', 'error_message']
     actions = [admin_actions.retry_open_graph_share,
                admin_actions.retry_open_graph_share_for_user]
 
