@@ -15,6 +15,29 @@ logger = logging.getLogger(__name__)
 PROFILE_IMAGE_PATH = os.path.join('images', 'facebook_profiles/%Y/%m/%d')
 
 
+class FACEBOOK_OG_STATE:
+    class NOT_CONNECTED:
+        '''
+        The user has not connected their profile with Facebook
+        '''
+        pass
+
+    class CONNECTED:
+        '''
+        The user has connected their profile with Facebook, but isn't
+        setup for Facebook sharing
+        - sharing is either disabled
+        - or we have no valid access token
+        '''
+        pass
+
+    class SHARING(CONNECTED):
+        '''
+        The user is connected to Facebook and sharing is enabled
+        '''
+        pass
+
+
 class BaseFacebookProfileModel(models.Model):
     '''
     Abstract class to add to your profile model.
@@ -40,6 +63,16 @@ class BaseFacebookProfileModel(models.Model):
 
     class Meta:
         abstract = True
+
+    @property
+    def facebook_og_state(self):
+        if not self.facebook_id:
+            state = FACEBOOK_OG_STATE.NOT_CONNECTED
+        elif self.access_token and self.facebook_open_graph:
+            state = FACEBOOK_OG_STATE.SHARING
+        else:
+            state = FACEBOOK_OG_STATE.CONNECTED
+        return state
 
     def likes(self):
         likes = FacebookLike.objects.filter(user_id=self.user_id)

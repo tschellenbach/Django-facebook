@@ -23,6 +23,7 @@ from open_facebook import exceptions as open_facebook_exceptions
 from django.shortcuts import redirect
 from ssl import SSLError
 from urllib2 import URLError
+from django_facebook.models import OpenGraphShare
 
 
 logger = logging.getLogger(__name__)
@@ -40,6 +41,15 @@ def open_graph_beta(request):
                   'Frictionless sharing to open graph beta action '
                   'fashiolista:love with item_url %s, this url contains '
                   'open graph data which Facebook scrapes' % entity_url)
+
+
+@facebook_required(scope='publish_actions')
+def remove_og_share(request):
+    graph = get_persistent_graph(request)
+    og_share_id = request.GET.get('og_share_id')
+    shares = OpenGraphShare.objects.filter(id=og_share_id)
+    for share in shares:
+        share.remove(graph)
 
 
 @facebook_required(scope='publish_stream')
