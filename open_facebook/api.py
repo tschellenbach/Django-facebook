@@ -331,7 +331,7 @@ class FacebookAuthorization(FacebookConnection):
         data = json.loads(base64_url_decode_php_style(payload))
 
         algo = data.get('algorithm').upper()
-        if  algo != 'HMAC-SHA256':
+        if algo != 'HMAC-SHA256':
             error_format = 'Unknown algorithm we only support HMAC-SHA256 user asked for %s'
             error_message = error_format % algo
             send_warning(error_message)
