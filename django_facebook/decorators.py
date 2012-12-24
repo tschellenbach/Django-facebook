@@ -1,4 +1,4 @@
-from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth import REDIRECT_FIELD_NAME, logout
 from django_facebook import settings as fb_settings
 
 from django.http import HttpResponseRedirect
@@ -7,7 +7,10 @@ from django.utils.decorators import available_attrs
 from django.utils.functional import wraps
 
 import logging
-from django_facebook.api import require_persistent_graph, get_persistent_graph
+from django_facebook.api import require_persistent_graph, get_persistent_graph,\
+    FacebookUserConverter, get_facebook_graph
+from django_facebook.connect import connect_user
+
 logger = logging.getLogger(__name__)
 
 
@@ -117,6 +120,41 @@ def facebook_required_lazy(view_func=None,
     if csrf_exempt:
         #always set canvas pages to be csrf exempt
         wrapped_view.csrf_exempt = csrf_exempt
+
+    return wrapped_view
+
+def facebook_login_required(view_func=None):
+    """
+    decorator that checks if user is authenticated with django and 
+    is the same user from facebook. If it's not, we logout the user
+    and relogin the new one.
+    """
+    def actual_decorator(view_func):
+        @wraps(view_func, assigned=available_attrs(view_func))
+        def _wrapped_view(request, *args, **kwargs):
+            #if user authenticated, we check if this is the same user
+            #in django and facebook. It may not be if 2 different facebook users
+            #access the app in the same computer (and browser). 
+            #Facebook IDs will not be the same, but for django, 
+            #the user is already authenticated
+            if request.user.is_authenticated():
+                django_user_facebook_id = request.user.get_profile().facebook_id
+                if hasattr(request, 'facebook'):
+                    del request.facebook
+                graph = get_facebook_graph(request)
+                facebook = FacebookUserConverter(graph)
+                facebook_data = facebook.facebook_profile_data()
+                if django_user_facebook_id != facebook_data['id']:
+                    logout(request) 
+            if not request.user.is_authenticated():
+                _action, _user = connect_user(request)
+            return view_func(request, *args, **kwargs)
+        return _wrapped_view
+    
+    if view_func:
+        wrapped_view = actual_decorator(view_func)
+    else:
+        wrapped_view = actual_decorator
 
     return wrapped_view
 
