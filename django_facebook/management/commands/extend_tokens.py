@@ -1,7 +1,6 @@
 from django_facebook.management.commands.base import CustomBaseCommand
 from django_facebook.utils import queryset_iterator
 from optparse import make_option
-import datetime
 
 
 class ExtendTokensCommand(CustomBaseCommand):
