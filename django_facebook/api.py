@@ -98,7 +98,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
     from django.core.cache import cache
     parsed_data = None
     expires = None
-    if hasattr(request, 'facebook'):
+    if hasattr(request, 'facebook') and request.facebook:
         graph = request.facebook
         _add_current_user_id(graph, request.user)
         return graph
