@@ -35,7 +35,8 @@ class BaseFacebookProfileModel(models.Model):
         ('m', 'Male'), ('f', 'Female')), blank=True, null=True)
     raw_data = models.TextField(blank=True, null=True)
     facebook_open_graph = models.BooleanField(default=True, help_text='Determines if this user want to share via open graph')
-
+    fb_update_required = models.BooleanField(default=False)
+    
     def __unicode__(self):
         return self.user.__unicode__()
 
