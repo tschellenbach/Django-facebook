@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.base import ModelBase
+from django.utils import timezone
 from django_facebook import model_managers, settings as facebook_settings
 from open_facebook.utils import json, camel_to_underscore
 import datetime
@@ -57,7 +58,8 @@ class BaseFacebookProfileModel(models.Model):
         ('m', 'Male'), ('f', 'Female')), blank=True, null=True)
     raw_data = models.TextField(blank=True, null=True)
     facebook_open_graph = models.BooleanField(default=True, help_text='Determines if this user want to share via open graph')
-
+    fb_update_required = models.BooleanField(default=False)
+    
     def __unicode__(self):
         return self.user.__unicode__()
 
@@ -395,7 +397,7 @@ class OpenGraphShare(BaseModel):
     def send(self, graph=None):
         result = None
         #update the last attempt
-        self.last_attempt = datetime.datetime.now()
+        self.last_attempt = timezone.now()
         self.save()
 
         #see if the graph is enabled
@@ -418,7 +420,7 @@ class OpenGraphShare(BaseModel):
                     raise OpenFacebookException(error_message)
                 self.share_id = share_id
                 self.error_message = None
-                self.completed_at = datetime.datetime.now()
+                self.completed_at = timezone.now()
                 self.save()
             except OpenFacebookException, e:
                 logger.warn(

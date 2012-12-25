@@ -132,7 +132,8 @@ setup(
 #                      'README.rest'])],
     description=DESCRIPTION,
     long_description=long_description,
-    classifiers=CLASSIFIERS
+    classifiers=CLASSIFIERS,
+    install_requires = ['python-dateutil'],
 #    tests_require=[
 #        'django',
 #    ],

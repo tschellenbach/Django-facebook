@@ -70,7 +70,8 @@ def connect_user(request, access_token=None, facebook_graph=None):
             # email address?
             # It is after all quite common to use email addresses for usernames
             update = getattr(auth_user, 'fb_update_required', False)
-            if not auth_user.get_profile().facebook_id:
+            profile = auth_user.get_profile() 
+            if not profile.facebook_id or profile.fb_update_required:
                 update = True
             #login the user
             user = _login_user(request, facebook, auth_user, update=update)
@@ -337,6 +338,7 @@ def _update_user(user, facebook, overwrite=True):
     if user_dirty:
         user.save()
     if profile_dirty:
+        profile.fb_update_required = False
         profile.save()
 
     signals.facebook_post_update.send(sender=get_profile_class(),
