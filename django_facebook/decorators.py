@@ -144,7 +144,7 @@ def facebook_login_required(view_func=None):
                 graph = get_facebook_graph(request)
                 facebook = FacebookUserConverter(graph)
                 facebook_data = facebook.facebook_profile_data()
-                if django_user_facebook_id != facebook_data['id']:
+                if django_user_facebook_id != long(facebook_data['id']):
                     logout(request) 
             if not request.user.is_authenticated():
                 _action, _user = connect_user(request)
