@@ -1,7 +1,9 @@
 try:
-    from django.utils import timezone as datetime
+    #using compatible_datetime instead of datetime only 
+    #not to override the original datetime package
+    from django.utils import timezone as compatible_datetime
 except ImportError:
-    from datetime import datetime
+    from datetime import datetime as compatible_datetime
 from django.http import QueryDict, HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django.db import models, transaction

@@ -1,4 +1,4 @@
-from django_facebook.utils import datetime
+from django_facebook.utils import compatible_datetime as datetime
 import logging
 from open_facebook import exceptions as facebook_exceptions
 import sys

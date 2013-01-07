@@ -3,7 +3,13 @@ from django.core.cache import cache
 from django.db import models
 import operator
 import random
-import datetime
+from django_facebook.utils import compatible_datetime
+try:
+    from compatible_datetime import timedelta
+except ImportError:
+    from datetime import timedelta
+#we need to set this here otherwise we can't import timedelta from original datetime module 
+datetime = compatible_datetime
 from django.contrib.contenttypes.models import ContentType
 import logging
 logger = logging.getLogger(__name__)
@@ -68,8 +74,8 @@ class OpenGraphShareManager(models.Manager):
 
     def recently_failed(self):
         from django_facebook import settings as facebook_settings
-        now = datetime.datetime.today()
-        recent_delta = datetime.timedelta(
+        now = datetime.now()
+        recent_delta = timedelta(
             days=facebook_settings.FACEBOOK_OG_SHARE_RETRY_DAYS)
         recent = now - recent_delta
         failed = self.failed()
