@@ -3,13 +3,8 @@ from django.core.cache import cache
 from django.db import models
 import operator
 import random
-from django_facebook.utils import compatible_datetime
-try:
-    from compatible_datetime import timedelta
-except ImportError:
-    from datetime import timedelta
-#we need to set this here otherwise we can't import timedelta from original datetime module 
-datetime = compatible_datetime
+from datetime import timedelta
+from django_facebook.utils import compatible_datetime as datetime
 from django.contrib.contenttypes.models import ContentType
 import logging
 logger = logging.getLogger(__name__)
