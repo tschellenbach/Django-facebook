@@ -4,6 +4,10 @@ from django_facebook import settings as facebook_settings
 from django_facebook.utils import mass_get_or_create, cleanup_oauth_url,\
     get_profile_class
 from open_facebook.exceptions import OpenFacebookException
+try:
+    from dateutil.parser import parse as parse_date
+except ImportError:
+    from django_facebook.utils import parse_like_datetime as parse_date
 import datetime
 import logging
 from open_facebook import exceptions as open_facebook_exceptions
@@ -496,8 +500,7 @@ class FacebookUserConverter(object):
                 created_time_string = like.get('created_time')
                 created_time = None
                 if created_time_string:
-                    created_time = datetime.datetime.strptime(
-                        like['created_time'], "%Y-%m-%dT%H:%M:%S+0000")
+                    created_time = parse_date(like['created_time'])
                 default_dict[like['id']] = dict(
                     created_time=created_time,
                     category=like.get('category'),

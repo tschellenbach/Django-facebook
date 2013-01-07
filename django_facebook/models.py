@@ -6,7 +6,9 @@ from django.db import models
 from django.db.models.base import ModelBase
 from django_facebook import model_managers, settings as facebook_settings
 from open_facebook.utils import json, camel_to_underscore
-import datetime
+from datetime import timedelta
+from django_facebook.utils import compatible_datetime as datetime
+
 import logging
 import os
 logger = logging.getLogger(__name__)
@@ -128,7 +130,7 @@ class BaseFacebookProfileModel(models.Model):
         token_changed = access_token != old_token
         message = 'a new' if token_changed else 'the same'
         log_format = 'Facebook provided %s token, which expires at %s'
-        expires_delta = datetime.timedelta(days=60)
+        expires_delta = timedelta(days=60)
         logger.info(log_format, message, expires_delta)
         if token_changed:
             logger.info('Saving the new access token')
@@ -395,7 +397,7 @@ class OpenGraphShare(BaseModel):
     def send(self, graph=None):
         result = None
         #update the last attempt
-        self.last_attempt = datetime.datetime.now()
+        self.last_attempt = datetime.now()
         self.save()
 
         #see if the graph is enabled
@@ -418,7 +420,7 @@ class OpenGraphShare(BaseModel):
                     raise OpenFacebookException(error_message)
                 self.share_id = share_id
                 self.error_message = None
-                self.completed_at = datetime.datetime.now()
+                self.completed_at = datetime.now()
                 self.save()
             except OpenFacebookException, e:
                 logger.warn(
@@ -461,7 +463,7 @@ class OpenGraphShare(BaseModel):
         graph = graph or profile.get_offline_graph()
 
         response = graph.delete(self.share_id)
-        self.removed_at = datetime.datetime.now()
+        self.removed_at = datetime.now()
         self.save()
 
     def retry(self, graph=None, reset_retries=False):

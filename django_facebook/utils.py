@@ -1,3 +1,10 @@
+try:
+    #using compatible_datetime instead of datetime only 
+    #not to override the original datetime package
+    from django.utils import timezone as compatible_datetime
+except ImportError:
+    from datetime import datetime as compatible_datetime
+from datetime import datetime
 from django.http import QueryDict, HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django.db import models, transaction
@@ -447,3 +454,6 @@ def get_class_from_string(path, default='raise'):
         else:
             backend_class = default
     return backend_class
+
+def parse_like_datetime(dt):
+    return datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S+0000")
