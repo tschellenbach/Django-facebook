@@ -1,3 +1,7 @@
+try:
+    from django.utils import timezone as datetime
+except ImportError:
+    from datetime import datetime
 from django.http import QueryDict, HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django.db import models, transaction

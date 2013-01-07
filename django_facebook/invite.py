@@ -1,7 +1,4 @@
-try:
-    from django.utils import timezone as datetime
-except ImportError:
-    from datetime import datetime
+from django_facebook.utils import datetime
 import logging
 from open_facebook import exceptions as facebook_exceptions
 import sys
