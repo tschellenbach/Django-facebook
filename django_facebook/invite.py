@@ -1,4 +1,4 @@
-import datetime
+from django_facebook.utils import compatible_datetime as datetime
 import logging
 from open_facebook import exceptions as facebook_exceptions
 import sys
@@ -67,7 +67,7 @@ def post_on_profile(user, fb, facebook_id, invite_message, force_class=None, for
 
     try:
         fb_invite, created = FacebookInvite.objects.get_or_create(user=user, user_invited=facebook_id, defaults=dict(message=invite_message))
-        fb_invite.last_attempt = datetime.datetime.now()
+        fb_invite.last_attempt = datetime.now()
         modulo = fb_invite.id % len(facebook_classes)
         message_class = facebook_classes[modulo]
         if force_class:
