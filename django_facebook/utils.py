@@ -1,5 +1,5 @@
 try:
-    #using compatible_datetime instead of datetime only 
+    #using compatible_datetime instead of datetime only
     #not to override the original datetime package
     from django.utils import timezone as compatible_datetime
 except ImportError:
@@ -454,6 +454,7 @@ def get_class_from_string(path, default='raise'):
         else:
             backend_class = default
     return backend_class
+
 
 def parse_like_datetime(dt):
     return datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S+0000")
