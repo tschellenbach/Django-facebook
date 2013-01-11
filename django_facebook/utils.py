@@ -1,5 +1,5 @@
 try:
-    #using compatible_datetime instead of datetime only 
+    #using compatible_datetime instead of datetime only
     #not to override the original datetime package
     from django.utils import timezone as compatible_datetime
 except ImportError:
@@ -116,11 +116,12 @@ class CanvasRedirect(HttpResponse):
     '''
     Redirect for Facebook Canvas pages
     '''
-    def __init__(self, redirect_to):
+    def __init__(self, redirect_to, show_body=True):
         self.redirect_to = redirect_to
         self.location = iri_to_uri(redirect_to)
 
-        context = dict(location=self.location)
+        context = dict(location=self.location,
+                       show_body=show_body)
         js_redirect = render_to_string(
             'django_facebook/canvas_redirect.html', context)
 
@@ -454,6 +455,7 @@ def get_class_from_string(path, default='raise'):
         else:
             backend_class = default
     return backend_class
+
 
 def parse_like_datetime(dt):
     return datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S+0000")
