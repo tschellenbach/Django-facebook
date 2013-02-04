@@ -8,6 +8,7 @@ from django.utils import simplejson as json
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings, signals
 from django_facebook.api import get_facebook_graph, FacebookUserConverter
+from django_facebook.models import FacebookProfile
 from django_facebook.utils import get_registration_backend, get_form_class, \
     get_profile_class, to_bool
 from random import randint
@@ -27,6 +28,9 @@ class CONNECT_ACTIONS:
         pass
 
     class REGISTER:
+        pass
+
+    class FAILED:
         pass
 
 
@@ -88,6 +92,11 @@ def connect_user(request, access_token=None, facebook_graph=None):
                     facebook_id=facebook_data['id'], **kwargs)
                 action = CONNECT_ACTIONS.LOGIN
                 user = _login_user(request, facebook, auth_user, update=False)
+            except FacebookProfile.DoesNotExist, e:
+                # The user was deleted by the downstream post_create signal
+                action = CONNECT_ACTIONS.FAILED
+                return action, None
+
 
     _update_likes_and_friends(request, user, facebook)
 
@@ -233,7 +242,7 @@ def _register_user(request, facebook, profile_callback=None,
         raise facebook_exceptions.AlreadyRegistered(e)
 
     signals.facebook_user_registered.send(sender=auth.models.User,
-                                          user=new_user, facebook_data=facebook_data)
+                                          user=new_user, facebook_data=facebook_data, request=request)
 
     #update some extra data not yet done by the form
     new_user = _update_user(new_user, facebook)
