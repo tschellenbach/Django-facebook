@@ -1,11 +1,11 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import login
-from django.contrib.auth.models import User
 
 from django_facebook import signals
 from django_facebook.forms import FacebookRegistrationFormUniqueEmail
 from django_facebook import settings as facebook_settings
+from django_facebook.utils import get_user_model
 
 
 class NooptRegistrationBackend(object):
@@ -54,7 +54,7 @@ class FacebookRegistrationBackend(NooptRegistrationBackend):
         username, email, password = kwargs['username'], kwargs[
             'email'], kwargs['password1']
         #Create user doesn't accept additional parameters,
-        new_user = User.objects.create_user(username, email, password)
+        new_user = get_user_model().objects.create_user(username, email, password)
 
         signals.user_registered.send(sender=self.__class__,
                                      user=new_user,

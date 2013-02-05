@@ -8,6 +8,7 @@ from django_facebook import model_managers, settings as facebook_settings
 from open_facebook.utils import json, camel_to_underscore
 from datetime import timedelta
 from django_facebook.utils import compatible_datetime as datetime
+from django_facebook.utils import get_user_model
 
 import logging
 import os
@@ -218,7 +219,7 @@ class FacebookProfile(FacebookProfileModel):
     Use this by setting
     AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile'
     '''
-    user = models.OneToOneField('auth.User')
+    user = models.OneToOneField(get_user_model())
 
 
 class BaseModelMetaclass(ModelBase):
@@ -344,8 +345,7 @@ class OpenGraphShare(BaseModel):
     '''
     objects = model_managers.OpenGraphShareManager()
 
-    from django.contrib.auth.models import User
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(get_user_model())
 
     #domain stores
     action_domain = models.CharField(max_length=255)
@@ -484,8 +484,7 @@ class OpenGraphShare(BaseModel):
 
 
 class FacebookInvite(CreatedAtAbstractBase):
-    from django.contrib.auth.models import User
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(get_user_model())
     user_invited = models.CharField(max_length=255)
     message = models.TextField(blank=True, null=True)
     type = models.CharField(blank=True, null=True, max_length=255)

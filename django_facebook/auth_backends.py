@@ -2,6 +2,7 @@ from django.contrib.auth import models, backends
 from django.db.utils import DatabaseError
 from django_facebook.utils import get_profile_class
 from django_facebook import settings as facebook_settings
+from django_facebook.utils import get_user_model
 #from user import models as models_user
 
 
@@ -30,8 +31,8 @@ class FacebookBackend(backends.ModelBackend):
                     profile = profiles[0] if profiles else None
                 except DatabaseError:
                     try:
-                        user = models.User.objects.get(email=facebook_email)
-                    except models.User.DoesNotExist:
+                        user = get_user_model().objects.get(email=facebook_email)
+                    except get_user_model().DoesNotExist:
                         user = None
                     profile = user.get_profile() if user else None
 

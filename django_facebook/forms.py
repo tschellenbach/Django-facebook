@@ -3,10 +3,11 @@ Forms and validation code for user registration.
 
 """
 
-
-from django.contrib.auth.models import User
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+
+from django_facebook.utils import get_user_model
+
 attrs_dict = {'class': 'required'}
 
 
@@ -36,9 +37,9 @@ class FacebookRegistrationFormUniqueEmail(forms.Form):
 
         """
         try:
-            user = User.objects.get(
+            get_user_model().objects.get(
                 username__iexact=self.cleaned_data['username'])
-        except User.DoesNotExist:
+        except get_user_model().DoesNotExist:
             return self.cleaned_data['username']
         raise forms.ValidationError(
             _("A user with that username already exists."))
@@ -61,6 +62,6 @@ class FacebookRegistrationFormUniqueEmail(forms.Form):
         Validate that the supplied email address is unique for the
         site.
         """
-        if User.objects.filter(email__iexact=self.cleaned_data['email']):
+        if get_user_model().objects.filter(email__iexact=self.cleaned_data['email']):
             raise forms.ValidationError(_("This email address is already in use. Please supply a different email address."))
         return self.cleaned_data['email']

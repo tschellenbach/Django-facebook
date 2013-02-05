@@ -46,7 +46,8 @@ import re
 from urlparse import urlparse
 logger = logging.getLogger(__name__)
 
-REQUEST_TIMEOUT = 8
+
+REQUEST_TIMEOUT = 30
 # two retries was too little, sometimes facebook is a bit flaky
 REQUEST_ATTEMPTS = 3
 
