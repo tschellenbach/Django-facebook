@@ -7,6 +7,7 @@ except ImportError:
 from datetime import datetime
 from django.http import QueryDict, HttpResponse, HttpResponseRedirect
 from django.conf import settings
+import django.contrib.auth
 from django.db import models, transaction
 import logging
 import re
@@ -185,6 +186,15 @@ def get_profile_class():
     app_label, model = profile_string.split('.')
 
     return models.get_model(app_label, model)
+
+
+def get_user_model():
+    """For Django < 1.5 backward compatibility
+    """
+    if hasattr(django.contrib.auth, 'get_user_model'):
+        return django.contrib.auth.get_user_model()
+    else:
+        return django.contrib.auth.models.User
 
 
 @transaction.commit_on_success

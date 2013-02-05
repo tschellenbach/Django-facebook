@@ -1,9 +1,10 @@
 from __future__ import with_statement
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.models import AnonymousUser
 from django.core.urlresolvers import reverse
 from django.test.client import Client
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings, signals
+from django_facebook.utils import get_user_model
 from django_facebook.api import get_facebook_graph, FacebookUserConverter, \
     get_persistent_graph
 from django_facebook.auth_backends import FacebookBackend
@@ -62,7 +63,7 @@ class UserConnectViewTest(FacebookTest):
         Test if we can do logins
         django_facebook.connect.connect_user
         '''
-        user = User.objects.all()[:1][0]
+        user = get_user_model().objects.all()[:1][0]
         url = reverse('facebook_connect')
 
         #see if the basics don't give errors
@@ -153,7 +154,7 @@ class OpenGraphShareTest(FacebookTest):
         from django_facebook.models import OpenGraphShare
         user_url = 'http://www.fashiolista.com/style/neni/'
         kwargs = dict(item=user_url)
-        user = User.objects.all()[:1][0]
+        user = get_user_model().objects.all()[:1][0]
         from django.contrib.contenttypes.models import ContentType
         love_content_type = ContentType.objects.get(
             app_label='auth', model='user')
@@ -172,7 +173,7 @@ class OpenGraphShareTest(FacebookTest):
         from django_facebook.models import OpenGraphShare
         user_url = 'http://www.fashiolista.com/style/neni/'
         kwargs = dict(item=user_url)
-        user = User.objects.all()[:1][0]
+        user = get_user_model().objects.all()[:1][0]
         profile = user.get_profile()
         profile.facebook_open_graph = True
         profile.save()
@@ -420,7 +421,7 @@ class SignalTest(FacebookTest):
             profile.post_update_signal = True
 
         Profile = get_profile_class()
-        signals.facebook_user_registered.connect(user_registered, sender=User)
+        signals.facebook_user_registered.connect(user_registered, sender=get_user_model())
         signals.facebook_pre_update.connect(pre_update, sender=Profile)
         signals.facebook_post_update.connect(post_update, sender=Profile)
 

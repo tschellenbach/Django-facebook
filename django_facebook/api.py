@@ -8,6 +8,8 @@ try:
     from dateutil.parser import parse as parse_date
 except ImportError:
     from django_facebook.utils import parse_like_datetime as parse_date
+from django_facebook.utils import get_user_model
+
 import datetime
 import logging
 from open_facebook import exceptions as open_facebook_exceptions
@@ -401,8 +403,7 @@ class FacebookUserConverter(object):
         '''
         Check the database and add numbers to the username to ensure its unique
         '''
-        from django.contrib.auth.models import User
-        usernames = list(User.objects.filter(
+        usernames = list(get_user_model().objects.filter(
             username__istartswith=base_username).values_list(
                 'username', flat=True))
         usernames_lower = [str(u).lower() for u in usernames]

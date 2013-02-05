@@ -9,7 +9,7 @@ from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings, signals
 from django_facebook.api import get_facebook_graph, FacebookUserConverter
 from django_facebook.utils import get_registration_backend, get_form_class, \
-    get_profile_class, to_bool
+    get_profile_class, to_bool, get_user_model
 from random import randint
 import logging
 import sys
@@ -232,7 +232,7 @@ def _register_user(request, facebook, profile_callback=None,
         #the second one raises an error
         raise facebook_exceptions.AlreadyRegistered(e)
 
-    signals.facebook_user_registered.send(sender=auth.models.User,
+    signals.facebook_user_registered.send(sender=get_user_model(),
                                           user=new_user, facebook_data=facebook_data)
 
     #update some extra data not yet done by the form
