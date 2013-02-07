@@ -496,7 +496,7 @@ class FacebookCanvasMiddlewareTest(FacebookTest):
         self.assertTrue(mocked_method.called)
         self.assertIsInstance(response, CanvasRedirect)
 
-    @patch('django_facebook.middlewares.connect_user', fake_connect)
+    @patch('django_facebook.middleware.connect_user', fake_connect)
     @patch.object(OpenFacebook, 'permissions')
     @patch.object(FacebookAuthorization, 'parse_signed_data')
     def test_auth_user(self, mocked_method_1=FacebookAuthorization.parse_signed_data,
