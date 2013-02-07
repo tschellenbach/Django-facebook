@@ -35,7 +35,7 @@ class FacebookProfileAdmin(admin.ModelAdmin):
         position: absolute;
         margin-top: -3px;
     "></span>""".format(
-            instance.image.url if instance.image else ''
+            instance.image.url if (instance and instance.image) else ''
         )
     image_.allow_tags = True
 

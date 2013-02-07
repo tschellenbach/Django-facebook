@@ -233,7 +233,7 @@ def _register_user(request, facebook, profile_callback=None,
         raise facebook_exceptions.AlreadyRegistered(e)
 
     signals.facebook_user_registered.send(sender=auth.models.User,
-                                          user=new_user, facebook_data=facebook_data)
+                                          user=new_user, facebook_data=facebook_data, request=request)
 
     #update some extra data not yet done by the form
     new_user = _update_user(new_user, facebook)
