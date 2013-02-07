@@ -499,12 +499,14 @@ class FacebookCanvasMiddlewareTest(FacebookTest):
     @patch('django_facebook.middleware.connect_user', fake_connect)
     @patch.object(OpenFacebook, 'permissions')
     @patch.object(FacebookAuthorization, 'parse_signed_data')
-    def test_auth_user(self, mocked_method_1=FacebookAuthorization.parse_signed_data,
-                       mocked_method_2=OpenFacebook.permissions):
+    def test_auth_user(
+        self, mocked_method_1=FacebookAuthorization.parse_signed_data,
+            mocked_method_2=OpenFacebook.permissions):
         data = {'signed_request': 'd7JQQIfxHgEzLIqJMeU9J5IlLg7shzPJ8DFRF55L52w.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImV4cGlyZXMiOjEzNTgwNzQ4MDAsImlzc3VlZF9hdCI6MTM1ODA2ODU1MCwib2F1dGhfdG9rZW4iOiJBQUFGdk02MWpkT0FCQVBhWkNzR1pDM0dEVFZtdDJCWkFQVlpDc0F0aGNmdXBYUnhMN1cwUHBaQm53OEUwTzBBRVNYNjVaQ0JHdjZpOFRBWGhnMEpzbER5UmtmZUlnYnNHUmV2eHQxblFGZ0hNcFNpeTNWRTB3ZCIsInVzZXIiOnsiY291bnRyeSI6ImJyIiwibG9jYWxlIjoiZW5fVVMiLCJhZ2UiOnsibWluIjoyMX19LCJ1c2VyX2lkIjoiMTAwMDA1MDEyNDY2Nzg1In0'}
         request = self.get_canvas_url(data=data)
         request.user = AnonymousUser()
-        mocked_method_1.return_value = {'user_id': '123456', 'oauth_token': 'qwertyuiop'}
+        mocked_method_1.return_value = {'user_id': '123456',
+                                        'oauth_token': 'qwertyuiop'}
         mocked_method_2.return_value = facebook_settings.FACEBOOK_DEFAULT_SCOPE
         self.assertIsNone(self.middleware.process_request(request))
         self.assertTrue(mocked_method_1.called)

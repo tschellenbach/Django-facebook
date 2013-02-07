@@ -80,6 +80,3 @@ FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = getattr(
 # Profile image location
 FACEBOOK_PROFILE_IMAGE_PATH = getattr(
     settings, 'FACEBOOK_PROFILE_IMAGE_PATH', None)
-
-
-

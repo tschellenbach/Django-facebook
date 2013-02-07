@@ -52,7 +52,8 @@ class FacebookCanvasMiddleWare(object):
             return redirect_login_oauth
 
         #get signed_request and redirect to authorization dialog if app not authorized by user
-        parsed_signed_request = FacebookAuthorization.parse_signed_data(signed_request)
+        parsed_signed_request = FacebookAuthorization.parse_signed_data(
+            signed_request)
         if 'user_id' not in parsed_signed_request or 'oauth_token' not in parsed_signed_request:
             return redirect_login_oauth
 

@@ -309,7 +309,7 @@ class FacebookUserConverter(object):
         if username:
             user_data['username'] = cls._create_unique_username(
                 user_data['username'])
-            
+
         # make sure the first and last name are not too long
         user_data['first_name'] = user_data['first_name'][:30]
         user_data['last_name'] = user_data['last_name'][:30]
@@ -427,7 +427,7 @@ class FacebookUserConverter(object):
         - name
         '''
         username = None
-        
+
         # start by checking the public profile link (your facebook username)
         link = facebook_data.get('link')
         if link:
@@ -435,7 +435,7 @@ class FacebookUserConverter(object):
             username = cls._make_username(username)
             if 'profilephp' in username:
                 username = None
-        
+
         # try the email adress next
         if not username and 'email' in facebook_data:
             username = cls._make_username(facebook_data.get(
@@ -444,7 +444,7 @@ class FacebookUserConverter(object):
         # last try the name of the user
         if not username or len(username) < 4:
             username = cls._make_username(facebook_data.get('name'))
-            
+
         if not username:
             raise FacebookException('couldnt figure out a username')
 
@@ -457,12 +457,12 @@ class FacebookUserConverter(object):
         '''
         from django.template.defaultfilters import slugify
         slugified_name = slugify(username).replace('-', '_')
-        
+
         # consider the username min and max constraints
         slugified_name = slugified_name[:30]
         if len(username) < 4:
             slugified_name = None
-        
+
         return slugified_name
 
     def get_and_store_likes(self, user):
