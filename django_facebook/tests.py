@@ -20,7 +20,7 @@ from open_facebook.api import FacebookConnection, FacebookAuthorization,\
 from open_facebook.exceptions import FacebookSSLError, FacebookURLError
 import logging
 import mock
-from django_facebook.middlewares import FacebookCanvasMiddleWare
+from django_facebook.middleware import FacebookCanvasMiddleWare
 from django.contrib.sessions.middleware import SessionMiddleware
 
 
