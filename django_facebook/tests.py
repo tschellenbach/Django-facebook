@@ -227,6 +227,19 @@ class UserConnectTest(FacebookTest):
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(user.get_profile().gender, 'm')
 
+    def test_long_username(self):
+        request = RequestMock().get('/')
+        request.session = {}
+        request.user = AnonymousUser()
+        graph = get_persistent_graph(request, access_token='long_username')
+        converter = FacebookUserConverter(graph)
+        base_data = converter.facebook_registration_data()
+        action, user = connect_user(self.request, facebook_graph=graph)
+        self.assertEqual(len(base_data['username']), 30)
+        self.assertEqual(len(user.username), 30)
+        self.assertEqual(len(user.first_name), 30)
+        self.assertEqual(len(user.last_name), 30)
+
     def test_full_connect(self):
         #going for a register, connect and login
         graph = get_facebook_graph(access_token='short_username')
