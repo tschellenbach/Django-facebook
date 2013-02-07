@@ -1,7 +1,7 @@
 from __future__ import with_statement
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.urlresolvers import reverse
-from django.test.client import Client
+from django.test.client import Client, RequestFactory
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings, signals
 from django_facebook.api import get_facebook_graph, FacebookUserConverter, \
@@ -11,13 +11,17 @@ from django_facebook.connect import _register_user, connect_user, \
     CONNECT_ACTIONS
 from django_facebook.tests_utils.base import FacebookTest, LiveFacebookTest, \
     RequestMock
-from django_facebook.utils import cleanup_oauth_url, get_profile_class
+from django_facebook.utils import cleanup_oauth_url, get_profile_class,\
+    CanvasRedirect
 from functools import partial
 from mock import Mock, patch
-from open_facebook.api import FacebookConnection, FacebookAuthorization
+from open_facebook.api import FacebookConnection, FacebookAuthorization,\
+    OpenFacebook
 from open_facebook.exceptions import FacebookSSLError, FacebookURLError
 import logging
 import mock
+from django_facebook.middlewares import FacebookCanvasMiddleWare
+from django.contrib.sessions.middleware import SessionMiddleware
 
 
 logger = logging.getLogger(__name__)
@@ -445,3 +449,62 @@ class SignalTest(FacebookTest):
                                  'pre_update_signal'), True)
         self.assertEqual(hasattr(user.get_profile(),
                                  'post_update_signal'), True)
+
+
+def fake_connect(request, access_tokon, graph):
+    return ('action', 'user')
+
+
+class FacebookCanvasMiddlewareTest(FacebookTest):
+
+    def setUp(self):
+        super(FacebookCanvasMiddlewareTest, self).setUp()
+        self.factory = RequestFactory()
+        self.middleware = FacebookCanvasMiddleWare()
+        self.session_middleware = SessionMiddleware()
+
+    def get_canvas_url(self, data={}):
+        request = self.factory.post('/', data)
+        request.META['HTTP_REFERER'] = 'https://apps.facebook.com/canvas/'
+        self.session_middleware.process_request(request)
+        return request
+
+    def test_referer(self):
+        #test empty referer
+        request = self.factory.get('/')
+        self.assertIsNone(self.middleware.process_request(request))
+        #test referer not facebook
+        request = self.factory.get('/')
+        request.META['HTTP_REFERER'] = 'https://localhost:8000/'
+        self.assertIsNone(self.middleware.process_request(request))
+        request = self.get_canvas_url()
+        response = self.middleware.process_request(request)
+        self.assertIsInstance(response, CanvasRedirect)
+
+    def test_user_denied(self):
+        request = self.factory.get('/?error_reason=user_denied&error=access_denied&error_description=The+user+denied+your+request.')
+        request.META['HTTP_REFERER'] = 'https://apps.facebook.com/canvas/'
+        response = self.middleware.process_request(request)
+        self.assertIsInstance(response, CanvasRedirect)
+
+    @patch.object(FacebookAuthorization, 'parse_signed_data')
+    def test_non_auth_user(self, mocked_method=FacebookAuthorization.parse_signed_data):
+        mocked_method.return_value = {}
+        data = {'signed_request': 'dXairHLF8dfUKaL7ZFXaKmTsAglg0EkyHesTLnPcPAE.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImlzc3VlZF9hdCI6MTM1ODA2MTU1MSwidXNlciI6eyJjb3VudHJ5IjoiYnIiLCJsb2NhbGUiOiJlbl9VUyIsImFnZSI6eyJtaW4iOjIxfX19'}
+        request = self.get_canvas_url(data=data)
+        response = self.middleware.process_request(request)
+        self.assertTrue(mocked_method.called)
+        self.assertIsInstance(response, CanvasRedirect)
+
+    @patch('django_facebook.middlewares.connect_user', fake_connect)
+    @patch.object(OpenFacebook, 'permissions')
+    @patch.object(FacebookAuthorization, 'parse_signed_data')
+    def test_auth_user(self, mocked_method_1=FacebookAuthorization.parse_signed_data,
+                       mocked_method_2=OpenFacebook.permissions):
+        data = {'signed_request': 'd7JQQIfxHgEzLIqJMeU9J5IlLg7shzPJ8DFRF55L52w.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImV4cGlyZXMiOjEzNTgwNzQ4MDAsImlzc3VlZF9hdCI6MTM1ODA2ODU1MCwib2F1dGhfdG9rZW4iOiJBQUFGdk02MWpkT0FCQVBhWkNzR1pDM0dEVFZtdDJCWkFQVlpDc0F0aGNmdXBYUnhMN1cwUHBaQm53OEUwTzBBRVNYNjVaQ0JHdjZpOFRBWGhnMEpzbER5UmtmZUlnYnNHUmV2eHQxblFGZ0hNcFNpeTNWRTB3ZCIsInVzZXIiOnsiY291bnRyeSI6ImJyIiwibG9jYWxlIjoiZW5fVVMiLCJhZ2UiOnsibWluIjoyMX19LCJ1c2VyX2lkIjoiMTAwMDA1MDEyNDY2Nzg1In0'}
+        request = self.get_canvas_url(data=data)
+        request.user = AnonymousUser()
+        mocked_method_1.return_value = {'user_id': '123456', 'oauth_token': 'qwertyuiop'}
+        mocked_method_2.return_value = facebook_settings.FACEBOOK_DEFAULT_SCOPE
+        self.assertIsNone(self.middleware.process_request(request))
+        self.assertTrue(mocked_method_1.called)

@@ -116,11 +116,12 @@ class CanvasRedirect(HttpResponse):
     '''
     Redirect for Facebook Canvas pages
     '''
-    def __init__(self, redirect_to):
+    def __init__(self, redirect_to, show_body=True):
         self.redirect_to = redirect_to
         self.location = iri_to_uri(redirect_to)
 
-        context = dict(location=self.location)
+        context = dict(location=self.location,
+                       show_body=show_body)
         js_redirect = render_to_string(
             'django_facebook/canvas_redirect.html', context)
 

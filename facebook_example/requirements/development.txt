@@ -3,3 +3,4 @@ django_facebook
 south
 PIL
 mock
+python-memcached
