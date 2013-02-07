@@ -210,8 +210,12 @@ class FacebookConnection(object):
             error_class = default_error_class
 
         logger.info('Matched error to class %s', error_class)
+        error_message = message
+        if error_code:
+            # this is handy when adding new exceptions for facebook errors
+            error_message = u'%s (error code %s)' % (message, error_code)
 
-        raise error_class(message)
+        raise error_class(error_message)
 
     @classmethod
     def get_code_from_message(cls, message):
