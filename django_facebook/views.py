@@ -1,81 +1,80 @@
-import logging
-
 from django.conf import settings
 from django.contrib import messages
 from django.http import Http404, HttpResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import redirect, render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
-from django.views.decorators.csrf import csrf_exempt
-
-# NOTE: from inside the application, you can directly import the file
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings
 from django_facebook.api import get_persistent_graph, FacebookUserConverter, \
     require_persistent_graph
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
-from django_facebook.utils import next_redirect, get_registration_backend,\
-    replication_safe, to_bool, error_next_redirect
-from django_facebook.decorators import (facebook_required,
-                                        facebook_required_lazy)
-from open_facebook.utils import send_warning
-from open_facebook import exceptions as open_facebook_exceptions
-from django.shortcuts import redirect
-from ssl import SSLError
-from urllib2 import URLError
+from django_facebook.decorators import facebook_required, facebook_required_lazy
 from django_facebook.models import OpenGraphShare
+from django_facebook.utils import next_redirect, get_registration_backend, \
+    to_bool, error_next_redirect
+from open_facebook import exceptions as open_facebook_exceptions
+from open_facebook.utils import send_warning
+import logging
 
 
 logger = logging.getLogger(__name__)
 
 
 @facebook_required(scope='publish_actions')
+@csrf_protect
 def open_graph_beta(request):
     '''
     Simple example on how to do open graph postings
     '''
-    fb = get_persistent_graph(request)
-    entity_url = 'http://www.fashiolista.com/item/2081202/'
-    fb.set('me/fashiolista:love', item=entity_url)
-    messages.info(request,
-                  'Frictionless sharing to open graph beta action '
-                  'fashiolista:love with item_url %s, this url contains '
-                  'open graph data which Facebook scrapes' % entity_url)
+    message = request.POST.get('message')
+    if message:
+        fb = get_persistent_graph(request)
+        entity_url = 'http://www.fashiolista.com/item/2081202/'
+        fb.set('me/fashiolista:love', item=entity_url, message=message)
+        messages.info(request,
+                      'Frictionless sharing to open graph beta action '
+                      'fashiolista:love with item_url %s, this url contains '
+                      'open graph data which Facebook scrapes' % entity_url)
 
 
 @facebook_required(scope='publish_actions')
+@csrf_protect
 def remove_og_share(request):
     graph = get_persistent_graph(request)
-    og_share_id = request.GET.get('og_share_id')
-    shares = OpenGraphShare.objects.filter(id=og_share_id)
-    for share in shares:
-        share.remove(graph)
+    og_share_id = request.POST.get('og_share_id')
+    if og_share_id:
+        shares = OpenGraphShare.objects.filter(id=og_share_id)
+        for share in shares:
+            share.remove(graph)
 
 
 @facebook_required(scope='publish_stream')
+@csrf_protect
 def wall_post(request):
     fb = get_persistent_graph(request)
-
-    message = request.REQUEST.get('message')
-    fb.set('me/feed', message=message)
-
-    messages.info(request, 'Posted the message to your wall')
-
-    return next_redirect(request)
+    message = request.POST.get('message')
+    if message:
+        fb.set('me/feed', message=message)
+        messages.info(request, 'Posted the message to your wall')
+        return next_redirect(request)
 
 
 @facebook_required(scope='publish_stream,user_photos')
+@csrf_protect
 def image_upload(request):
     fb = get_persistent_graph(request)
-    pictures = request.REQUEST.getlist('pictures')
+    pictures = request.POST.getlist('pictures')
 
-    for picture in pictures:
-        fb.set('me/photos', url=picture, message='the writing is one The '
-               'wall image %s' % picture)
-
-    messages.info(request, 'The images have been added to your profile!')
-
-    return next_redirect(request)
+    if pictures:
+        for picture in pictures:
+            fb.set('me/photos', url=picture, message='the writing is one The '
+                   'wall image %s' % picture)
+    
+        messages.info(request, 'The images have been added to your profile!')
+    
+        return next_redirect(request)
 
 
 @csrf_exempt
