@@ -76,3 +76,10 @@ FACEBOOK_OG_SHARE_DB_TABLE = getattr(
 # Force profile update every login
 FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = getattr(
     settings, 'FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN', False)
+
+# Profile image location
+FACEBOOK_PROFILE_IMAGE_PATH = getattr(
+    settings, 'FACEBOOK_PROFILE_IMAGE_PATH', None)
+
+
+
