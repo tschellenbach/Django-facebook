@@ -447,10 +447,12 @@ class OpenGraphShare(BaseModel):
         #see if the graph is enabled
         profile = self.user.get_profile()
         graph = graph or profile.get_offline_graph()
-
-        response = graph.delete(self.share_id)
-        self.removed_at = datetime.now()
-        self.save()
+        response = None
+        if graph:
+            response = graph.delete(self.share_id)
+            self.removed_at = datetime.now()
+            self.save()
+        return response
 
     def retry(self, graph=None, reset_retries=False):
         if self.completed_at:
