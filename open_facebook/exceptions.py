@@ -95,6 +95,10 @@ class AliasException(OpenFacebookException):
     instead of a 404....
     '''
     codes = 803
+    
+    
+class UnsupportedDeleteRequest(OpenFacebookException):
+    pass
 
 
 class ParseException(OpenFacebookException):

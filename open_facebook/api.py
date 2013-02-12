@@ -47,7 +47,8 @@ from urlparse import urlparse
 logger = logging.getLogger(__name__)
 
 
-REQUEST_TIMEOUT = 30
+# base timeout, actual timeout will increase when requests fail
+REQUEST_TIMEOUT = 10
 # two retries was too little, sometimes facebook is a bit flaky
 REQUEST_ATTEMPTS = 3
 
@@ -102,7 +103,11 @@ class FacebookConnection(object):
         statsd_path = path.replace('.', '_')
 
         # give it a few shots, connection is buggy at times
+        timeout_mp = 0
         while attempts:
+            # gradually increase the timeout upon failure
+            timeout_mp += 1
+            extended_timeout = timeout * timeout_mp
             response_file = None
             encoded_params = encode_params(post_data) if post_data else None
             post_string = (urllib.urlencode(encoded_params)
@@ -112,7 +117,7 @@ class FacebookConnection(object):
 
                 try:
                     response_file = opener.open(
-                        url, post_string, timeout=timeout)
+                        url, post_string, timeout=extended_timeout)
                     response = response_file.read().decode('utf8')
                 except (urllib2.HTTPError,), e:
                     response_file = e
@@ -130,8 +135,8 @@ class FacebookConnection(object):
                 break
             except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError), e:
                 # These are often temporary errors, so we will retry before failing
-                error_format = 'Facebook encountered a timeout or error %s'
-                logger.warn(error_format, unicode(e))
+                error_format = 'Facebook encountered a timeout (%ss) or error %s'
+                logger.warn(error_format, extended_timeout, unicode(e))
                 attempts -= 1
                 if not attempts:
                     # if we have no more attempts actually raise the error
@@ -205,6 +210,10 @@ class FacebookConnection(object):
         # hack for missing parameters
         if 'Missing' in message and 'parameter' in message:
             error_class = facebook_exceptions.MissingParameter
+            
+        # hack for Unsupported delete request
+        if 'Unsupported delete request' in message:
+            error_class = facebook_exceptions.UnsupportedDeleteRequest
 
         # fallback to the default
         if not error_class:
