@@ -221,7 +221,7 @@ def _register_user(request, facebook, profile_callback=None,
         if backend:
             new_user = backend.register(request, **form.cleaned_data)
         #fall back to the form approach
-        if not new_user:
+        if new_user is None:
             # For backward compatibility, if django-registration form is used
             try:
                 new_user = form.save(profile_callback=profile_callback)
