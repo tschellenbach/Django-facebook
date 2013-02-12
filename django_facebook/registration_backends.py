@@ -54,7 +54,8 @@ class FacebookRegistrationBackend(NooptRegistrationBackend):
         username, email, password = kwargs['username'], kwargs[
             'email'], kwargs['password1']
         #Create user doesn't accept additional parameters,
-        new_user = get_user_model().objects.create_user(username, email, password)
+        new_user = get_user_model(
+        ).objects.create_user(username, email, password)
 
         signals.user_registered.send(sender=self.__class__,
                                      user=new_user,

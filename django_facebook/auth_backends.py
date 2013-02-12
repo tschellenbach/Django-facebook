@@ -31,7 +31,8 @@ class FacebookBackend(backends.ModelBackend):
                     profile = profiles[0] if profiles else None
                 except DatabaseError:
                     try:
-                        user = get_user_model().objects.get(email=facebook_email)
+                        user = get_user_model(
+                        ).objects.get(email=facebook_email)
                     except get_user_model().DoesNotExist:
                         user = None
                     profile = user.get_profile() if user else None

@@ -210,7 +210,7 @@ class FacebookConnection(object):
         # hack for missing parameters
         if 'Missing' in message and 'parameter' in message:
             error_class = facebook_exceptions.MissingParameter
-            
+
         # hack for Unsupported delete request
         if 'Unsupported delete request' in message:
             error_class = facebook_exceptions.UnsupportedDeleteRequest

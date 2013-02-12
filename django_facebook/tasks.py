@@ -30,6 +30,11 @@ def store_likes(user, likes):
 
 
 @task.task(ignore_result=True)
+def remove_share(share):
+    share._remove()
+
+
+@task.task(ignore_result=True)
 def get_and_store_likes(user, facebook):
     '''
     Since facebook is quite slow this version also runs the get

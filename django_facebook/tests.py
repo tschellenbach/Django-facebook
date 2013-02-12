@@ -438,7 +438,8 @@ class SignalTest(FacebookTest):
             profile.post_update_signal = True
 
         Profile = get_profile_class()
-        signals.facebook_user_registered.connect(user_registered, sender=get_user_model())
+        signals.facebook_user_registered.connect(
+            user_registered, sender=get_user_model())
         signals.facebook_pre_update.connect(pre_update, sender=Profile)
         signals.facebook_post_update.connect(post_update, sender=Profile)
 
