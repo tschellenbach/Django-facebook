@@ -11,7 +11,7 @@ from django_facebook.api import require_persistent_graph, get_persistent_graph
 logger = logging.getLogger(__name__)
 
 
-def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
+def facebook_required(view_func=None, scope=None,
                       redirect_field_name=REDIRECT_FIELD_NAME, login_url=None, canvas=False):
     """
     Decorator which makes the view require the given Facebook perms,
@@ -23,6 +23,7 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
     """
     from open_facebook import exceptions as open_facebook_exceptions
     from django_facebook.utils import test_permissions
+    scope = fb_settings.FACEBOOK_DEFAULT_SCOPE if scope is None else scope
     scope_list = parse_scope(scope)
     #canvas pages always need to be csrf excempt
     csrf_exempt = canvas
@@ -63,7 +64,7 @@ def facebook_required(view_func=None, scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
 
 
 def facebook_required_lazy(view_func=None,
-                           scope=fb_settings.FACEBOOK_DEFAULT_SCOPE,
+                           scope=None,
                            redirect_field_name=REDIRECT_FIELD_NAME,
                            login_url=None, extra_params=None, canvas=False):
     """
@@ -76,6 +77,7 @@ def facebook_required_lazy(view_func=None,
     """
     from django_facebook.utils import test_permissions
     from open_facebook import exceptions as open_facebook_exceptions
+    scope = fb_settings.FACEBOOK_DEFAULT_SCOPE if scope is None else scope
     scope_list = parse_scope(scope)
     #canvas pages always need to be csrf excempt
     csrf_exempt = canvas

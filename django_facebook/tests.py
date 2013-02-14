@@ -12,11 +12,11 @@ from django_facebook.connect import _register_user, connect_user, \
     CONNECT_ACTIONS
 from django_facebook.tests_utils.base import FacebookTest, LiveFacebookTest, \
     RequestMock
-from django_facebook.utils import cleanup_oauth_url, get_profile_class,\
+from django_facebook.utils import cleanup_oauth_url, get_profile_class, \
     CanvasRedirect
 from functools import partial
 from mock import Mock, patch
-from open_facebook.api import FacebookConnection, FacebookAuthorization,\
+from open_facebook.api import FacebookConnection, FacebookAuthorization, \
     OpenFacebook
 from open_facebook.exceptions import FacebookSSLError, FacebookURLError
 import logging
@@ -28,38 +28,48 @@ from django.contrib.sessions.middleware import SessionMiddleware
 logger = logging.getLogger(__name__)
 __doctests__ = ['django_facebook.api']
 
+'''
+TODO
 
-class TestUserTest(LiveFacebookTest):
-    def test_create_test_user(self):
-        #Also, somehow unittest.skip doesnt work with travis ci?
-        return 'Skipping since you might have created test users manually, lets not delete them :)'
-        #start by clearing out our test users (maybe this isnt safe to use in testing)
-        #if other people create test users manualy this could be annoying
-        app_access_token = FacebookAuthorization.get_cached_app_access_token()
-        FacebookAuthorization.delete_test_users(app_access_token)
-        #the permissions for which we want a test user
-        permissions = ['email', 'publish_actions']
-        #gets the test user object
-        test_user = FacebookAuthorization.get_or_create_test_user(
-            app_access_token, permissions)
-        graph = test_user.graph()
-        me = graph.me()
-        assert me
+- Decorator Testing
+Done - Example views
+- 
+
+'''
 
 
-class ExtendTokenTest(LiveFacebookTest):
-    def test_extend_token(self):
-        return 'this doesnt work in travis, but locally its fine... weird'
-        app_access_token = FacebookAuthorization.get_cached_app_access_token()
-        test_user = FacebookAuthorization.get_or_create_test_user(
-            app_access_token)
-        access_token = test_user.access_token
-        results = FacebookAuthorization.extend_access_token(access_token)
-        if 'access_token' not in results:
-            raise ValueError('we didnt get a fresh token')
+class DecoratorTest(FacebookTest):
+    '''
+    Verify that the lazy and facebook_required decorator work as expected
+    
+    Facebook required decorator
+        If you have the permissions proceed
+        Else show the login screen
+            If you allow, proceed
+            If you click cancel ...
+            
+    Facebook required lazy
+        Proceed
+        Upon OAuthException, go to login screen
+            If you allow proceed
+            If you click cancel ...
+    '''
+    def test_facebook_required(self):
+        import textwrap
+        url = reverse('facebook_decorator_example')
+        # this should redirect to Facebook oAuth
+        response = self.client.get(url, follow=True)
+        target_url = textwrap.dedent("""\
+            https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birt
+            hday%2Cuser_website&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fdecorator_
+            example%2F%3Fattempt%3D1&client_id=215464901804004""")
+        
+        print response.redirect_chain
+        print response.status_code
+        self.assertRedirects(response, target_url, target_status_code=404)
 
 
-class UserConnectViewTest(FacebookTest):
+class ConnectViewTest(FacebookTest):
     fixtures = ['users.json']
 
     def test_connect(self):
@@ -70,7 +80,7 @@ class UserConnectViewTest(FacebookTest):
         user = get_user_model().objects.all()[:1][0]
         url = reverse('facebook_connect')
 
-        #see if the basics don't give errors
+        # see if the basics don't give errors
         response = self.client.get('%s?facebook_login=a' % url)
         self.assertEqual(response.status_code, 200)
         response = self.client.get('%s?facebook_login=0' % url)
@@ -80,7 +90,7 @@ class UserConnectViewTest(FacebookTest):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
-        #test registration flow
+        # test registration flow
         from django_facebook.connect import connect_user
         with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.REGISTER, user)) as wrapped_connect:
             post_data = dict(access_token='short_username',
@@ -90,7 +100,7 @@ class UserConnectViewTest(FacebookTest):
             self.assertIn('register', response.redirect_chain[0][0])
             self.assertEqual(response.status_code, 200)
 
-        #user register next instead of next
+        # user register next instead of next
         with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.REGISTER, user)) as wrapped_connect:
             post_data = dict(access_token='short_username', register_next='%s?register=1' % url, facebook_login=1)
             response = self.client.post(url, post_data, follow=True)
@@ -98,7 +108,7 @@ class UserConnectViewTest(FacebookTest):
             self.assertIn('register', response.redirect_chain[0][0])
             self.assertEqual(response.status_code, 200)
 
-        #test login
+        # test login
         with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.LOGIN, user)) as wrapped_connect:
             post_data = dict(access_token='short_username',
                              next='%s?loggggg=1' % url, facebook_login=1)
@@ -107,7 +117,7 @@ class UserConnectViewTest(FacebookTest):
             self.assertIn('?loggggg=1', response.redirect_chain[0][0])
             self.assertEqual(response.status_code, 200)
 
-        #test connect
+        # test connect
         with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.CONNECT, user)) as wrapped_connect:
             post_data = dict(access_token='short_username',
                              next='%s?loggggg=1' % url, facebook_login=1)
@@ -116,7 +126,7 @@ class UserConnectViewTest(FacebookTest):
             assert '?loggggg=1' in response.redirect_chain[0][0]
             self.assertEqual(response.status_code, 200)
 
-        #test connect
+        # test connect
         from django_facebook import exceptions as facebook_exceptions
         profile_error = facebook_exceptions.IncompleteProfileError()
         profile_error.form = None
@@ -136,7 +146,7 @@ class UserConnectViewTest(FacebookTest):
         '''
         url = reverse('facebook_connect')
 
-        #test super slow Facebook
+        # test super slow Facebook
         errors = [FacebookSSLError(), FacebookURLError(
             '<urlopen error _ssl.c:489: The handshake operation timed out>')]
         for error in errors:
@@ -149,6 +159,41 @@ class UserConnectViewTest(FacebookTest):
                 self.assertEqual(instance.is_authenticated.call_count, 1)
                 self.assertTrue(response.context)
                 assert '?loggggg=1' in response.redirect_chain[0][0]
+
+
+
+
+class TestUserTest(LiveFacebookTest):
+    def test_create_test_user(self):
+        # Also, somehow unittest.skip doesnt work with travis ci?
+        return 'Skipping since you might have created test users manually, lets not delete them :)'
+        # start by clearing out our test users (maybe this isnt safe to use in testing)
+        # if other people create test users manualy this could be annoying
+        app_access_token = FacebookAuthorization.get_cached_app_access_token()
+        FacebookAuthorization.delete_test_users(app_access_token)
+        # the permissions for which we want a test user
+        permissions = ['email', 'publish_actions']
+        # gets the test user object
+        test_user = FacebookAuthorization.get_or_create_test_user(
+            app_access_token, permissions)
+        graph = test_user.graph()
+        me = graph.me()
+        assert me
+
+
+class ExtendTokenTest(LiveFacebookTest):
+    def test_extend_token(self):
+        return 'this doesnt work in travis, but locally its fine... weird'
+        app_access_token = FacebookAuthorization.get_cached_app_access_token()
+        test_user = FacebookAuthorization.get_or_create_test_user(
+            app_access_token)
+        access_token = test_user.access_token
+        results = FacebookAuthorization.extend_access_token(access_token)
+        if 'access_token' not in results:
+            raise ValueError('we didnt get a fresh token')
+
+
+
 
 
 class OpenGraphShareTest(FacebookTest):
@@ -246,7 +291,7 @@ class UserConnectTest(FacebookTest):
         self.assertEqual(len(user.last_name), 30)
 
     def test_full_connect(self):
-        #going for a register, connect and login
+        # going for a register, connect and login
         graph = get_facebook_graph(access_token='short_username')
         FacebookUserConverter(graph)
         action, user = connect_user(self.request, facebook_graph=graph)
@@ -472,10 +517,10 @@ class FacebookCanvasMiddlewareTest(FacebookTest):
         return request
 
     def test_referer(self):
-        #test empty referer
+        # test empty referer
         request = self.factory.get('/')
         self.assertIsNone(self.middleware.process_request(request))
-        #test referer not facebook
+        # test referer not facebook
         request = self.factory.get('/')
         request.META['HTTP_REFERER'] = 'https://localhost:8000/'
         self.assertIsNone(self.middleware.process_request(request))
