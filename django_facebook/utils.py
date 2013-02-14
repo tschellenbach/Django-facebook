@@ -29,6 +29,17 @@ def clear_persistent_graph_cache(request):
     if request.user.is_authenticated():
         profile = request.user.get_profile()
         profile.clear_access_token()
+        
+        
+def has_permissions(graph, scope_list):
+    from open_facebook import exceptions as open_facebook_exceptions
+    permissions_granted = False
+    try:
+        if graph:
+            permissions_granted = graph.has_permissions(scope_list)
+    except open_facebook_exceptions.OAuthException, e:
+        pass
+    return permissions_granted
 
 
 def queryset_iterator(queryset, chunksize=1000, getfunc=getattr):
@@ -56,34 +67,6 @@ def queryset_iterator(queryset, chunksize=1000, getfunc=getattr):
             pk = getfunc(row, 'pk')
             yield row
         gc.collect()
-
-
-def test_permissions(request, scope_list, redirect_uri=None):
-    '''
-    Call Facebook me/permissions to see if we are allowed to do this
-    '''
-    from django_facebook.api import get_persistent_graph
-
-    fb = get_persistent_graph(request, redirect_uri=redirect_uri)
-    permissions_dict = {}
-    if fb:
-        #see what permissions we have
-        permissions_dict = fb.permissions()
-
-    # see if we have all permissions
-    scope_allowed = True
-    for permission in scope_list:
-        if permission not in permissions_dict:
-            scope_allowed = False
-
-    # raise if this happens after a redirect though
-    if not scope_allowed and request.GET.get('attempt'):
-        raise ValueError(
-            'Somehow facebook is not giving us the permissions needed, '
-            'lets break instead of endless redirects. Fb was %s and '
-            'permissions %s' % (fb, permissions_dict))
-
-    return scope_allowed
 
 
 def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):

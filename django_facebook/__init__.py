@@ -24,3 +24,10 @@ http://www.pip-installer.org/en/latest/index.html
 pip install -e ./
 
 '''
+
+
+# few easy shortcuts
+from django_facebook.api import get_persistent_graph
+from django_facebook.api import require_persistent_graph
+from django_facebook.decorators import facebook_required
+from django_facebook.decorators import facebook_required_lazy

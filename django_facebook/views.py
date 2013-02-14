@@ -146,6 +146,3 @@ def disconnect(request):
         profile.save()
     response = next_redirect(request)
     return response
-
-
-

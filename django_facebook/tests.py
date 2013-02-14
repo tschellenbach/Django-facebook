@@ -23,6 +23,7 @@ import logging
 import mock
 from django_facebook.middleware import FacebookCanvasMiddleWare
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.http import QueryDict
 
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ TODO
 
 - Decorator Testing
 Done - Example views
-- 
+Done - Refactor test permissions
 
 '''
 
@@ -54,19 +55,60 @@ class DecoratorTest(FacebookTest):
             If you allow proceed
             If you click cancel ...
     '''
-    def test_facebook_required(self):
-        import textwrap
-        url = reverse('facebook_decorator_example')
-        # this should redirect to Facebook oAuth
-        response = self.client.get(url, follow=True)
-        target_url = textwrap.dedent("""\
-            https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birt
+    def setUp(self):
+        self.url = reverse('facebook_decorator_example')
+        target_url = r'''https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birt
             hday%2Cuser_website&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fdecorator_
-            example%2F%3Fattempt%3D1&client_id=215464901804004""")
+            example%2F%3Fattempt%3D1&client_id=215464901804004
+        '''.replace(' ', '').replace('\n', '')
+        self.target_url = target_url
+        FacebookTest.setUp(self)
+    
+    def test_decorator_not_authenticated(self):
+        '''
+        We should redirect to Facebook oauth dialog
+        '''
+        response = self.client.get(self.url, follow=True)
+        self.assertRedirects(response, self.target_url, target_status_code=404)
         
-        print response.redirect_chain
-        print response.status_code
-        self.assertRedirects(response, target_url, target_status_code=404)
+    def test_decorator_authenticated(self):
+        '''
+        Here we fake that we have permissions
+        This should enter the view and in this test return "authorized"
+        '''
+        with mock.patch('django_facebook.utils.has_permissions') as mocked_test:
+            mocked_test.return_value = True
+            with mock.patch('django_facebook.decorators.get_persistent_graph') as mocked_graph:
+                mocked_graph.return_value = True
+                with mock.patch('django_facebook.decorators.require_persistent_graph') as mocked_graph:
+                    mocked_graph.return_value = True
+                    response = self.client.get(self.url, follow=True)
+                    self.assertEqual(response.content, 'authorized')
+            
+    def test_decorator_denied(self):
+        '''
+        Here the users denies our app. Facebook adds this in the url
+        attempt=1&error_reason=user_denied&error=access_denied&error_description=The+user+denied+your+request.
+        '''
+        query_dict_string = 'attempt=1&error_reason=user_denied&error=access_denied&error_description=The+user+denied+your+request.'
+        get = QueryDict(query_dict_string, True)
+        denied_url = '%s?%s' % (self.url, get.urlencode())
+        response = self.client.get(denied_url, follow=True)
+        self.assertEqual(response.content, 'user denied or error')
+        
+
+class LazyDecoratorTest(DecoratorTest):
+    '''
+    Tests the more complicated but faster lazy decorator
+    '''
+    def setUp(self):
+        self.url = reverse('facebook_lazy_decorator_example')
+        target_url = r'''https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birt
+            hday%2Cuser_website&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Flazy_decorator_
+            example%2F%3Fattempt%3D1&client_id=215464901804004
+        '''.replace(' ', '').replace('\n', '')
+        self.target_url = target_url
+        FacebookTest.setUp(self)
 
 
 class ConnectViewTest(FacebookTest):

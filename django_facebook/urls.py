@@ -2,27 +2,35 @@ from django.conf.urls.defaults import patterns, url
 from django.conf import settings
 
 urlpatterns = patterns('django_facebook.views',
-   url(r'^connect/$', 'connect', name='facebook_connect'),
-   url(r'^disconnect/$', 'disconnect', name='facebook_disconnect'),
-       
+                       url(r'^connect/$', 'connect', name='facebook_connect'),
+                       url(r'^disconnect/$',
+                           'disconnect', name='facebook_disconnect'),
 
-)
+
+                       )
 
 dev_patterns = patterns('django_facebook.example_views',
-   url(r'^lazy_decorator_example/$', 'lazy_decorator_example', name='facebook_lazy_decorator_example'),
-   url(r'^decorator_example/$', 'decorator_example', name='facebook_decorator_example'),
-   url(r'^wall_post/$', 'wall_post', name='facebook_wall_post'),
-   url(r'^image_upload/$', 'image_upload', name='facebook_image_upload'),
-   url(r'^canvas/$', 'canvas', name='facebook_canvas'),
-   url(r'^open_graph_beta/$', 'open_graph_beta', name='facebook_open_graph_beta'),
-   url(r'^remove_og_share/$', 'remove_og_share', name='facebook_remove_og_share'),
-)
+                        url(
+                            r'^lazy_decorator_example/$', 'lazy_decorator_example',
+                        name='facebook_lazy_decorator_example'),
+                        url(r'^decorator_example/$', 'decorator_example',
+                            name='facebook_decorator_example'),
+                        url(r'^wall_post/$',
+                            'wall_post', name='facebook_wall_post'),
+                        url(r'^image_upload/$',
+                            'image_upload', name='facebook_image_upload'),
+                        url(r'^canvas/$', 'canvas', name='facebook_canvas'),
+                        url(r'^open_graph_beta/$', 'open_graph_beta',
+                            name='facebook_open_graph_beta'),
+                        url(r'^remove_og_share/$', 'remove_og_share',
+                            name='facebook_remove_og_share'),
+                        )
 
 # when developing enable the example views
 if settings.DEBUG or True:
     # only enable example views while developing
     urlpatterns += dev_patterns
-    
+
 #help autodiscovery a bit
 from django_facebook import admin
 
