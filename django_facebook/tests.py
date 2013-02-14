@@ -32,9 +32,10 @@ __doctests__ = ['django_facebook.api']
 '''
 TODO
 
-- Decorator Testing
+Done - Decorator Testing
 Done - Example views
 Done - Refactor test permissions
+Class based decorator
 
 '''
 
