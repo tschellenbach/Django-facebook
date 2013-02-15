@@ -36,7 +36,7 @@ Done - Decorator Testing
 Done - Example views
 Done - Refactor test permissions
 Done - Class based decorator
-Clean up connect view
+Done - Clean up connect view
 Done - Allow customization of the FacebookUserConverter class
 Document customization of the FacebookUserConverter class
 '''

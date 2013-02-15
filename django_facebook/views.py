@@ -121,7 +121,7 @@ def _connect(request, facebook_login, graph):
             # the user denied the request
             return error_next_redirect(
                 request,
-                additional_params=dict(error='1'))
+                additional_params=dict(fb_error_or_cancel='1'))
 
         # for CONNECT and LOGIN we simple redirect to the next page
         return next_redirect(request, default=facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT)

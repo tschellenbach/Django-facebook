@@ -7,9 +7,9 @@ from django.db.utils import IntegrityError
 from django.utils import simplejson as json
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings, signals
-from django_facebook.api import get_facebook_graph, FacebookUserConverter
+from django_facebook.api import get_facebook_graph
 from django_facebook.utils import get_registration_backend, get_form_class, \
-    get_profile_class, to_bool, get_user_model
+    get_profile_class, to_bool, get_user_model, get_instance_for
 from random import randint
 import logging
 import sys
@@ -40,10 +40,10 @@ def connect_user(request, access_token=None, facebook_graph=None):
     '''
     user = None
     graph = facebook_graph or get_facebook_graph(request, access_token)
-    facebook = FacebookUserConverter(graph)
+    converter = get_instance_for('user_conversion', graph)
 
-    assert facebook.is_authenticated()
-    facebook_data = facebook.facebook_profile_data()
+    assert converter.is_authenticated()
+    facebook_data = converter.facebook_profile_data()
     force_registration = request.REQUEST.get('force_registration') or\
         request.REQUEST.get('force_registration_hard')
 
@@ -55,7 +55,7 @@ def connect_user(request, access_token=None, facebook_graph=None):
         # only when the request.CONNECT_FACEBOOK = 1
         # if this isn't present we just do a login
         action = CONNECT_ACTIONS.CONNECT
-        user = _connect_user(request, facebook)
+        user = _connect_user(request, converter)
     else:
         email = facebook_data.get('email', False)
         email_verified = facebook_data.get('verified', False)
@@ -73,12 +73,12 @@ def connect_user(request, access_token=None, facebook_graph=None):
             if not auth_user.get_profile().facebook_id:
                 update = True
             # login the user
-            user = _login_user(request, facebook, auth_user, update=update)
+            user = _login_user(request, converter, auth_user, update=update)
         else:
             action = CONNECT_ACTIONS.REGISTER
             # when force registration is active we should remove the old profile
             try:
-                user = _register_user(request, facebook,
+                user = _register_user(request, converter,
                                       remove_old_connections=force_registration)
             except facebook_exceptions.AlreadyRegistered, e:
                 # in Multithreaded environments it's possible someone beats us to
@@ -87,9 +87,9 @@ def connect_user(request, access_token=None, facebook_graph=None):
                 auth_user = authenticate(
                     facebook_id=facebook_data['id'], **kwargs)
                 action = CONNECT_ACTIONS.LOGIN
-                user = _login_user(request, facebook, auth_user, update=False)
+                user = _login_user(request, converter, auth_user, update=False)
 
-    _update_likes_and_friends(request, user, facebook)
+    _update_likes_and_friends(request, user, converter)
 
     _update_access_token(user, graph)
 
@@ -377,8 +377,8 @@ def update_connection(request, graph):
     - sets the facebook_id if nothing is specified
     - stores friends and likes if possible
     '''
-    facebook = FacebookUserConverter(graph)
-    user = _connect_user(request, facebook, overwrite=False)
-    _update_likes_and_friends(request, user, facebook)
+    converter = get_instance_for('user_conversion', graph)
+    user = _connect_user(request, converter, overwrite=False)
+    _update_likes_and_friends(request, user, converter)
     _update_access_token(user, graph)
     return user
