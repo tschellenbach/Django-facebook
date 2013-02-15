@@ -7,7 +7,6 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings
-from django_facebook.api import FacebookUserConverter, require_persistent_graph
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
 from django_facebook.decorators import facebook_required_lazy
 from django_facebook.utils import next_redirect, get_registration_backend, \
