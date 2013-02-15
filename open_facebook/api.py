@@ -35,22 +35,22 @@ Currently that would be a bad idea though because of maintenance
 from django.http import QueryDict
 from django_facebook import settings as facebook_settings
 from open_facebook import exceptions as facebook_exceptions
-from open_facebook.utils import json, encode_params, send_warning, memoized
+from open_facebook.utils import json, encode_params, send_warning, memoized, \
+    stop_statsd, start_statsd
 import logging
 import urllib
 import urllib2
 from django_facebook.utils import to_int
+import ssl
+import re
+from urlparse import urlparse
 logger = logging.getLogger(__name__)
 
-REQUEST_TIMEOUT = 8
-#two retries was too little, sometimes facebook is a bit flaky
+
+# base timeout, actual timeout will increase when requests fail
+REQUEST_TIMEOUT = 10
+# two retries was too little, sometimes facebook is a bit flaky
 REQUEST_ATTEMPTS = 3
-
-
-try:
-    import django_statsd
-except ImportError:
-    django_statsd = None
 
 
 class FacebookConnection(object):
@@ -81,51 +81,70 @@ class FacebookConnection(object):
         request the given url and parse it as json
         urllib2 raises errors on different status codes so use a try except
         '''
+        # change fb__explicitly_shared to fb:explicitly_shared
+        if post_data:
+            post_data = dict(
+                (k.replace('__', ':'), v) for k, v in post_data.items())
+
         logger.info('requesting url %s with post data %s', url, post_data)
         post_request = (post_data is not None or 'method=post' in url)
 
         if post_request and facebook_settings.FACEBOOK_READ_ONLY:
-            response = dict(id=123456789)
+            logger.info('running in readonly mode')
+            response = dict(id=123456789, setting_read_only=True)
             return response
 
+        # nicely identify ourselves before sending the request
         opener = urllib2.build_opener()
         opener.addheaders = [('User-agent', 'Open Facebook Python')]
-        # give it a few shots, connection is buggy at times
 
-        path = url.split('?', 1)[0].rsplit('/', 1)[-1].replace('.', '_')
+        # get the statsd path to track response times with
+        path = urlparse(url).path
+        statsd_path = path.replace('.', '_')
+
+        # give it a few shots, connection is buggy at times
+        timeout_mp = 0
         while attempts:
+            # gradually increase the timeout upon failure
+            timeout_mp += 1
+            extended_timeout = timeout * timeout_mp
             response_file = None
             encoded_params = encode_params(post_data) if post_data else None
             post_string = (urllib.urlencode(encoded_params)
                            if post_data else None)
             try:
-                if django_statsd:
-                    django_statsd.start('facebook.%s' % path)
+                start_statsd('facebook.%s' % statsd_path)
 
                 try:
-                    # For older python versions you could leave out the timeout
-                    # response_file = opener.open(url, post_string)
-                    response_file = opener.open(url, post_string,
-                                                timeout=timeout)
+                    response_file = opener.open(
+                        url, post_string, timeout=extended_timeout)
+                    response = response_file.read().decode('utf8')
                 except (urllib2.HTTPError,), e:
-                    # catch the silly status code errors
-                    if 'http error' in str(e).lower():
-                        response_file = e
-                    else:
-                        raise
-                response = response_file.read().decode('utf8')
+                    response_file = e
+                    response = response_file.read().decode('utf8')
+                    # Facebook sents error codes for many of their flows
+                    # we still want the json to allow for proper handling
+                    msg_format = 'FB request, error type %s, code %s'
+                    logger.warn(msg_format, type(e), getattr(e, 'code', None))
+                    # detect if its a server or application error
+                    server_error = cls.is_server_error(e, response)
+                    if server_error:
+                        # trigger a retry
+                        raise urllib2.URLError(
+                            'Facebook is down %s' % response)
                 break
-            except (urllib2.HTTPError, urllib2.URLError), e:
-                logger.warn('facebook encountered a timeout or error %s',
-                            unicode(e))
+            except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError), e:
+                # These are often temporary errors, so we will retry before failing
+                error_format = 'Facebook encountered a timeout (%ss) or error %s'
+                logger.warn(error_format, extended_timeout, unicode(e))
                 attempts -= 1
                 if not attempts:
-                    raise
+                    # if we have no more attempts actually raise the error
+                    raise facebook_exceptions.convert_unreachable_exception(e)
             finally:
                 if response_file:
                     response_file.close()
-                if django_statsd:
-                    django_statsd.stop('facebook.%s' % path)
+                stop_statsd('facebook.%s' % statsd_path)
 
         try:
             parsed_response = json.loads(response)
@@ -147,29 +166,70 @@ class FacebookConnection(object):
         return parsed_response
 
     @classmethod
-    def raise_error(self, error_type, message):
+    def is_server_error(cls, e, response):
         '''
-        Search for a corresponding error class and fall back to
-        open facebook exception
+        Checks an HTTPError to see if Facebook is down or we are using the
+        API in the wrong way
+        Facebook doesn't clearly distinquish between the two, so this is a bit
+        of a hack
         '''
-        import re
-        error_class = None
-        if not isinstance(error_type, int):
-            error_class = getattr(facebook_exceptions, error_type, None)
-        if error_class and not issubclass(error_class,
-                                          facebook_exceptions.OpenFacebookException):
-            error_class = None
-        # map error classes to facebook error ids
-        # define a string to match a single error,
-        # use ranges for complexer cases
-        # also see http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
-        classes = [getattr(facebook_exceptions, e, None)
-                   for e in dir(facebook_exceptions)]
-        exception_classes = [e for e in classes if getattr(
-            e, 'codes', None) and issubclass(
-                e, facebook_exceptions.OpenFacebookException)]
-        exception_classes.sort(key=lambda e: e.range())
+        from open_facebook.utils import is_json
+        server_error = False
+        if hasattr(e, 'code') and e.code == 500:
+            server_error = True
 
+        # if it looks like json, facebook is probably not down
+        if is_json(response):
+            server_error = False
+
+        return server_error
+
+    @classmethod
+    def raise_error(cls, error_type, message):
+        '''
+        Lookup the best error class for the error and raise it
+        '''
+        default_error_class = facebook_exceptions.OpenFacebookException
+        error_class = None
+
+        # get the error code
+        error_code = cls.get_code_from_message(message)
+        # also see http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
+        logger.info('Trying to match error code %s to error class', error_code)
+
+        # lookup by error code takes precedence
+        error_class = cls.match_error_code(error_code)
+
+        # try to get error class by direct lookup
+        if not error_class:
+            if not isinstance(error_type, int):
+                error_class = getattr(facebook_exceptions, error_type, None)
+            if error_class and not issubclass(error_class, default_error_class):
+                error_class = None
+
+        # hack for missing parameters
+        if 'Missing' in message and 'parameter' in message:
+            error_class = facebook_exceptions.MissingParameter
+
+        # hack for Unsupported delete request
+        if 'Unsupported delete request' in message:
+            error_class = facebook_exceptions.UnsupportedDeleteRequest
+
+        # fallback to the default
+        if not error_class:
+            error_class = default_error_class
+
+        logger.info('Matched error to class %s', error_class)
+        error_message = message
+        if error_code:
+            # this is handy when adding new exceptions for facebook errors
+            error_message = u'%s (error code %s)' % (message, error_code)
+
+        raise error_class(error_message)
+
+    @classmethod
+    def get_code_from_message(cls, message):
+        # map error classes to facebook error codes
         # find the error code
         error_code = None
         error_code_re = re.compile('\(#(\d+)\)')
@@ -178,42 +238,45 @@ class FacebookConnection(object):
         if matching_groups:
             error_code = to_int(matching_groups[0]) or None
 
+        return error_code
+
+    @classmethod
+    def get_sorted_exceptions(cls):
+        from open_facebook.exceptions import get_exception_classes
+        exception_classes = get_exception_classes()
+        exception_classes.sort(key=lambda e: e.range())
+        return exception_classes
+
+    @classmethod
+    def match_error_code(cls, error_code):
+        '''
+        Return the right exception class for the error code
+        '''
+        exception_classes = cls.get_sorted_exceptions()
+        error_class = None
         for class_ in exception_classes:
             codes_list = class_.codes_list()
             # match the error class
             matching_error_class = None
             for code in codes_list:
-                if isinstance(code, basestring):
-                    # match on string
-                    key = code
-                    if key in message:
-                        matching_error_class = class_
-                        break
-                elif isinstance(code, tuple):
+                if isinstance(code, tuple):
                     start, stop = code
                     if error_code and start <= error_code <= stop:
                         matching_error_class = class_
-                        break
+                        logger.info('Matched error on code %s', code)
                 elif isinstance(code, (int, long)):
                     if int(code) == error_code:
                         matching_error_class = class_
-                        break
+                        logger.info('Matched error on code %s', code)
                 else:
                     raise(
-                        ValueError, 'Dont know how to handle %s of ' \
+                        ValueError, 'Dont know how to handle %s of '
                         'type %s' % (code, type(code)))
-            #tell about the happy news if we found something
+            # tell about the happy news if we found something
             if matching_error_class:
                 error_class = matching_error_class
                 break
-
-        if 'Missing' in message and 'parameter' in message:
-            error_class = facebook_exceptions.MissingParameter
-
-        if not error_class:
-            error_class = facebook_exceptions.OpenFacebookException
-
-        raise error_class(message)
+        return error_class
 
 
 class FacebookAuthorization(FacebookConnection):
@@ -232,7 +295,7 @@ class FacebookAuthorization(FacebookConnection):
     '''
     @classmethod
     def convert_code(cls, code,
-        redirect_uri='http://local.mellowmorning.com:8000/facebook/connect/'):
+                     redirect_uri='http://local.mellowmorning.com:8000/facebook/connect/'):
         '''
         Turns a code into an access token
         '''
@@ -282,7 +345,7 @@ class FacebookAuthorization(FacebookConnection):
         data = json.loads(base64_url_decode_php_style(payload))
 
         algo = data.get('algorithm').upper()
-        if  algo != 'HMAC-SHA256':
+        if algo != 'HMAC-SHA256':
             error_format = 'Unknown algorithm we only support HMAC-SHA256 user asked for %s'
             error_message = error_format % algo
             send_warning(error_message)
@@ -317,7 +380,7 @@ class FacebookAuthorization(FacebookConnection):
         }
         response = cls.request('oauth/access_token', **kwargs)
         return response['access_token']
-    
+
     @classmethod
     @memoized
     def get_cached_app_access_token(cls):
@@ -338,18 +401,20 @@ class FacebookAuthorization(FacebookConnection):
         {u'access_token': u'215464901804004|b8d73771906a072829857c2f.0-100002661892257|DALPDLEZl4B0BNm0RYXnAsuri-I', u'password': u'1932271520', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002661892257&n=Zdu5jdD4tjNsfma', u'id': u'100002661892257', u'email': u'hello_nrthuig_world@tfbnw.net'}
         '''
         if not permissions:
-            permissions = ['read_stream', 'publish_stream', 'user_photos,offline_access']
+            permissions = ['read_stream', 'publish_stream',
+                           'user_photos,offline_access']
         if isinstance(permissions, list):
             permissions = ','.join(permissions)
 
-        default_name = 'Permissions %s' % permissions.replace(',', ' ').replace('_', '')
+        default_name = 'Permissions %s' % permissions.replace(
+            ',', ' ').replace('_', '')
         name = name or default_name
-        
+
         if app_access:
-            app_access='true'
+            app_access = 'true'
         else:
-            app_access='false'
-            
+            app_access = 'false'
+
         kwargs = {
             'access_token': app_access_token,
             'installed': app_access,
@@ -358,7 +423,7 @@ class FacebookAuthorization(FacebookConnection):
             'permissions': permissions,
         }
         path = '%s/accounts/test-users' % facebook_settings.FACEBOOK_APP_ID
-        #add the test user data to the test user data class
+        # add the test user data to the test user data class
         test_user_data = cls.request(path, **kwargs)
         test_user_data['name'] = name
         test_user = TestUser(test_user_data)
@@ -366,69 +431,81 @@ class FacebookAuthorization(FacebookConnection):
         return test_user
 
     @classmethod
-    def get_or_create_test_user(cls, app_access_token, permissions=None):
+    def get_or_create_test_user(cls, app_access_token, name=None, permissions=None, force_create=False):
         '''
         There is no supported way of get or creating a test user
         However
         - creating a test user takes around 5s
         - you an only create 500 test users
         So this slows your testing flow quite a bit.
-        
+
         This method checks your test users
         Queries their names (stores the permissions in the name)
-        
+
         '''
         if not permissions:
-            permissions = ['read_stream', 'publish_stream', 'user_photos,offline_access']
+            permissions = ['read_stream', 'publish_stream', 'publish_actions',
+                           'user_photos,offline_access']
         if isinstance(permissions, list):
             permissions = ','.join(permissions)
-            
-        #hacking the permissions into the name of the test user
-        name = 'Permissions %s' % permissions.replace(',', ' ').replace('_', '')
 
-        #retrieve all test users
+        # hacking the permissions into the name of the test user
+        default_name = 'Permissions %s' % permissions.replace(
+            ',', ' ').replace('_', '')
+        name = name or default_name
+
+        # retrieve all test users
         test_users = cls.get_test_users(app_access_token)
         user_id_dict = dict([(int(u['id']), u) for u in test_users])
         user_ids = map(str, user_id_dict.keys())
-        
-        #use fql to figure out their names
+
+        # use fql to figure out their names
         facebook = OpenFacebook(app_access_token)
-        users = facebook.fql('SELECT uid, name FROM user WHERE uid in (%s)' % ','.join(user_ids))
+        users = facebook.fql('SELECT uid, name FROM user WHERE uid in (%s)' %
+                             ','.join(user_ids))
         users_dict = dict([(u['name'], u['uid']) for u in users])
         user_id = users_dict.get(name)
-        
+
+        if force_create and user_id:
+            # we need the users access_token, the app access token doesn't
+            # always work, seems to be a bug in the Facebook api
+            test_user_data = user_id_dict[user_id]
+            cls.delete_test_user(test_user_data['access_token'], user_id)
+            user_id = None
+
         if user_id:
-            #we found our user, extend the data a bit
+            # we found our user, extend the data a bit
             test_user_data = user_id_dict[user_id]
             test_user_data['name'] = name
             test_user = TestUser(test_user_data)
         else:
-            #create the user
-            test_user = cls.create_test_user(app_access_token, permissions, name)
-        
+            # create the user
+            test_user = cls.create_test_user(
+                app_access_token, permissions, name)
+
         return test_user
-    
+
     @classmethod
     def get_test_users(cls, app_access_token):
         kwargs = dict(access_token=app_access_token)
         path = '%s/accounts/test-users' % facebook_settings.FACEBOOK_APP_ID
-        #retrieve all test users
+        # retrieve all test users
         response = cls.request(path, **kwargs)
         test_users = response['data']
         return test_users
-    
+
     @classmethod
     def delete_test_user(cls, app_access_token, test_user_id):
         kwargs = dict(access_token=app_access_token, method='delete')
         path = '%s/' % test_user_id
 
-        #retrieve all test users
+        # retrieve all test users
         response = cls.request(path, **kwargs)
         return response
 
     @classmethod
     def delete_test_users(cls, app_access_token):
-        #retrieve all test users
+        # retrieve all test users
         test_users = cls.get_test_users(app_access_token)
         test_user_ids = [u['id'] for u in test_users]
         for test_user_id in test_user_ids:
@@ -553,15 +630,32 @@ class OpenFacebook(FacebookConnection):
         self.request(*args, **kwargs)
 
     def fql(self, query, **kwargs):
-        """Runs the specified query against the Facebook FQL API.
-        """
-        kwargs['format'] = 'JSON'
-        kwargs['query'] = query
-        path = 'fql.query'
+        '''
+        Runs the specified query against the Facebook FQL API.
+        '''
+        kwargs['q'] = query
+        path = 'fql'
 
-        response = self.request(path, old_api=True, **kwargs)
+        response = self.request(path, **kwargs)
 
-        return response
+        # return only the data for backward compatability
+        return response['data']
+
+    def batch_fql(self, queries_dict):
+        '''
+        queries_dict a dict with the required queries
+        returns the query results in:
+
+        response['fql_results']['query1']
+        response['fql_results']['query2']
+        etc
+        '''
+        query = json.dumps(queries_dict)
+        query_results = self.fql(query)
+        named_results = dict(
+            [(r['name'], r['fql_result_set']) for r in query_results])
+
+        return named_results
 
     def me(self):
         '''
@@ -572,7 +666,7 @@ class OpenFacebook(FacebookConnection):
             self._me = me = self.get('me')
 
         return me
-    
+
     def permissions(self):
         '''
         Shortcut for self.get('me/permissions')
@@ -583,8 +677,8 @@ class OpenFacebook(FacebookConnection):
         except facebook_exceptions.OAuthException:
             permissions = {}
         permissions_dict = dict([(k, bool(int(v)))
-                         for k, v in permissions.items()
-                         if v == '1' or v == 1])
+                                 for k, v in permissions.items()
+                                 if v == '1' or v == 1])
         return permissions_dict
 
     def my_image_url(self, size=None):
@@ -628,5 +722,3 @@ class TestUser(object):
 
     def __repr__(self):
         return 'Test user %s' % self.name
-
-

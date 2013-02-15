@@ -8,14 +8,14 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
-        # Adding field 'UserProfile.gender'
-        db.add_column('member_userprofile', 'gender', self.gf('django.db.models.fields.CharField')(max_length=1, null=True, blank=True), keep_default=False)
+        # Adding field 'UserProfile.facebook_open_graph'
+        db.add_column('member_userprofile', 'facebook_open_graph', self.gf('django.db.models.fields.BooleanField')(default=True), keep_default=False)
 
 
     def backwards(self, orm):
         
-        # Deleting field 'UserProfile.gender'
-        db.delete_column('member_userprofile', 'gender')
+        # Deleting field 'UserProfile.facebook_open_graph'
+        db.delete_column('member_userprofile', 'facebook_open_graph')
 
 
     models = {
@@ -34,7 +34,7 @@ class Migration(SchemaMigration):
         },
         'auth.user': {
             'Meta': {'object_name': 'User'},
-            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2012, 9, 19, 12, 46, 22, 102000)'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
             'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
@@ -42,7 +42,7 @@ class Migration(SchemaMigration):
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
+            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2012, 9, 19, 12, 46, 22, 102000)'}),
             'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
@@ -57,19 +57,20 @@ class Migration(SchemaMigration):
         },
         'member.userprofile': {
             'Meta': {'object_name': 'UserProfile'},
-            'about_me': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'access_token': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'blog_url': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'about_me': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'access_token': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'blog_url': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'date_of_birth': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'facebook_id': ('django.db.models.fields.BigIntegerField', [], {'unique': 'True', 'null': 'True', 'blank': 'True'}),
-            'facebook_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'facebook_profile_url': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'facebook_name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
+            'facebook_open_graph': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'facebook_profile_url': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'gender': ('django.db.models.fields.CharField', [], {'max_length': '1', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'image': ('django.db.models.fields.files.ImageField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'raw_data': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'raw_data': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'}),
-            'website_url': ('django.db.models.fields.TextField', [], {'blank': 'True'})
+            'website_url': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'})
         }
     }
 

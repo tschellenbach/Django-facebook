@@ -1,11 +1,13 @@
 <html>
     <head>
         <script>
-            var authUrl = '{{ location|safe }}';
-            top.location.href=authUrl;
+            var oauth_url = '{{ location|safe }}';
+            window.top.location = oauth_url;
         </script>
     </head>
     <body>
+    	{% if show_body %}
         Redirecting you to <a href="{{ location }}">{{ location }}</a>
+        {% endif %}
     </body>
 </html>

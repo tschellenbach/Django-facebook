@@ -3,6 +3,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django_facebook import admin_actions
 from django_facebook import models
+from django_facebook import settings as facebook_settings
 
 
 class FacebookUserAdmin(admin.ModelAdmin):
@@ -34,7 +35,7 @@ class FacebookProfileAdmin(admin.ModelAdmin):
         position: absolute;
         margin-top: -3px;
     "></span>""".format(
-            instance.image.url
+            instance.image.url if (instance and instance.image) else ''
         )
     image_.allow_tags = True
 
@@ -45,8 +46,8 @@ class FacebookProfileAdmin(admin.ModelAdmin):
             instance.user
         )
     user_.allow_tags = True
-    
-    
+
+
 def facebook_profile(open_graph_share):
     '''
     Nicely displayed version of the facebook user
@@ -65,10 +66,18 @@ facebook_profile.short_description = 'Profile'
 
 class OpenGraphShareAdmin(admin.ModelAdmin):
     raw_id_fields = ['user']
-    list_filter = ['created_at', 'completed_at', 'action_domain']
-    list_display = ['user', 'action_domain', facebook_profile, 'completed_at', 'error_message']
-    actions = [admin_actions.retry_open_graph_share]
-    date_hierarchy = 'created_at'
+    list_display = ['user', 'action_domain', facebook_profile, 'view_share',
+                    'completed_at', 'removed_at', 'error_message']
+    actions = [admin_actions.retry_open_graph_share,
+               admin_actions.retry_open_graph_share_for_user]
+
+    def view_share(self, instance):
+        share_id = instance.share_id
+        url_format = 'https://developers.facebook.com/tools/explorer/%s/?method=GET&path=%s%%2F'
+        url = url_format % (facebook_settings.FACEBOOK_APP_ID, share_id)
+        template = '<a href="%s">%s</a>' % (url, share_id)
+        return template
+    view_share.allow_tags = True
 
 
 if settings.AUTH_PROFILE_MODULE == 'django_facebook.FacebookProfile':
@@ -76,3 +85,4 @@ if settings.AUTH_PROFILE_MODULE == 'django_facebook.FacebookProfile':
 
 admin.site.register(models.FacebookUser, FacebookUserAdmin)
 admin.site.register(models.FacebookLike, FacebookLikeAdmin)
+admin.site.register(models.OpenGraphShare, OpenGraphShareAdmin)

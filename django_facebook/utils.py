@@ -1,11 +1,20 @@
+try:
+    #using compatible_datetime instead of datetime only
+    #not to override the original datetime package
+    from django.utils import timezone as compatible_datetime
+except ImportError:
+    from datetime import datetime as compatible_datetime
+from datetime import datetime
 from django.http import QueryDict, HttpResponse, HttpResponseRedirect
 from django.conf import settings
+import django.contrib.auth
 from django.db import models, transaction
 import logging
 import re
 from django_facebook import settings as facebook_settings
 from django.utils.encoding import iri_to_uri
 from django.template.loader import render_to_string
+import gc
 
 
 logger = logging.getLogger(__name__)
@@ -22,12 +31,39 @@ def clear_persistent_graph_cache(request):
         profile.clear_access_token()
 
 
+def queryset_iterator(queryset, chunksize=1000, getfunc=getattr):
+    '''''
+    Iterate over a Django Queryset ordered by the primary key
+
+    This method loads a maximum of chunksize (default: 1000) rows in it's
+    memory at the same time while django normally would load all rows in it's
+    memory. Using the iterator() method only causes it to not preload all the
+    classes.
+
+    Note that the implementation of the iterator does not support ordered query sets.
+    '''
+    pk = 0
+
+    try:
+        '''In the case of an empty list, return'''
+        last_pk = getfunc(queryset.order_by('-pk')[0], 'pk')
+    except IndexError:
+        return
+
+    queryset = queryset.order_by('pk')
+    while pk < last_pk:
+        for row in queryset.filter(pk__gt=pk)[:chunksize].iterator():
+            pk = getfunc(row, 'pk')
+            yield row
+        gc.collect()
+
+
 def test_permissions(request, scope_list, redirect_uri=None):
     '''
     Call Facebook me/permissions to see if we are allowed to do this
     '''
     from django_facebook.api import get_persistent_graph
-    
+
     fb = get_persistent_graph(request, redirect_uri=redirect_uri)
     permissions_dict = {}
     if fb:
@@ -43,9 +79,9 @@ def test_permissions(request, scope_list, redirect_uri=None):
     # raise if this happens after a redirect though
     if not scope_allowed and request.GET.get('attempt'):
         raise ValueError(
-              'Somehow facebook is not giving us the permissions needed, ' \
-              'lets break instead of endless redirects. Fb was %s and ' \
-              'permissions %s' % (fb, permissions_dict))
+            'Somehow facebook is not giving us the permissions needed, '
+            'lets break instead of endless redirects. Fb was %s and '
+            'permissions %s' % (fb, permissions_dict))
 
     return scope_allowed
 
@@ -81,13 +117,15 @@ class CanvasRedirect(HttpResponse):
     '''
     Redirect for Facebook Canvas pages
     '''
-    def __init__(self, redirect_to):
+    def __init__(self, redirect_to, show_body=True):
         self.redirect_to = redirect_to
         self.location = iri_to_uri(redirect_to)
-        
-        context = dict(location=self.location)
-        js_redirect = render_to_string('django_facebook/canvas_redirect.html', context)
-        
+
+        context = dict(location=self.location,
+                       show_body=show_body)
+        js_redirect = render_to_string(
+            'django_facebook/canvas_redirect.html', context)
+
         super(CanvasRedirect, self).__init__(js_redirect)
 
 
@@ -97,8 +135,20 @@ def response_redirect(redirect_url, canvas=False):
     '''
     if canvas:
         return CanvasRedirect(redirect_url)
-    
+
     return HttpResponseRedirect(redirect_url)
+
+
+def error_next_redirect(request, default='/', additional_params=None, next_key=None, redirect_url=None, canvas=False):
+    '''
+    Short cut for an error next redirect
+    '''
+    if not next_key:
+        next_key = ['error_next', 'next']
+
+    redirect = next_redirect(
+        request, default, additional_params, next_key, redirect_url, canvas)
+    return redirect
 
 
 def next_redirect(request, default='/', additional_params=None,
@@ -128,7 +178,7 @@ def next_redirect(request, default='/', additional_params=None,
 
     if canvas:
         return CanvasRedirect(redirect_url)
-    
+
     return HttpResponseRedirect(redirect_url)
 
 
@@ -137,6 +187,15 @@ def get_profile_class():
     app_label, model = profile_string.split('.')
 
     return models.get_model(app_label, model)
+
+
+def get_user_model():
+    """For Django < 1.5 backward compatibility
+    """
+    if hasattr(django.contrib.auth, 'get_user_model'):
+        return django.contrib.auth.get_user_model()
+    else:
+        return django.contrib.auth.models.User
 
 
 @transaction.commit_on_success
@@ -154,7 +213,8 @@ def mass_get_or_create(model_class, base_queryset, id_field, default_dict,
     >>> global_defaults = dict(user=request.user, list_id=1) #global defaults
     '''
     current_instances = list(base_queryset)
-    current_ids = set([unicode(getattr(c, id_field)) for c in current_instances])
+    current_ids = set(
+        [unicode(getattr(c, id_field)) for c in current_instances])
     given_ids = map(unicode, default_dict.keys())
     #both ends of the comparison are in unicode ensuring the not in works
     new_ids = [g for g in given_ids if g not in current_ids]
@@ -190,9 +250,9 @@ def get_form_class(backend, request):
         backend = backend or get_registration_backend()
         if backend:
             form_class = backend.get_form_class(request)
-            
+
     assert form_class, 'we couldnt find a form class, so we cant go on like this'
-            
+
     return form_class
 
 
@@ -202,15 +262,16 @@ def get_registration_backend():
     '''
     backend = None
     backend_class = None
-    
-    registration_backend_string = getattr(facebook_settings, 'FACEBOOK_REGISTRATION_BACKEND', None)
+
+    registration_backend_string = getattr(
+        facebook_settings, 'FACEBOOK_REGISTRATION_BACKEND', None)
     if registration_backend_string:
         backend_class = get_class_from_string(registration_backend_string)
-       
+
     #instantiate
     if backend_class:
         backend = backend_class()
-        
+
     return backend
 
 
@@ -226,12 +287,12 @@ def get_django_registration_version():
         version = 'new'
     except ImportError:
         version = 'old'
-        
+
     try:
         import registration
     except ImportError, e:
         version = None
-    
+
     return version
 
 
@@ -286,6 +347,22 @@ def to_int(input, default=0, exception=(ValueError, TypeError), regexp=None):
         return default
 
 
+def to_bool(input, default=False):
+    '''
+    Take a request value and turn it into a bool
+    Never raises errors
+    '''
+    if input is None:
+        value = default
+    else:
+        int_value = to_int(input, default=None)
+        if int_value is None:
+            value = default
+        else:
+            value = bool(int_value)
+    return value
+
+
 def remove_query_param(url, key):
     p = re.compile('%s=[^=&]*&' % key, re.VERBOSE)
     url = p.sub('', url)
@@ -333,12 +410,12 @@ def cleanup_oauth_url(redirect_uri):
 
 def replication_safe(f):
     '''
-    Usually views which do a POST will require the next page to be 
+    Usually views which do a POST will require the next page to be
     read from the master database. (To prevent issues with replication lag).
-    
+
     However certain views like login do not have this issue.
     They do a post, but don't modify data which you'll show on subsequent pages.
-    
+
     This decorators marks these views as safe.
     This ensures requests on the next page are allowed to use the slave db
     '''
@@ -349,7 +426,7 @@ def replication_safe(f):
         request.replication_safe = True
         response = f(request, *args, **kwargs)
         return response
-    
+
     return wrapper
 
 
@@ -383,10 +460,12 @@ def get_class_from_string(path, default='raise'):
     except AttributeError:
         if default == 'raise':
             raise ImproperlyConfigured(
-                'Module "%s" does not define a registration ' \
+                'Module "%s" does not define a registration '
                 'backend named "%s"' % (module, attr))
         else:
             backend_class = default
     return backend_class
 
 
+def parse_like_datetime(dt):
+    return datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S+0000")

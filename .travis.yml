@@ -3,25 +3,29 @@ python:
   - 2.6
   - 2.7
 env:
-  - REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook DJANGO=1.3.1
-  - REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook DJANGO=1.4
+  - REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook DJANGO=1.3.5
+  - REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook DJANGO=1.4.3
+  #- REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook DJANGO=1.5
   #- REQUIREMENTS=userena SETTINGS=facebook_example.userena_settings TESTS=django_facebook
-  - REQUIREMENTS=django_registration SETTINGS=facebook_example.django_registration_settings TESTS=django_facebook DJANGO=1.3.1
-  - REQUIREMENTS=django_registration SETTINGS=facebook_example.django_registration_settings TESTS=django_facebook DJANGO=1.4
+  - REQUIREMENTS=django_registration SETTINGS=facebook_example.django_registration_settings TESTS=django_facebook open_facebook DJANGO=1.3.5
+  - REQUIREMENTS=django_registration SETTINGS=facebook_example.django_registration_settings TESTS=django_facebook open_facebook DJANGO=1.4.3
+  #- REQUIREMENTS=django_registration SETTINGS=facebook_example.django_registration_settings TESTS=django_facebook open_facebook DJANGO=1.5
   #- REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=open_facebook
 postgres:
   adapter: sqlite3
   database: django_fb_test
 install:
   - pip install pep8 --use-mirrors
+  - pip install coverage
   - pip install https://github.com/dcramer/pyflakes/tarball/master
   - python setup.py install
   - pip install -r facebook_example/requirements/$REQUIREMENTS.txt --use-mirrors -I
-  - pip install -q Django==$DJANGO --use-mirrors
-#before_script:
-#  - "pep8 --exclude=migrations --ignore=E501,E225 django_facebook"
+  - pip install -q Django==$DJANGO --use-mirrors -I
+before_script:
+  - "pep8 --exclude=migrations --ignore=E501,E225 django_facebook open_facebook"
 #  - pyflakes -x W src
 script:
   - pip install -e .
   - cd facebook_example
-  - python manage.py test $TESTS --settings=$SETTINGS
+  - coverage run manage.py test $TESTS --settings=$SETTINGS
+  - coverage report

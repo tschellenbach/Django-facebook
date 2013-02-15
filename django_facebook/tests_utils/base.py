@@ -1,6 +1,6 @@
 from django.core.handlers.base import BaseHandler
-from django.test.client import RequestFactory
 from django.test import TestCase
+from django.test.client import Client, RequestFactory
 
 
 class RequestMock(RequestFactory):
@@ -24,18 +24,30 @@ class RequestMock(RequestFactory):
 
 class FacebookTest(TestCase):
     '''
-    Normal facebook tests run against a fake API
+    Normal Facebook tests run against a fake API
     '''
     def setUp(self):
-        from django_facebook.tests_utils.mock_official_sdk import MockFacebookAPI
+        from django_facebook.tests_utils.mock_official_sdk import MockFacebookAPI, MockFacebookAuthorization
         from open_facebook import api
         import open_facebook
-        api.OpenFacebook = MockFacebookAPI
-        open_facebook.OpenFacebook = MockFacebookAPI
+
+        self.originalAPI = open_facebook.OpenFacebook
+        self.originalAuthorization = open_facebook.FacebookAuthorization
+
+        open_facebook.OpenFacebook = api.OpenFacebook = MockFacebookAPI
+        open_facebook.FacebookAuthorization = api.FacebookAuthorization = MockFacebookAuthorization
 
         rf = RequestMock()
         self.request = rf.get('/')
-        
+        self.client = Client()
+
+    def tearDown(self):
+        from open_facebook import api
+        import open_facebook
+        open_facebook.OpenFacebook = api.OpenFacebook = self.originalAPI
+        open_facebook.FacebookAuthorization = api.FacebookAuthorization = self.originalAuthorization
+
+
 class LiveFacebookTest(TestCase):
     '''
     Live Facebook Tests run against the actual Facebook API

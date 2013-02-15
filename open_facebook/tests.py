@@ -1,16 +1,72 @@
-
 # -*- coding: utf-8 -*-
-import os
-os.environ['DJANGO_SETTINGS_MODULE'] = 'facebook_example.settings'
+
 from open_facebook.api import *
 import unittest
 import logging
+import mock
+import datetime
 logger = logging.getLogger()
 from open_facebook.utils import json
 
 
-class TestErrorMapping(unittest.TestCase):
-    
+TEST_USER_FORCE_CREATE = True
+TEST_USER_DICT = {
+    'tommy': dict(name='Tommaso Ilgubrab'),
+    'thi': dict(name='Thierry Hcabnellehcs'),
+    'guy': dict(name='Guyon Eerom', permissions=['read_stream'])
+}
+TEST_USER_NAMES = [v['name'] for k, v in TEST_USER_DICT.items()]
+
+TEST_USER_OBJECTS = None
+
+
+def setup_users():
+    '''
+    Since this is soo slow we only do this once for all tests
+    '''
+    #caching because these apis are just too damn slow for test driven development
+    from django.core.cache import cache
+    global TEST_USER_OBJECTS
+    if TEST_USER_OBJECTS is None:
+        key = 'test_user_objects'
+        user_objects = cache.get(key)
+        if not user_objects or True:
+            logger.info('test user cache not found, rebuilding')
+            user_objects = {}
+            app_token = FacebookAuthorization.get_app_access_token()
+            for user_slug, user_dict in TEST_USER_DICT.items():
+                test_user = FacebookAuthorization.get_or_create_test_user(
+                    app_token, name=user_dict[
+                        'name'], force_create=TEST_USER_FORCE_CREATE,
+                    permissions=user_dict.get('permissions')
+                )
+                user_objects[user_slug] = test_user
+            cache.set(key, user_objects, 60 * 60)
+        TEST_USER_OBJECTS = user_objects
+    return TEST_USER_OBJECTS
+
+
+class OpenFacebookTest(unittest.TestCase):
+    def setUp(self):
+        setup_users()
+        for user_slug, user_object in TEST_USER_OBJECTS.items():
+            setattr(self, user_slug, user_object)
+
+
+class TestErrorMapping(OpenFacebookTest):
+
+    def test_syntax_error(self):
+        error_response = '''
+        {
+           'error': {
+               'message': 'Syntax error "Expected end of string instead of "?"." at character 14: third_party_id?access_token=AAABbPDnY390BAOZA22ugLfCyr2OGH0k82VJMPJRR8qxceV96nBra53R5ISiou7VOD9eBd21ZCzPZC5Vn1hWbVkY9Qvx9g8wl1NCmuL9vwZDZD',
+               'code': 2500,
+               'type': 'OAuthException'
+           }
+        }
+        '''
+        return
+
     def test_oauth_errors(self):
         expires_response = '''{
           "error": {
@@ -43,71 +99,102 @@ class TestErrorMapping(unittest.TestCase):
         }
         '''
         responses = [expires_response, changed_password_response,
-                      deauthorized_response, loggedout_response]
+                     deauthorized_response, loggedout_response]
         response_objects = []
         for response_string in responses:
             response = json.loads(response_string)
-            
+
             response_objects.append(response)
-            
+
         from open_facebook import exceptions as open_facebook_exceptions
         for response in response_objects:
             oauth = False
             try:
                 FacebookConnection.raise_error(response['error']['type'],
-                                    response['error']['message'])
+                                               response['error']['message'])
             except open_facebook_exceptions.OAuthException, e:
                 oauth = True
             assert oauth, 'response %s didnt raise oauth error' % response
 
-class TestOpenFacebook(unittest.TestCase):
-    def test_thijs_profile(self):
 
-        token = FacebookAuthorization.get_app_access_token()
-        FacebookAuthorization.create_test_user(token)
-        test_user = FacebookAuthorization.get_or_create_test_user(token)
-        return
+class Test500Detection(OpenFacebookTest):
+    def test_500(self):
+        '''
+        Facebook errors often look like 500s
+        Its a silly system, but we need to support it
 
-        message = "Hi! I'm on Fashiolista, a worldwide community for " \
-                  "fashion inspiration. Click to see my style profile and " \
-                  "discover great new shops and fashion items!"
-        image_urls = [
-            'http://e.fashiocdn.com/images/entities/0/0/x/l/W/0.365x365.jpg',
-            'http://d.fashiocdn.com/images/entities/0/9/9/j/j/0.365x365.jpg',
-            'http://e.fashiocdn.com/images/entities/0/8/0/7/4/0.365x365.jpg',
-        ]
-        token = None
-        access_token = '215464901804004|fc589819a12431167c3bd571.0-100002862180253|by58p1KHqf_XiqA4ux390XBGBIo'
-        # login
-        # https://www.facebook.com/platform/test_account_login.php?user_id=100002898600225&n=I4x8lGXREnEhea7
-        # fill in a real token for this to work
-        # {u'access_token': u'215464901804004|fc589819a12431167c3bd571.0-100002862180253|by58p1KHqf_XiqA4ux390XBGBIo', u'password': u'1439799010', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002862180253&n=4xdwSTQbstgOzUt', u'id': u'100002862180253', u'email': u'hello_edztofa_world@tfbnw.net'}
-        fb = OpenFacebook(access_token)
-        print fb.get('me/accounts')
-        return
-        permissions = [p for p, v in fb.get(
-            'me/permissions')['data'][0].items() if v]
-        print permissions
-        return
-        print fb.fql("SELECT uid, name, sex FROM user WHERE uid IN " \
-                     "(SELECT uid2 FROM friend WHERE uid1 = me())")
-        return
-        actions = [dict(name='Follow', link='http://www.fashiolista.com/')]
-        # print fb.get('thijsgoos', metadata='1')['metadata']
-        types = ['link', 'photo']
+        '''
+        from StringIO import StringIO
+        graph = self.guy.graph()
 
-        for type in types:
-            for image_url in image_urls:
-                fb.set('me/feed', picture=image_url,
-                       actions=actions, type=type, message=type)
-        # print fb.set('696010430_10150752137065431/likes')
+        with mock.patch('urllib2.build_opener') as patched:
+            from urllib2 import HTTPError
 
-    def test_app_access_token(self):
-        token = FacebookAuthorization.get_app_access_token()
-        test_user = FacebookAuthorization.create_test_user(token)
-        token_available = 'access_token' in test_user
-        assert token_available, 'App authentication failed %s' % test_user
+            opener = mock.MagicMock()
+            response = StringIO('''{
+              "error": {
+                "type": "OAuthException",
+                "message": "Error validating access token: USER_ID has not authorized application APP_ID"
+              }
+            }''')
+            opener.open.side_effect = HTTPError(
+                'bla', 500, 'bla', 'bla', response)
 
+            patched.return_value = opener
+
+            def make_request():
+                graph.get('me')
+
+            self.assertRaises(facebook_exceptions.OAuthException, make_request)
+
+
+class TestPublishing(OpenFacebookTest):
+    def test_wallpost(self):
+        graph = self.thi.graph()
+        now = datetime.datetime.now()
+        result = graph.set('me/feed', message='This should work %s' % now)
+        self.assertTrue(result['id'])
+        graph.delete(result['id'])
+
+        #we have no permissions, this should fail
+        guy_graph = self.guy.graph()
+        try:
+            guy_graph.set('me/feed', message='Nonnonono')
+            raise ValueError('We were expecting a permissions exception')
+        except facebook_exceptions.PermissionException, e:
+            pass
+
+    def test_og_follow(self):
+        #perform an og follow
+        graph = self.thi.graph()
+        path = 'me/og.follows'
+        result = graph.set(path, profile=self.guy.id)
+        self.assertTrue(result['id'])
+
+        #now try removing it
+        remove_path = result['id']
+        deleted = graph.delete(remove_path)
+
+    def test_og_adjust(self):
+        #perform an og follow
+        graph = self.thi.graph()
+        path = 'me/og.follows'
+        result = graph.set(path, profile=self.guy.id)
+        self.assertTrue(result['id'])
+
+        change_result = graph.set(result['id'], message='hello world')
+        assert change_result is True
+
+    def test_og_explicit_share(self):
+        #perform an og follow
+        graph = self.thi.graph()
+        path = 'me/og.follows'
+        result = graph.set(
+            path, profile=self.guy.id, fb__explicitly_shared='true')
+        self.assertTrue(result['id'])
+
+
+class TestOpenFacebook(OpenFacebookTest):
     def test_cookie_parsing(self):
         cookie = 'F7cndfQuSIkcVHWIgg_SHQ4LIDJXeeHhiXUNjesOw5g.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImNvZGUiOiJVMTZuMFNoWVUxSTJ5VEFJMVZ0RmlvZTdhRVRaaEZ4cGV5d1hwYnZvOUprLmV5SnBkaUk2SW1OcmFGVXlWR053ZDA1VlMwSTRlUzFzZDA1WmFtY2lmUS5rZl9RTUhCMnVFTVh5YW83UU5UcnFGMlJzOGxxQUxrM1AxYm8zazBLMm5YUXpOZW5LSVlfczBVV3ZNbE1jTXAzcE04TXNLNVVDQUpjWlQ1N1ZaZXFkS3ZPeXRFbmdoODFxTmczTXVDeTBHNjB6WjFBOWZGZlpHenVDejdKSEVSSCIsImlzc3VlZF9hdCI6MTMxMTYwMDEyNywidXNlcl9pZCI6Nzg0Nzg1NDMwfQ'
         parsed_cookie = FacebookAuthorization.parse_signed_data(cookie)
@@ -127,26 +214,17 @@ class TestOpenFacebook(unittest.TestCase):
             pass
 
     def test_fql(self):
-        token = self.get_access_token()
-        facebook = OpenFacebook(token)
+        facebook = self.thi.graph()
         result = facebook.fql('SELECT name FROM user WHERE uid = me()')
         assert 'name' in result[0]
 
-    def get_access_token(self):
-        token = FacebookAuthorization.get_app_access_token()
-        test_user = FacebookAuthorization.create_test_user(token)
-        return test_user['access_token']
-
     def test_open_api(self):
-        token = self.get_access_token()
-        facebook = OpenFacebook(token)
+        facebook = self.guy.graph()
         assert 'name' in facebook.me()
-
         assert facebook.get('fashiolista')
 
     def test_album_upload(self):
-        token = self.get_access_token()
-        facebook = OpenFacebook(token)
+        facebook = self.tommy.graph()
         photo_urls = [
             'http://d.fashiocdn.com/images/entities/0/6/t/p/d/0.365x365.jpg',
             'http://e.fashiocdn.com/images/entities/0/5/E/b/Q/0.365x365.jpg',
@@ -178,13 +256,3 @@ class TestOpenFacebook(unittest.TestCase):
                 '%s/photos' % album_id, url=photo,
                 message='the writing is one the wall tw',
                 name='FashiolistaTestt')
-
-
-if __name__ == '__main__':
-    import logging
-    handler = logging.StreamHandler()
-    logger = logging.getLogger('')
-    logger.setLevel(logging.DEBUG)
-    handler.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
-    unittest.main(defaultTest='TestOpenFacebook.test_thijs_profile')

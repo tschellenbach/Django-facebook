@@ -28,4 +28,3 @@ INSTALLED_APPS += (
     'userena',
     'guardian',
 )
-

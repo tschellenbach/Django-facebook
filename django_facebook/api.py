@@ -1,9 +1,16 @@
 from django.forms.util import ValidationError
 from django.utils import simplejson as json
 from django_facebook import settings as facebook_settings
-from django_facebook.utils import mass_get_or_create, cleanup_oauth_url,\
+from django_facebook.utils import mass_get_or_create, cleanup_oauth_url, \
     get_profile_class
 from open_facebook.exceptions import OpenFacebookException
+from django_facebook.exceptions import FacebookException
+try:
+    from dateutil.parser import parse as parse_date
+except ImportError:
+    from django_facebook.utils import parse_like_datetime as parse_date
+from django_facebook.utils import get_user_model
+
 import datetime
 import logging
 from open_facebook import exceptions as open_facebook_exceptions
@@ -11,6 +18,7 @@ from open_facebook.utils import send_warning
 from django_facebook import signals
 
 logger = logging.getLogger(__name__)
+
 
 def require_persistent_graph(request, *args, **kwargs):
     '''
@@ -35,10 +43,10 @@ def get_persistent_graph(request, *args, **kwargs):
     '''
     if not request:
         raise(ValidationError,
-            'Request is required if you want to use persistent tokens')
-        
+              'Request is required if you want to use persistent tokens')
+
     graph = None
-    #some situations like an expired access token require us to refresh our graph
+    # some situations like an expired access token require us to refresh our graph
     require_refresh = False
     code = request.REQUEST.get('code')
     if code:
@@ -46,31 +54,28 @@ def get_persistent_graph(request, *args, **kwargs):
 
     local_graph = getattr(request, 'facebook', None)
     if local_graph:
-        #gets the graph from the local memory if available
+        # gets the graph from the local memory if available
         graph = local_graph
 
     if not graph:
-        #search for the graph in the session
+        # search for the graph in the session
         cached_graph = request.session.get('graph')
         if cached_graph:
             cached_graph._me = None
             graph = cached_graph
-            
+
     if not graph or require_refresh:
-        #gets the new graph, note this might do token conversions (slow) 
+        # gets the new graph, note this might do token conversions (slow)
         graph = get_facebook_graph(request, *args, **kwargs)
-        #if it's valid replace the old cache
+        # if it's valid replace the old cache
         if graph is not None and graph.access_token:
             request.session['graph'] = graph
 
-    #add the current user id and cache the graph at the request level
+    # add the current user id and cache the graph at the request level
     _add_current_user_id(graph, request.user)
     request.facebook = graph
 
     return graph
-
-
-
 
 
 def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise_=False):
@@ -91,7 +96,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
     specify redirect_uri if you are not posting and recieving the code
     on the same page
     '''
-    #this is not a production flow, but very handy for testing
+    # this is not a production flow, but very handy for testing
     if not access_token and request.REQUEST.get('access_token'):
         access_token = request.REQUEST['access_token']
     # should drop query params be included in the open facebook api,
@@ -100,25 +105,25 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
     from django.core.cache import cache
     parsed_data = None
     expires = None
-    if hasattr(request, 'facebook'):
+    if hasattr(request, 'facebook') and request.facebook:
         graph = request.facebook
         _add_current_user_id(graph, request.user)
         return graph
 
     if not access_token:
-        #easy case, code is in the get
+        # easy case, code is in the get
         code = request.REQUEST.get('code')
         if code:
             logger.info('Got code from the request data')
         if not code:
-            #signed request or cookie leading, base 64 decoding needed
+            # signed request or cookie leading, base 64 decoding needed
             signed_data = request.REQUEST.get('signed_request')
             cookie_name = 'fbsr_%s' % facebook_settings.FACEBOOK_APP_ID
             cookie_data = request.COOKIES.get(cookie_name)
 
             if cookie_data:
                 signed_data = cookie_data
-                #the javascript api assumes a redirect uri of ''
+                # the javascript api assumes a redirect uri of ''
                 redirect_uri = ''
             if signed_data:
                 logger.info('Got signed data from facebook')
@@ -126,7 +131,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                     signed_data)
                 if parsed_data:
                     logger.info('Got parsed data from facebook')
-                    #parsed data can fail because of signing issues
+                    # parsed data can fail because of signing issues
                     if 'oauth_token' in parsed_data:
                         logger.info('Got access_token from parsed data')
                         # we already have an active access token in the data
@@ -150,22 +155,22 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                     # for other pages it should be the url
                     if not redirect_uri:
                         redirect_uri = ''
-    
+
                     # we need to drop signed_request, code and state
                     redirect_uri = cleanup_oauth_url(redirect_uri)
-    
+
                     try:
                         logger.info(
                             'trying to convert the code with redirect uri: %s',
                             redirect_uri)
-                        #This is realy slow, that's why it's cached
+                        # This is realy slow, that's why it's cached
                         token_response = FacebookAuthorization.convert_code(
                             code, redirect_uri=redirect_uri)
                         expires = token_response.get('expires')
                         access_token = token_response['access_token']
-                        #would use cookies instead, but django's cookie setting
-                        #is a bit of a mess
-                        cache.set(cache_key, access_token, 60*60*2)
+                        # would use cookies instead, but django's cookie setting
+                        # is a bit of a mess
+                        cache.set(cache_key, access_token, 60 * 60 * 2)
                     except open_facebook_exceptions.OAuthException, e:
                         # this sometimes fails, but it shouldnt raise because
                         # it happens when users remove your
@@ -177,7 +182,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                         else:
                             return None
             elif request.user.is_authenticated():
-                #support for offline access tokens stored in the users profile
+                # support for offline access tokens stored in the users profile
                 profile = request.user.get_profile()
                 access_token = getattr(profile, 'access_token', None)
                 if not access_token:
@@ -194,7 +199,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                     return None
 
     graph = OpenFacebook(access_token, parsed_data, expires=expires)
-    #add user specific identifiers
+    # add user specific identifiers
     if request:
         _add_current_user_id(graph, request.user)
 
@@ -277,7 +282,7 @@ class FacebookUserConverter(object):
         user_data['facebook_profile_url'] = profile.get('link')
         user_data['facebook_name'] = profile.get('name')
         if len(user_data.get('email', '')) > 75:
-            #no more fake email accounts for facebook
+            # no more fake email accounts for facebook
             del user_data['email']
 
         gender = profile.get('gender', None)
@@ -289,7 +294,7 @@ class FacebookUserConverter(object):
 
         user_data['username'] = cls._retrieve_facebook_username(user_data)
         user_data['password2'], user_data['password1'] = (
-            cls._generate_fake_password(), ) * 2  # same as double equal
+            cls._generate_fake_password(),) * 2  # same as double equal
 
         facebook_map = dict(birthday='date_of_birth',
                             about='about_me', id='facebook_id')
@@ -306,6 +311,10 @@ class FacebookUserConverter(object):
         if username:
             user_data['username'] = cls._create_unique_username(
                 user_data['username'])
+
+        # make sure the first and last name are not too long
+        user_data['first_name'] = user_data['first_name'][:30]
+        user_data['last_name'] = user_data['last_name'][:30]
 
         return user_data
 
@@ -388,9 +397,9 @@ class FacebookUserConverter(object):
         data_tuple = (unicode(e), data_dump, data_dump_python)
         message = message_format % data_tuple
         extra_data = {
-             'data_dump': data_dump,
-             'data_dump_python': data_dump_python,
-             'facebook_data': facebook_data,
+            'data_dump': data_dump,
+            'data_dump_python': data_dump_python,
+            'facebook_data': facebook_data,
         }
         send_warning(message, **extra_data)
 
@@ -399,8 +408,7 @@ class FacebookUserConverter(object):
         '''
         Check the database and add numbers to the username to ensure its unique
         '''
-        from django.contrib.auth.models import User
-        usernames = list(User.objects.filter(
+        usernames = list(get_user_model().objects.filter(
             username__istartswith=base_username).values_list(
                 'username', flat=True))
         usernames_lower = [str(u).lower() for u in usernames]
@@ -419,30 +427,43 @@ class FacebookUserConverter(object):
         - email
         - name
         '''
+        username = None
+
+        # start by checking the public profile link (your facebook username)
         link = facebook_data.get('link')
         if link:
             username = link.split('/')[-1]
-            username = cls._username_slugify(username)
-        if 'profilephp' in username:
-            username = None
+            username = cls._make_username(username)
+            if 'profilephp' in username:
+                username = None
 
+        # try the email adress next
         if not username and 'email' in facebook_data:
-            username = cls._username_slugify(facebook_data.get(
+            username = cls._make_username(facebook_data.get(
                 'email').split('@')[0])
 
+        # last try the name of the user
         if not username or len(username) < 4:
-            username = cls._username_slugify(facebook_data.get('name'))
+            username = cls._make_username(facebook_data.get('name'))
+
+        if not username:
+            raise FacebookException('couldnt figure out a username')
 
         return username
 
     @classmethod
-    def _username_slugify(cls, username):
+    def _make_username(cls, username):
         '''
         Slugify the username and replace - with _ to meet username requirements
         '''
         from django.template.defaultfilters import slugify
         slugified_name = slugify(username).replace('-', '_')
+
+        # consider the username min and max constraints
         slugified_name = slugified_name[:30]
+        if len(username) < 4:
+            slugified_name = None
+
         return slugified_name
 
     def get_and_store_likes(self, user):
@@ -486,7 +507,7 @@ class FacebookUserConverter(object):
     @classmethod
     def _store_likes(self, user, likes):
         current_likes = inserted_likes = None
-        
+
         if likes:
             from django_facebook.models import FacebookLike
             base_queryset = FacebookLike.objects.filter(user_id=user.id)
@@ -498,8 +519,7 @@ class FacebookUserConverter(object):
                 created_time_string = like.get('created_time')
                 created_time = None
                 if created_time_string:
-                    created_time = datetime.datetime.strptime(
-                        like['created_time'], "%Y-%m-%dT%H:%M:%S+0000")
+                    created_time = parse_date(like['created_time'])
                 default_dict[like['id']] = dict(
                     created_time=created_time,
                     category=like.get('category'),
@@ -511,13 +531,13 @@ class FacebookUserConverter(object):
             logger.debug('found %s likes and inserted %s new likes',
                          len(current_likes), len(inserted_likes))
 
-        #fire an event, so u can do things like personalizing the users' account
-        #based on the likes
+        # fire an event, so u can do things like personalizing the users' account
+        # based on the likes
         signals.facebook_post_store_likes.send(sender=get_profile_class(),
-            user=user, likes=likes, current_likes=current_likes,
-            inserted_likes=inserted_likes,
-        )
-        
+                                               user=user, likes=likes, current_likes=current_likes,
+                                               inserted_likes=inserted_likes,
+                                               )
+
         return likes
 
     def get_and_store_friends(self, user):
@@ -547,7 +567,7 @@ class FacebookUserConverter(object):
         friends = getattr(self, '_friends', None)
         if friends is None:
             friends_response = self.open_facebook.fql(
-                "SELECT uid, name, sex FROM user WHERE uid IN (SELECT uid2 " \
+                "SELECT uid, name, sex FROM user WHERE uid IN (SELECT uid2 "
                 "FROM friend WHERE uid1 = me()) LIMIT %s" % limit)
             # friends_response = self.open_facebook.get('me/friends',
             #                                           limit=limit)
@@ -576,16 +596,17 @@ class FacebookUserConverter(object):
     def _store_friends(self, user, friends):
         from django_facebook.models import FacebookUser
         current_friends = inserted_friends = None
-        
-        #store the users for later retrieval
+
+        # store the users for later retrieval
         if friends:
-            #see which ids this user already stored
+            # see which ids this user already stored
             base_queryset = FacebookUser.objects.filter(user_id=user.id)
-            #if none if your friend have a gender clean the old data
-            genders = FacebookUser.objects.filter(user_id=user.id, gender__in=('M','F')).count()
+            # if none if your friend have a gender clean the old data
+            genders = FacebookUser.objects.filter(
+                user_id=user.id, gender__in=('M', 'F')).count()
             if not genders:
                 FacebookUser.objects.filter(user_id=user.id).delete()
-            
+
             global_defaults = dict(user_id=user.id)
             default_dict = {}
             gender_map = dict(female='F', male='M')
@@ -602,13 +623,13 @@ class FacebookUserConverter(object):
                 global_defaults)
             logger.debug('found %s friends and inserted %s new ones',
                          len(current_friends), len(inserted_friends))
-            
-        #fire an event, so u can do things like personalizing suggested users
-        #to follow
+
+        # fire an event, so u can do things like personalizing suggested users
+        # to follow
         signals.facebook_post_store_friends.send(sender=get_profile_class(),
-            user=user, friends=friends, current_friends=current_friends,
-            inserted_friends=inserted_friends,
-        )
+                                                 user=user, friends=friends, current_friends=current_friends,
+                                                 inserted_friends=inserted_friends,
+                                                 )
 
         return friends
 
