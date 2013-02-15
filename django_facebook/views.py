@@ -11,7 +11,7 @@ from django_facebook.api import FacebookUserConverter, require_persistent_graph
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
 from django_facebook.decorators import facebook_required_lazy
 from django_facebook.utils import next_redirect, get_registration_backend, \
-    to_bool, error_next_redirect
+    to_bool, error_next_redirect, get_instance_for
 from open_facebook import exceptions as open_facebook_exceptions
 from open_facebook.utils import send_warning
 import logging
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @facebook_required_lazy(extra_params=dict(facebook_login='1'))
-def connect(request):
+def connect(request, graph):
     '''
     Exception and validation functionality around the _connect view
     Separated this out from _connect to preserve readability
@@ -41,7 +41,7 @@ def connect(request):
         raise Http404('not showing the connect page')
 
     try:
-        response = _connect(request, facebook_login)
+        response = _connect(request, facebook_login, graph)
     except open_facebook_exceptions.FacebookUnreachable, e:
         # often triggered when Facebook is slow
         warning_format = u'%s, often caused by Facebook slowdown, error %s'
@@ -55,75 +55,74 @@ def connect(request):
     return response
 
 
-def _connect(request, facebook_login):
+def _connect(request, facebook_login, graph):
     '''
     Handles the view logic around connect user
     - (if authenticated) connect the user
     - login
     - register
+    
+    We are already covered by the facebook_required_lazy decorator
+    So we know we either have a graph and permissions, or the user denied
+    the oAuth dialog
     '''
     backend = get_registration_backend()
     context = RequestContext(request)
 
     if facebook_login:
         logger.info('trying to connect using Facebook')
-        graph = require_persistent_graph(request)
-        authenticated = False
         if graph:
             logger.info('found a graph object')
-            facebook = FacebookUserConverter(graph)
-            authenticated = facebook.is_authenticated()
+            converter = get_instance_for('user_conversion', graph)
+            authenticated = converter.is_authenticated()
+            # Defensive programming :)
+            if not authenticated:
+                raise ValueError('didnt expect this flow')
 
-            if authenticated:
-                logger.info('Facebook is authenticated')
-                facebook_data = facebook.facebook_profile_data()
-                # either, login register or connect the user
-                try:
-                    action, user = connect_user(request)
-                    logger.info('Django facebook performed action: %s', action)
-                except facebook_exceptions.IncompleteProfileError, e:
-                    # show them a registration form to add additional data
-                    warning_format = u'Incomplete profile data encountered with error %s'
-                    warn_message = warning_format % e.message
-                    send_warning(warn_message, e=e,
-                                 facebook_data=facebook_data)
+            logger.info('Facebook is authenticated')
+            facebook_data = converter.facebook_profile_data()
+            # either, login register or connect the user
+            try:
+                action, user = connect_user(request)
+                logger.info('Django facebook performed action: %s', action)
+            except facebook_exceptions.IncompleteProfileError, e:
+                # show them a registration form to add additional data
+                warning_format = u'Incomplete profile data encountered with error %s'
+                warn_message = warning_format % e.message
+                send_warning(warn_message, e=e,
+                             facebook_data=facebook_data)
 
-                    context['facebook_mode'] = True
-                    context['form'] = e.form
-                    return render_to_response(
-                        facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE,
-                        context_instance=context,
-                    )
-                except facebook_exceptions.AlreadyConnectedError, e:
-                    user_ids = [u.user_id for u in e.users]
-                    ids_string = ','.join(map(str, user_ids))
-                    return error_next_redirect(
-                        request,
-                        additional_params=dict(already_connected=ids_string))
+                context['facebook_mode'] = True
+                context['form'] = e.form
+                return render_to_response(
+                    facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE,
+                    context_instance=context,
+                )
+            except facebook_exceptions.AlreadyConnectedError, e:
+                user_ids = [u.user_id for u in e.users]
+                ids_string = ','.join(map(str, user_ids))
+                return error_next_redirect(
+                    request,
+                    additional_params=dict(already_connected=ids_string))
 
-                if action is CONNECT_ACTIONS.CONNECT:
-                    # connect means an existing account was attached to facebook
-                    messages.info(request, _("You have connected your account "
-                                             "to %s's facebook profile") % facebook_data['name'])
-                elif action is CONNECT_ACTIONS.REGISTER:
-                    # hook for tying in specific post registration functionality
-                    response = backend.post_registration_redirect(
-                        request, user)
-                    # compatibility for Django registration backends which return redirect tuples instead of a response
-                    if not isinstance(response, HttpResponse):
-                        to, args, kwargs = response
-                        response = redirect(to, *args, **kwargs)
-                    return response
-
-        # either redirect to error next or raise an error (caught by the decorator and going into a retry
-        if not authenticated:
-            if 'attempt' in request.GET:
-                return error_next_redirect(request, additional_params=dict(fb_error_or_cancel=1))
-            else:
-                logger.info('Facebook authentication needed for connect, '
-                            'raising an error')
-                raise open_facebook_exceptions.OpenFacebookException(
-                    'please authenticate')
+            if action is CONNECT_ACTIONS.CONNECT:
+                # connect means an existing account was attached to facebook
+                messages.info(request, _("You have connected your account "
+                                         "to %s's facebook profile") % facebook_data['name'])
+            elif action is CONNECT_ACTIONS.REGISTER:
+                # hook for tying in specific post registration functionality
+                response = backend.post_registration_redirect(
+                    request, user)
+                # compatibility for Django registration backends which return redirect tuples instead of a response
+                if not isinstance(response, HttpResponse):
+                    to, args, kwargs = response
+                    response = redirect(to, *args, **kwargs)
+                return response
+        else:
+            # the user denied the request
+            return error_next_redirect(
+                request,
+                additional_params=dict(error='1'))
 
         # for CONNECT and LOGIN we simple redirect to the next page
         return next_redirect(request, default=facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT)

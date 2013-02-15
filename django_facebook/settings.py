@@ -80,3 +80,7 @@ FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = getattr(
 # Profile image location
 FACEBOOK_PROFILE_IMAGE_PATH = getattr(
     settings, 'FACEBOOK_PROFILE_IMAGE_PATH', None)
+
+# Ability to easily overwrite classes used for certain tasks
+FACEBOOK_CLASS_MAPPING = getattr(
+    settings, 'FACEBOOK_CLASS_MAPPING', None)

@@ -488,3 +488,42 @@ def get_class_from_string(path, default='raise'):
 
 def parse_like_datetime(dt):
     return datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S+0000")
+
+
+def get_default_mapping():
+    from django_facebook.api import FacebookUserConverter
+    DEFAULT_FACEBOOK_CLASS_MAPPING = {
+        'user_conversion': FacebookUserConverter
+    }
+    return DEFAULT_FACEBOOK_CLASS_MAPPING
+
+
+def get_class_mapping():
+    mapping = facebook_settings.FACEBOOK_CLASS_MAPPING
+    if mapping is None:
+        mapping = get_default_mapping()
+    return mapping
+
+
+def get_class_for(purpose):
+    '''
+    Usage:
+    conversion_class = get_class_for('user_conversion')
+    '''
+    mapping = get_class_mapping()
+    class_ = mapping[purpose]
+    return class_
+
+
+def get_instance_for(purpose, *args, **kwargs):
+    '''
+    Usage:
+    conversion_instance = get_instance_for('facebook_user_conversion', user=user)
+    '''
+    class_ = get_class_for(purpose)
+    instance = class_(*args, **kwargs)
+    return instance
+    
+
+
+
