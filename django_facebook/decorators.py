@@ -1,12 +1,11 @@
 from django.utils.decorators import available_attrs
 from django.utils.functional import wraps
-from django_facebook import settings as fb_settings
-from django_facebook import get_persistent_graph
-from django_facebook.utils import get_oauth_url, parse_scope, response_redirect
-import logging
+from django_facebook import get_persistent_graph, settings as fb_settings
 from django_facebook.api import require_persistent_graph
+from django_facebook.utils import get_oauth_url, parse_scope, response_redirect, \
+    has_permissions, simplify_class_decorator
 from open_facebook import exceptions as open_facebook_exceptions
-from django_facebook.utils import has_permissions
+import logging
 
 
 logger = logging.getLogger(__name__)
@@ -21,7 +20,8 @@ class FacebookRequired(object):
     and upon a permission error redirect to login_url
     Querying the permissions would slow down things
     """
-    def __init__(self, scope=None, canvas=False, extra_params=None):
+    def __init__(self, fn, scope=None, canvas=False, extra_params=None):
+        self.fn = fn
         scope = fb_settings.FACEBOOK_DEFAULT_SCOPE if scope is None else scope
         self.scope = scope
         self.scope_list = parse_scope(scope)
@@ -60,10 +60,19 @@ class FacebookRequired(object):
         
         return response
         
-    def __call__(self, fn):
-        @wraps(fn)
+    def __call__(self):
+        '''
+        When the decorator is called like this
+            @facebook_required
+            The call will receive 
+        
+        Otherwise it will be like
+            @facebook_required(scope=[])
+            The init will receive the parameters
+        '''
+        @wraps(self.fn, assigned=available_attrs(self.fn))
         def wrapped_view(request, *args, **kwargs):
-            response = self.authenticate(fn, request, *args, **kwargs)
+            response = self.authenticate(self.fn, request, *args, **kwargs)
             return response
             
         wrapped_view.csrf_exempt = self.csrf_exempt
@@ -96,11 +105,13 @@ class FacebookRequired(object):
         try:
             result = view_func(*args, **kwargs)
         except TypeError, e:
+            graph = kwargs.pop('graph', None)
             result = view_func(*args, **kwargs)
         return result
 
+
 # decorators should look like functions :)
-facebook_required = FacebookRequired
+facebook_required = simplify_class_decorator(FacebookRequired)
     
     
 class FacebookRequiredLazy(FacebookRequired):
@@ -113,7 +124,6 @@ class FacebookRequiredLazy(FacebookRequired):
 
     Use this in combination with require_persistent_graph
     """
-    
     def authenticate(self, fn, request, *args, **kwargs):
         oauth_url, current_uri, redirect_uri = get_oauth_url(
                 request, self.scope_list, extra_params=self.extra_params)
@@ -142,8 +152,9 @@ class FacebookRequiredLazy(FacebookRequired):
                 response = self.oauth_redirect(oauth_url, redirect_uri, e)
         return response
     
+    
 # decorators should look like functions :)
-facebook_required_lazy = FacebookRequiredLazy
+facebook_required_lazy = simplify_class_decorator(FacebookRequiredLazy)
 
 
 

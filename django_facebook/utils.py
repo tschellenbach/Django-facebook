@@ -71,9 +71,9 @@ def queryset_iterator(queryset, chunksize=1000, getfunc=getattr):
 
 def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
     '''
-    Returns the oauth url for the given request and scope
-    Request maybe shouldnt be tied to this function, but for now it seems
-    rather ocnvenient
+    Returns the oAuth URL for the given request and scope
+    Request maybe shouldn't be tied to this function, but for now it seems
+    rather convenient
     '''
     from django_facebook import settings as facebook_settings
     scope = parse_scope(scope)
@@ -293,8 +293,44 @@ def parse_scope(scope):
         scope_list = scope.split(',')
     elif isinstance(scope, (list, tuple)):
         scope_list = list(scope)
+    else:
+        raise ValueError('unrecognized type for scope %r' % scope)
 
     return scope_list
+
+
+def simplify_class_decorator(class_decorator):
+    '''
+    Makes the decorator syntax uniform
+    Regardless if you call the decorator like
+        @decorator
+        or
+        @decorator()
+        or
+        @decorator(staff=True)
+    
+    Complexity, Python's class based decorators are weird to say the least:
+    http://www.artima.com/weblogs/viewpost.jsp?thread=240845
+    
+    This function makes sure that your decorator class always gets called with
+    __init__(fn, *option_args, *option_kwargs)
+    __call__()
+        return a function which accepts the *args and *kwargs intended
+        for fn
+    '''
+    def outer(fn=None, *decorator_args, **decorator_kwargs):
+        def actual_decorator(fn):
+            instance = class_decorator(fn, *decorator_args, **decorator_kwargs)
+            _wrapped_view = instance.__call__()
+            return _wrapped_view
+    
+        if fn is not None:
+            wrapped_view = actual_decorator(fn)
+        else:
+            wrapped_view = actual_decorator
+            
+        return wrapped_view
+    return outer
 
 
 def to_int(input, default=0, exception=(ValueError, TypeError), regexp=None):

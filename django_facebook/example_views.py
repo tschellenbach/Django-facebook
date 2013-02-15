@@ -8,7 +8,7 @@ from django_facebook import facebook_required_lazy, facebook_required, \
 from django_facebook.utils import next_redirect
 
 
-@facebook_required()
+@facebook_required
 def decorator_example(request, graph):
     '''
     Redirects the user to Facebook's oAuth dialog if the permissions
@@ -23,9 +23,23 @@ def decorator_example(request, graph):
         # this happens when the user denies the authentication request
         # or when there is a Facebook error
         return HttpResponse('user denied or error')
+
+
+@facebook_required(scope=['publish_actions'])
+def decorator_example_scope(request, graph):
+    '''
+    Same as above, but with a custom scope
+    '''
+    if graph:
+        # Proceed to load the users friends, or maybe post on their wall
+        return HttpResponse('authorized')
+    else:
+        # this happens when the user denies the authentication request
+        # or when there is a Facebook error
+        return HttpResponse('user denied or error')
     
 
-@facebook_required_lazy()
+@facebook_required_lazy
 def lazy_decorator_example(request, graph):
     '''
     The lazy decorator is faster, but somewhat harder to use

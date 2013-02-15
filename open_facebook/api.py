@@ -676,16 +676,15 @@ class OpenFacebook(FacebookConnection):
                                  if v == '1' or v == 1])
         return permissions_dict
     
-    def has_permissions(self, permissions):
+    def has_permissions(self, required_permissions):
         permissions_dict = self.permissions()
         # see if we have all permissions
         has_permissions = True
-        for permission in has_permissions:
+        for permission in required_permissions:
             if permission not in permissions_dict:
                 has_permissions = False
         return has_permissions
         
-
     def my_image_url(self, size=None):
         '''
         Returns the image url from your profile

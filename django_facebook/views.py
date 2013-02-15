@@ -4,14 +4,12 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings
-from django_facebook.api import get_persistent_graph, FacebookUserConverter, \
-    require_persistent_graph
+from django_facebook.api import FacebookUserConverter, require_persistent_graph
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
-from django_facebook.decorators import facebook_required, facebook_required_lazy
-from django_facebook.models import OpenGraphShare
+from django_facebook.decorators import facebook_required_lazy
 from django_facebook.utils import next_redirect, get_registration_backend, \
     to_bool, error_next_redirect
 from open_facebook import exceptions as open_facebook_exceptions

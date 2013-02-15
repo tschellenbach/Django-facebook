@@ -51,9 +51,9 @@ def connect_user(request, access_token=None, facebook_graph=None):
 
     logger.debug('force registration is set to %s', force_registration)
     if connect_facebook and request.user.is_authenticated() and not force_registration:
-        #we should only allow connect if users indicate they really want to connect
-        #only when the request.CONNECT_FACEBOOK = 1
-        #if this isn't present we just do a login
+        # we should only allow connect if users indicate they really want to connect
+        # only when the request.CONNECT_FACEBOOK = 1
+        # if this isn't present we just do a login
         action = CONNECT_ACTIONS.CONNECT
         user = _connect_user(request, facebook)
     else:
@@ -72,7 +72,7 @@ def connect_user(request, access_token=None, facebook_graph=None):
             update = getattr(auth_user, 'fb_update_required', False)
             if not auth_user.get_profile().facebook_id:
                 update = True
-            #login the user
+            # login the user
             user = _login_user(request, facebook, auth_user, update=update)
         else:
             action = CONNECT_ACTIONS.REGISTER
@@ -81,8 +81,8 @@ def connect_user(request, access_token=None, facebook_graph=None):
                 user = _register_user(request, facebook,
                                       remove_old_connections=force_registration)
             except facebook_exceptions.AlreadyRegistered, e:
-                #in Multithreaded environments it's possible someone beats us to
-                #the punch, in that case just login
+                # in Multithreaded environments it's possible someone beats us to
+                # the punch, in that case just login
                 logger.info('parallel register encountered, slower thread is doing a login')
                 auth_user = authenticate(
                     facebook_id=facebook_data['id'], **kwargs)
@@ -120,7 +120,7 @@ def _connect_user(request, facebook, overwrite=True):
     data = facebook.facebook_profile_data()
     facebook_id = data['id']
 
-    #see if we already have profiles connected to this facebook account
+    # see if we already have profiles connected to this Facebook account
     old_connections = _get_old_connections(facebook_id, request.user.id)[:20]
     if old_connections and not request.REQUEST.get('confirm_connect'):
         raise facebook_exceptions.AlreadyConnectedError(list(old_connections))
@@ -130,7 +130,7 @@ def _connect_user(request, facebook, overwrite=True):
 
 
 def _update_likes_and_friends(request, user, facebook):
-    #store likes and friends if configured
+    # store likes and friends if configured
     sid = transaction.savepoint()
     try:
         if facebook_settings.FACEBOOK_STORE_LIKES:
@@ -155,7 +155,7 @@ def _update_access_token(user, graph):
     Conditionally updates the access token in the database
     '''
     profile = user.get_profile()
-    #store the access token for later usage if the profile model supports it
+    # store the access token for later usage if the profile model supports it
     if hasattr(profile, 'access_token'):
         # update if not equal to the current token
         new_token = graph.access_token != profile.access_token
@@ -165,8 +165,8 @@ def _update_access_token(user, graph):
             logger.info('access token changed, updating now')
             profile.access_token = graph.access_token
             profile.save()
-            #see if we can extend the access token
-            #this runs in a task, after extending the token we fire an event
+            # see if we can extend the access token
+            # this runs in a task, after extending the token we fire an event
             profile.extend_access_token()
 
 
@@ -216,11 +216,11 @@ def _register_user(request, facebook, profile_callback=None,
         raise error
 
     try:
-        #for new registration systems use the backends methods of saving
+        # for new registration systems use the backends methods of saving
         new_user = None
         if backend:
             new_user = backend.register(request, **form.cleaned_data)
-        #fall back to the form approach
+        # fall back to the form approach
         if new_user is None:
             # For backward compatibility, if django-registration form is used
             try:
@@ -228,14 +228,14 @@ def _register_user(request, facebook, profile_callback=None,
             except TypeError:
                 new_user = form.save()
     except IntegrityError, e:
-        #this happens when users click multiple times, the first request registers
-        #the second one raises an error
+        # this happens when users click multiple times, the first request registers
+        # the second one raises an error
         raise facebook_exceptions.AlreadyRegistered(e)
 
     signals.facebook_user_registered.send(sender=get_user_model(),
                                           user=new_user, facebook_data=facebook_data, request=request)
 
-    #update some extra data not yet done by the form
+    # update some extra data not yet done by the form
     new_user = _update_user(new_user, facebook)
 
     # IS this the correct way for django 1.3? seems to require the backend
@@ -289,13 +289,13 @@ def _update_user(user, facebook, overwrite=True):
     profile_field_names = [f.name for f in profile._meta.fields]
     user_field_names = [f.name for f in user._meta.fields]
 
-    #set the facebook id and make sure we are the only user with this id
+    # set the facebook id and make sure we are the only user with this id
     facebook_id_changed = facebook_data['facebook_id'] != profile.facebook_id
     overwrite_allowed = overwrite or not profile.facebook_id
 
-    #update the facebook id and access token
+    # update the facebook id and access token
     if facebook_id_changed and overwrite_allowed:
-        #when not overwriting we only update if there is no profile.facebook_id
+        # when not overwriting we only update if there is no profile.facebook_id
         logger.info('profile facebook id changed from %s to %s',
                     repr(facebook_data['facebook_id']),
                     repr(profile.facebook_id))
@@ -303,7 +303,7 @@ def _update_user(user, facebook, overwrite=True):
         profile_dirty = True
         _remove_old_connections(profile.facebook_id, user.id)
 
-    #update all fields on both user and profile
+    # update all fields on both user and profile
     for f in facebook_fields:
         facebook_value = facebook_data.get(f, False)
         if facebook_value:
@@ -318,7 +318,7 @@ def _update_user(user, facebook, overwrite=True):
                 setattr(user, f, facebook_value)
                 user_dirty = True
 
-    #write the raw data in case we missed something
+    # write the raw data in case we missed something
     if hasattr(profile, 'raw_data'):
         serialized_fb_data = json.dumps(facebook.facebook_profile_data())
         if profile.raw_data != serialized_fb_data:
@@ -328,12 +328,12 @@ def _update_user(user, facebook, overwrite=True):
             profile_dirty = True
 
     image_url = facebook_data['image']
-    #update the image if we are allowed and have to
+    # update the image if we are allowed and have to
     if facebook_settings.FACEBOOK_STORE_LOCAL_IMAGE:
         if hasattr(profile, 'image') and not profile.image:
             profile_dirty = _update_image(profile, image_url)
 
-    #save both models if they changed
+    # save both models if they changed
     if user_dirty:
         user.save()
     if profile_dirty:
