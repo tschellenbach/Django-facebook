@@ -5,6 +5,7 @@ from django.shortcuts import redirect, render_to_response
 from django.template.context import RequestContext
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.contrib.auth.decorators import login_required
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings
 from django_facebook.api import get_persistent_graph, FacebookUserConverter, \
@@ -216,3 +217,46 @@ def canvas(request):
     context['likes'] = likes
 
     return render_to_response('django_facebook/canvas.html', context)
+
+
+@login_required
+@csrf_exempt
+def test_users(request):
+    '''
+    Create test users for facebook
+    '''
+    if not request.user.is_staff:
+        raise Http404("access denied")
+    context = RequestContext(request)
+
+    if request.POST:
+        from open_facebook.api import FacebookAuthorization
+        token = FacebookAuthorization.get_app_access_token()
+
+        fb_response = ''
+        if request.POST.get('create_user', None):
+            name = request.POST.get('user_name', None)
+            app_access = request.POST.get('app_access', None)
+            if app_access == 'on':
+                app_access = True
+            else:
+                app_access = False
+            fb_response = FacebookAuthorization.create_test_user(token, name=name, app_access=app_access)
+
+        if request.POST.get('get_users', None):
+            fb_response = FacebookAuthorization.get_test_users(token)
+
+            test_users = []
+            if len(fb_response) > 0:
+                test_users = fb_response
+
+            context['test_users'] = test_users
+            # test_users = FacebookTestUser.objects.filter(app_access_token=token)
+
+        if request.POST.get('delete_user', None):
+            user_id = request.POST.get('delete_user_id', None)
+            fb_response = FacebookAuthorization.delete_test_user(token, user_id)
+
+        context['fb_response'] = fb_response
+
+    return render_to_response('django_facebook/test_users.html', context)

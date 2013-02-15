@@ -391,7 +391,7 @@ class FacebookAuthorization(FacebookConnection):
         return app_access_token
 
     @classmethod
-    def create_test_user(cls, app_access_token, permissions=None, name=None):
+    def create_test_user(cls, app_access_token, permissions=None, name=None, app_access=True):
         '''
         My test user
         {u'access_token': u'215464901804004|2.AQBHGHuWRllFbN4E.3600.1311465600.0-100002619711402|EtaLBkqHGsTa0cpMlFA4bmL4aAc', u'password': u'564490991', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002619711402&n=3c5fAe1nNVk0HaJ', u'id': u'100002619711402', u'email': u'hello_luncrwh_world@tfbnw.net'}
@@ -410,9 +410,14 @@ class FacebookAuthorization(FacebookConnection):
             ',', ' ').replace('_', '')
         name = name or default_name
 
+        if app_access:
+            app_access = 'true'
+        else:
+            app_access = 'false'
+
         kwargs = {
             'access_token': app_access_token,
-            'installed': True,
+            'installed': app_access,
             'name': name,
             'method': 'post',
             'permissions': permissions,
