@@ -46,6 +46,15 @@ class FacebookTest(TestCase):
         import open_facebook
         open_facebook.OpenFacebook = api.OpenFacebook = self.originalAPI
         open_facebook.FacebookAuthorization = api.FacebookAuthorization = self.originalAuthorization
+        
+    def create_patch(self, name, return_value=None):
+        from mock import patch
+        patcher = patch(name)
+        thing = patcher.start()
+        if return_value is not None:
+            thing.return_value = return_value
+        self.addCleanup(patcher.stop)
+        return thing
 
 
 class LiveFacebookTest(TestCase):

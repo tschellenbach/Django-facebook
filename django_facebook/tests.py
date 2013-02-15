@@ -64,7 +64,7 @@ class DecoratorTest(FacebookTest):
         '''.replace(' ', '').replace('\n', '')
         self.target_url = target_url
         FacebookTest.setUp(self)
-    
+        
     def test_decorator_not_authenticated(self):
         '''
         We should redirect to Facebook oauth dialog
@@ -77,14 +77,11 @@ class DecoratorTest(FacebookTest):
         Here we fake that we have permissions
         This should enter the view and in this test return "authorized"
         '''
-        with mock.patch('django_facebook.utils.has_permissions') as mocked_test:
-            mocked_test.return_value = True
-            with mock.patch('django_facebook.decorators.get_persistent_graph') as mocked_graph:
-                mocked_graph.return_value = True
-                with mock.patch('django_facebook.decorators.require_persistent_graph') as mocked_graph:
-                    mocked_graph.return_value = True
-                    response = self.client.get(self.url, follow=True)
-                    self.assertEqual(response.content, 'authorized')
+        self.create_patch('django_facebook.decorators.has_permissions', True)
+        self.create_patch('django_facebook.decorators.get_persistent_graph', True)
+        self.create_patch('django_facebook.decorators.require_persistent_graph', True)
+        response = self.client.get(self.url, follow=True)
+        self.assertEqual(response.content, 'authorized')
             
     def test_decorator_denied(self):
         '''
