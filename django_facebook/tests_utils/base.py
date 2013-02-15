@@ -48,6 +48,9 @@ class FacebookTest(TestCase):
         open_facebook.FacebookAuthorization = api.FacebookAuthorization = self.originalAuthorization
         
     def create_patch(self, name, return_value=None):
+        '''
+        Easy workaround for having to nest mock.patch context managers
+        '''
         from mock import patch
         patcher = patch(name)
         thing = patcher.start()
@@ -55,6 +58,14 @@ class FacebookTest(TestCase):
             thing.return_value = return_value
         self.addCleanup(patcher.stop)
         return thing
+    
+    def mock_authenticated(self):
+        '''
+        Fake that we are authenticated
+        '''
+        self.create_patch('django_facebook.decorators.has_permissions', True)
+        self.create_patch('django_facebook.decorators.get_persistent_graph', True)
+        self.create_patch('django_facebook.decorators.require_persistent_graph', True)
 
 
 class LiveFacebookTest(TestCase):

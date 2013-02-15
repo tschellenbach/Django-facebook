@@ -79,9 +79,7 @@ class DecoratorTest(FacebookTest):
         Here we fake that we have permissions
         This should enter the view and in this test return "authorized"
         '''
-        self.create_patch('django_facebook.decorators.has_permissions', True)
-        self.create_patch('django_facebook.decorators.get_persistent_graph', True)
-        self.create_patch('django_facebook.decorators.require_persistent_graph', True)
+        self.mock_authenticated()
         response = self.client.get(self.url, follow=True)
         self.assertEqual(response.content, 'authorized')
             
@@ -134,6 +132,7 @@ class ConnectViewTest(FacebookTest):
         url = reverse('facebook_connect')
 
         # see if the basics don't give errors
+        self.mock_authenticated()
         response = self.client.get('%s?facebook_login=a' % url)
         self.assertEqual(response.status_code, 200)
         response = self.client.get('%s?facebook_login=0' % url)
