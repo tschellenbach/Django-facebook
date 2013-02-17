@@ -38,7 +38,13 @@ Done - Refactor test permissions
 Done - Class based decorator
 Done - Clean up connect view
 Done - Allow customization of the FacebookUserConverter class
+Python setup.py test support
 Document customization of the FacebookUserConverter class
+Setup.py import order errors
+Update connect tests with new decorator logic
+Canvas support
+Cleanup Test Utils directory
+
 '''
 
 

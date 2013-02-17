@@ -132,9 +132,12 @@ setup(
 #                      'README.rest'])],
     description=DESCRIPTION,
     long_description=long_description,
-    classifiers=CLASSIFIERS
-#    tests_require=[
-#        'django',
-#    ],
-#    test_suite='django_facebook.runtests.runtests',
+    classifiers=CLASSIFIERS,
+    tests_require=[
+        'django',
+        'python-memcached',
+        'pil',
+        'mock'
+    ],
+    test_suite='runtests',
 )

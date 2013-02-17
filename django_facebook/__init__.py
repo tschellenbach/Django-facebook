@@ -25,9 +25,11 @@ pip install -e ./
 
 '''
 
-
-# few easy shortcuts
-from django_facebook.api import get_persistent_graph
-from django_facebook.api import require_persistent_graph
-from django_facebook.decorators import facebook_required
-from django_facebook.decorators import facebook_required_lazy
+try:
+    from django_facebook.api import get_persistent_graph
+    from django_facebook.api import require_persistent_graph
+    from django_facebook.decorators import facebook_required
+    from django_facebook.decorators import facebook_required_lazy
+except ImportError, e:
+    #TODO ugly hack for running pip install (django isnt available at that point)
+    pass
