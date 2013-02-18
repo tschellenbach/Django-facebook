@@ -41,6 +41,7 @@ Done - Allow customization of the FacebookUserConverter class
 Python setup.py test support
 Document customization of the FacebookUserConverter class
 Setup.py import order errors
+https://github.com/divio/django-cms/blob/develop/runtests.py
 Update connect tests with new decorator logic
 Canvas support
 Cleanup Test Utils directory
