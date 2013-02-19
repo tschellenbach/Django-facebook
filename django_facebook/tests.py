@@ -38,14 +38,13 @@ Done - Refactor test permissions
 Done - Class based decorator
 Done - Clean up connect view
 Done - Allow customization of the FacebookUserConverter class
-Python setup.py test support
-Document customization of the FacebookUserConverter class
-Setup.py import order errors
-https://github.com/divio/django-cms/blob/develop/runtests.py
-Update connect tests with new decorator logic
-Canvas support
-Cleanup Test Utils directory
+Done - Cleanup Test Utils directory
+Done - Python setup.py test support
+Done - Update connect tests with new decorator logic
 
+Setup.py import order errors
+Document customization of the FacebookUserConverter class
+Canvas support
 '''
 
 
