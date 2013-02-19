@@ -129,6 +129,26 @@ class LazyDecoratorTest(DecoratorTest):
 
 class ConnectViewTest(FacebookTest):
     fixtures = ['users.json']
+    
+    def setUp(self):
+        FacebookTest.setUp(self)
+        
+        self.url = reverse('facebook_connect')
+    
+    def test_connect_parameter_parsing(self):
+        '''
+        Test if the parameter facebook_login doesnt break with unexpected input
+        '''
+        # see if the basics don't give errors
+        self.mock_authenticated()
+        response = self.client.get('%s?facebook_login=a' % self.url)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('%s?facebook_login=0' % self.url)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('%s?facebook_login=' % self.url)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
 
     def test_connect(self):
         '''
@@ -136,18 +156,7 @@ class ConnectViewTest(FacebookTest):
         django_facebook.connect.connect_user
         '''
         user = get_user_model().objects.all()[:1][0]
-        url = reverse('facebook_connect')
-
-        # see if the basics don't give errors
-        self.mock_authenticated()
-        response = self.client.get('%s?facebook_login=a' % url)
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get('%s?facebook_login=0' % url)
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get('%s?facebook_login=' % url)
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        url = self.url
 
         # test registration flow
         from django_facebook.connect import connect_user
@@ -209,7 +218,7 @@ class ConnectViewTest(FacebookTest):
         errors = [FacebookSSLError(), FacebookURLError(
             '<urlopen error _ssl.c:489: The handshake operation timed out>')]
         for error in errors:
-            with patch('django_facebook.views.FacebookUserConverter') as converter:
+            with patch('django_facebook.views.get_instance_for') as converter:
                 instance = converter.return_value
                 instance.is_authenticated = Mock(side_effect=error)
                 post_data = dict(access_token='short_username',
@@ -218,8 +227,6 @@ class ConnectViewTest(FacebookTest):
                 self.assertEqual(instance.is_authenticated.call_count, 1)
                 self.assertTrue(response.context)
                 assert '?loggggg=1' in response.redirect_chain[0][0]
-
-
 
 
 class TestUserTest(LiveFacebookTest):
@@ -466,12 +473,6 @@ class UserConnectTest(FacebookTest):
         action, user = connect_user(self.request, facebook_graph=facebook)
         # The test form always sets username to test form
         self.assertEqual(user.username, 'Test form')
-
-    def test_connect_page(self):
-        url = reverse('facebook_connect')
-        c = Client()
-        response = c.get(url)
-        self.assertEqual(response.status_code, 200)
 
 
 class AuthBackend(FacebookTest):
