@@ -13,7 +13,7 @@ def decorator_example(request, graph):
     '''
     Redirects the user to Facebook's oAuth dialog if the permissions
     requested in scope are not present
-    
+
     default is FACEBOOK_DEFAULT_SCOPE
     '''
     if graph:
@@ -37,7 +37,7 @@ def decorator_example_scope(request, graph):
         # this happens when the user denies the authentication request
         # or when there is a Facebook error
         return HttpResponse('user denied or error')
-    
+
 
 @facebook_required_lazy
 def lazy_decorator_example(request, graph):
@@ -55,7 +55,7 @@ def lazy_decorator_example(request, graph):
             # requesting friends will fail if we don't have permissions
             # the exception will trigger a redirect to the oAuth dialog
             friends = graph.get('me/friends')
-        
+
         return HttpResponse('authorized')
     else:
         # this happens when the user denies the authentication request

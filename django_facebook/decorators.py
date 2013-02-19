@@ -30,26 +30,27 @@ class FacebookRequired(object):
         # canvas pages always need to be csrf excempt
         csrf_exempt = canvas
         self.csrf_exempt = csrf_exempt
-        
+
     def authenticate(self, fn, request, *args, **kwargs):
         '''
         Authenticate the user
-        
+
         There are three options
         a.) We have permissions, proceed with the view
         b.) We tried getting permissions and failed, abort...
         c.) We are about to ask for permissions
         '''
         oauth_url, current_uri, redirect_uri = get_oauth_url(
-                request, self.scope_list, extra_params=self.extra_params)
-        
+            request, self.scope_list, extra_params=self.extra_params)
+
         graph = get_persistent_graph(request, redirect_uri=redirect_uri)
-            
+
         # See if we have all permissions
         permissions_granted = has_permissions(graph, self.scope_list)
-    
+
         if permissions_granted:
-            response = self.execute_view(fn, request, graph=graph, *args, **kwargs)
+            response = self.execute_view(
+                fn, request, graph=graph, *args, **kwargs)
         elif request.REQUEST.get('attempt') == '1':
             # Doing a redirect could end up causing infinite redirects
             # If Facebook is somehow not giving permissions
@@ -57,15 +58,15 @@ class FacebookRequired(object):
             response = self.authentication_failed(fn, request, *args, **kwargs)
         else:
             response = self.oauth_redirect(oauth_url, redirect_uri)
-        
+
         return response
-        
+
     def __call__(self):
         '''
         When the decorator is called like this
             @facebook_required
-            The call will receive 
-        
+            The call will receive
+
         Otherwise it will be like
             @facebook_required(scope=[])
             The init will receive the parameters
@@ -74,7 +75,7 @@ class FacebookRequired(object):
         def wrapped_view(request, *args, **kwargs):
             response = self.authenticate(self.fn, request, *args, **kwargs)
             return response
-            
+
         wrapped_view.csrf_exempt = self.csrf_exempt
         return wrapped_view
 
@@ -87,7 +88,7 @@ class FacebookRequired(object):
             redirect_uri, e)
         response = response_redirect(oauth_url, canvas=self.canvas)
         return response
-    
+
     def authentication_failed(self, fn, request, *args, **kwargs):
         '''
         Execute the view but don't pass the graph to indicate we couldn't
@@ -100,7 +101,7 @@ class FacebookRequired(object):
         logger.info(msg)
         response = self.execute_view(fn, request, graph=None, *args, **kwargs)
         return response
-    
+
     def execute_view(self, view_func, *args, **kwargs):
         try:
             result = view_func(*args, **kwargs)
@@ -112,13 +113,13 @@ class FacebookRequired(object):
 
 # decorators should look like functions :)
 facebook_required = simplify_class_decorator(FacebookRequired)
-    
-    
+
+
 class FacebookRequiredLazy(FacebookRequired):
     """
     Decorator which makes the view require the given Facebook perms,
     redirecting to the log-in page if necessary.
-    
+
     Based on exceptions instead of a permission check
     Faster, but more prone to bugs
 
@@ -126,8 +127,8 @@ class FacebookRequiredLazy(FacebookRequired):
     """
     def authenticate(self, fn, request, *args, **kwargs):
         oauth_url, current_uri, redirect_uri = get_oauth_url(
-                request, self.scope_list, extra_params=self.extra_params)
-        
+            request, self.scope_list, extra_params=self.extra_params)
+
         graph = None
         try:
             # call get persistent graph and convert the
@@ -135,7 +136,8 @@ class FacebookRequiredLazy(FacebookRequired):
             graph = require_persistent_graph(request, redirect_uri=current_uri)
             # Note we're not requiring a persistent graph here
             # You should require a persistent graph in the view when you start using this
-            response = self.execute_view(fn, request, graph=graph, *args, **kwargs)
+            response = self.execute_view(
+                fn, request, graph=graph, *args, **kwargs)
         except open_facebook_exceptions.OpenFacebookException, e:
             permission_granted = has_permissions(graph, self.scope_list)
             if permission_granted:
@@ -147,15 +149,12 @@ class FacebookRequiredLazy(FacebookRequired):
                 # Doing a redirect could end up causing infinite redirects
                 # If Facebook is somehow not giving permissions
                 # Time to show an error page
-                response = self.authentication_failed(fn, request, *args, **kwargs)
+                response = self.authentication_failed(
+                    fn, request, *args, **kwargs)
             else:
                 response = self.oauth_redirect(oauth_url, redirect_uri, e)
         return response
-    
-    
+
+
 # decorators should look like functions :)
 facebook_required_lazy = simplify_class_decorator(FacebookRequiredLazy)
-
-
-
-

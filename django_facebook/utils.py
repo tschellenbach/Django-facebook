@@ -29,8 +29,8 @@ def clear_persistent_graph_cache(request):
     if request.user.is_authenticated():
         profile = request.user.get_profile()
         profile.clear_access_token()
-        
-        
+
+
 def has_permissions(graph, scope_list):
     from open_facebook import exceptions as open_facebook_exceptions
     permissions_granted = False
@@ -308,10 +308,10 @@ def simplify_class_decorator(class_decorator):
         @decorator()
         or
         @decorator(staff=True)
-    
+
     Complexity, Python's class based decorators are weird to say the least:
     http://www.artima.com/weblogs/viewpost.jsp?thread=240845
-    
+
     This function makes sure that your decorator class always gets called with
     __init__(fn, *option_args, *option_kwargs)
     __call__()
@@ -323,12 +323,12 @@ def simplify_class_decorator(class_decorator):
             instance = class_decorator(fn, *decorator_args, **decorator_kwargs)
             _wrapped_view = instance.__call__()
             return _wrapped_view
-    
+
         if fn is not None:
             wrapped_view = actual_decorator(fn)
         else:
             wrapped_view = actual_decorator
-            
+
         return wrapped_view
     return outer
 
@@ -518,12 +518,9 @@ def get_class_for(purpose):
 def get_instance_for(purpose, *args, **kwargs):
     '''
     Usage:
-    conversion_instance = get_instance_for('facebook_user_conversion', user=user)
+    conversion_instance = get_instance_for(
+        'facebook_user_conversion', user=user)
     '''
     class_ = get_class_for(purpose)
     instance = class_(*args, **kwargs)
     return instance
-    
-
-
-

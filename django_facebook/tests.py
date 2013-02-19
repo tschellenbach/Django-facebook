@@ -12,8 +12,8 @@ from django_facebook.auth_backends import FacebookBackend
 from django_facebook.connect import _register_user, connect_user, \
     CONNECT_ACTIONS
 from django_facebook.middleware import FacebookCanvasMiddleWare
-from django_facebook.tests_utils.base import FacebookTest, LiveFacebookTest, \
-    RequestMock
+from django_facebook.test_utils.mocks import RequestMock
+from django_facebook.test_utils.testcases import FacebookTest, LiveFacebookTest
 from django_facebook.utils import cleanup_oauth_url, get_profile_class, \
     CanvasRedirect, get_user_model
 from functools import partial
@@ -52,13 +52,13 @@ Cleanup Test Utils directory
 class DecoratorTest(FacebookTest):
     '''
     Verify that the lazy and facebook_required decorator work as expected
-    
+
     Facebook required decorator
         If you have the permissions proceed
         Else show the login screen
             If you allow, proceed
             If you click cancel ...
-            
+
     Facebook required lazy
         Proceed
         Upon OAuthException, go to login screen
@@ -73,14 +73,14 @@ class DecoratorTest(FacebookTest):
         '''.replace(' ', '').replace('\n', '')
         self.target_url = target_url
         FacebookTest.setUp(self)
-        
+
     def test_decorator_not_authenticated(self):
         '''
         We should redirect to Facebook oauth dialog
         '''
         response = self.client.get(self.url, follow=True)
         self.assertRedirects(response, self.target_url, target_status_code=404)
-        
+
     def test_decorator_authenticated(self):
         '''
         Here we fake that we have permissions
@@ -89,7 +89,7 @@ class DecoratorTest(FacebookTest):
         self.mock_authenticated()
         response = self.client.get(self.url, follow=True)
         self.assertEqual(response.content, 'authorized')
-            
+
     def test_decorator_denied(self):
         '''
         Here the users denies our app. Facebook adds this in the url
@@ -111,7 +111,7 @@ class ScopedDecoratorTest(DecoratorTest):
         target_url = r'https://www.facebook.com/dialog/oauth?scope=publish_actions&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fdecorator_example_scope%2F%3Fattempt%3D1&client_id=215464901804004'
         self.target_url = target_url
         FacebookTest.setUp(self)
-        
+
 
 class LazyDecoratorTest(DecoratorTest):
     '''
@@ -129,12 +129,12 @@ class LazyDecoratorTest(DecoratorTest):
 
 class ConnectViewTest(FacebookTest):
     fixtures = ['users.json']
-    
+
     def setUp(self):
         FacebookTest.setUp(self)
-        
+
         self.url = reverse('facebook_connect')
-    
+
     def test_connect_parameter_parsing(self):
         '''
         Test if the parameter facebook_login doesnt break with unexpected input
@@ -257,9 +257,6 @@ class ExtendTokenTest(LiveFacebookTest):
         results = FacebookAuthorization.extend_access_token(access_token)
         if 'access_token' not in results:
             raise ValueError('we didnt get a fresh token')
-
-
-
 
 
 class OpenGraphShareTest(FacebookTest):
@@ -468,7 +465,7 @@ class UserConnectTest(FacebookTest):
         '''
         Django_facebook should use user supplied registration form if given
         '''
-        facebook_settings.FACEBOOK_REGISTRATION_FORM = 'django_facebook.tests_utils.forms.SignupForm'
+        facebook_settings.FACEBOOK_REGISTRATION_FORM = 'django_facebook.test_utils.forms.SignupForm'
         facebook = get_facebook_graph(access_token='short_username')
         action, user = connect_user(self.request, facebook_graph=facebook)
         # The test form always sets username to test form

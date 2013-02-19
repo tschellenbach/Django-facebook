@@ -32,4 +32,4 @@ def clean():
     local('bash -c "autopep8 -i django_facebook/*.py"')
     local('bash -c "autopep8 -i open_facebook/*.py"')
     local('bash -c "autopep8 -i django_facebook/management/commands/*.py"')
-    local('bash -c "autopep8 -i django_facebook/tests_utils/*.py"')
+    local('bash -c "autopep8 -i django_facebook/test_utils/*.py"')

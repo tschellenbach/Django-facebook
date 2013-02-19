@@ -60,7 +60,7 @@ def _connect(request, facebook_login, graph):
     - (if authenticated) connect the user
     - login
     - register
-    
+
     We are already covered by the facebook_required_lazy decorator
     So we know we either have a graph and permissions, or the user denied
     the oAuth dialog
