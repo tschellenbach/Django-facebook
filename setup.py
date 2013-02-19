@@ -101,8 +101,13 @@ package_data = find_package_data(exclude_directories=excluded_directories)
 license_text = open('LICENSE.txt').read()
 long_description = open('README.rest').read()
 
+if 'alpha' in __version__:
+    development_status = 'Development Status :: 3 - Alpha'
+else:
+    development_status = 'Development Status :: 5 - Production/Stable'
+
 CLASSIFIERS = [
-    'Development Status :: 5 - Production/Stable',
+    development_status,
     'Intended Audience :: Developers',
     'License :: OSI Approved :: GNU General Public License (GPL)',
     'Natural Language :: English',

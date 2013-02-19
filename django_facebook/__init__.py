@@ -22,8 +22,10 @@ http://pypi.python.org/pypi
 setting up pip for editing
 http://www.pip-installer.org/en/latest/index.html
 pip install -e ./
-
 '''
+
+import logging
+logger = logging.getLogger(__name__)
 
 try:
     from django_facebook.api import get_persistent_graph
@@ -31,5 +33,6 @@ try:
     from django_facebook.decorators import facebook_required
     from django_facebook.decorators import facebook_required_lazy
 except ImportError, e:
+    logger.warn('Couldnt import django_facebook shortcuts, errors was %s', e)
     #TODO ugly hack for running pip install (django isnt available at that point)
     pass
