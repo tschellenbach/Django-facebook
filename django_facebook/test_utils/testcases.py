@@ -8,7 +8,7 @@ class FacebookTest(TestCase):
     '''
     def setUp(self):
         from django_facebook.test_utils.mocks import MockFacebookAPI, MockFacebookAuthorization, RequestMock
-        
+
         from open_facebook import api
         import open_facebook
 
@@ -27,7 +27,7 @@ class FacebookTest(TestCase):
         import open_facebook
         open_facebook.OpenFacebook = api.OpenFacebook = self.originalAPI
         open_facebook.FacebookAuthorization = api.FacebookAuthorization = self.originalAuthorization
-        
+
     def create_patch(self, name, return_value=None):
         '''
         Easy workaround for having to nest mock.patch context managers
@@ -39,14 +39,16 @@ class FacebookTest(TestCase):
             thing.return_value = return_value
         self.addCleanup(patcher.stop)
         return thing
-    
+
     def mock_authenticated(self):
         '''
         Fake that we are authenticated
         '''
         self.create_patch('django_facebook.decorators.has_permissions', True)
-        self.create_patch('django_facebook.decorators.get_persistent_graph', True)
-        self.create_patch('django_facebook.decorators.require_persistent_graph', True)
+        self.create_patch(
+            'django_facebook.decorators.get_persistent_graph', True)
+        self.create_patch(
+            'django_facebook.decorators.require_persistent_graph', True)
 
 
 class LiveFacebookTest(TestCase):
