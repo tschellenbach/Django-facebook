@@ -164,6 +164,7 @@ class TestPublishing(OpenFacebookTest):
         except facebook_exceptions.PermissionException, e:
             pass
 
+    @unittest.skip
     def test_og_follow(self):
         #perform an og follow
         graph = self.thi.graph()
@@ -185,6 +186,7 @@ class TestPublishing(OpenFacebookTest):
         change_result = graph.set(result['id'], message='hello world')
         assert change_result is True
 
+    @unittest.skip
     def test_og_explicit_share(self):
         #perform an og follow
         graph = self.thi.graph()
