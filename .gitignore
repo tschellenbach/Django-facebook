@@ -22,6 +22,7 @@ bulkloader-*
 
 #app specific
 facebook_example/django_fb_test
+facebook_example/media/*
 
 # But allow the gitignore file
 !.gitignore

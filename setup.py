@@ -118,7 +118,6 @@ Fixes issues with the official but unsupported Facebook python-sdk. Enables mobi
 Canvas page authentication for facebook applications. FQL access via the server side api.
 """
 
-from setuptest import test
 setup(
     name='django-facebook',
     version=__version__,
@@ -128,19 +127,16 @@ setup(
     license=license_text,
     packages=find_packages(),
     package_data=package_data,
-#    data_files=[('', ['LICENSE.txt',
-#                      'README.rest'])],
     description=DESCRIPTION,
     long_description=long_description,
     classifiers=CLASSIFIERS,
     tests_require=[
-        'django-setuptest',
         'django',
         'python-memcached',
         'pil',
-        'mock'
+        'mock',
+        'pytest',
+        'pytest-django',
     ],
-    test_suite='setuptest.setuptest.SetupTestSuite',
-    cmdclass={'test': test},
-    py_modules=['django_facebook'],
+    test_suite='runtests.runtests',
 )
