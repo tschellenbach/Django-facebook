@@ -1,3 +1,5 @@
+from django.utils.decorators import available_attrs
+from functools import wraps
 try:
     #using compatible_datetime instead of datetime only
     #not to override the original datetime package
@@ -319,6 +321,8 @@ def simplify_class_decorator(class_decorator):
         for fn
     '''
     def outer(fn=None, *decorator_args, **decorator_kwargs):
+        # wraps isn't needed, the decorator should do the wrapping :)
+        # @wraps(fn, assigned=available_attrs(fn))
         def actual_decorator(fn):
             instance = class_decorator(fn, *decorator_args, **decorator_kwargs)
             _wrapped_view = instance.__call__()

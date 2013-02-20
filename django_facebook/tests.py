@@ -45,10 +45,37 @@ Done - Update connect tests with new decorator logic
 Setup.py import order errors
 Document customization of the FacebookUserConverter class
 Canvas support
+Docs on celery vs no celery usage
 '''
 
 
-class DecoratorTest(FacebookTest):
+class BaseDecoratorTest(FacebookTest):
+    def setUp(self):
+        FacebookTest.setUp(self)
+        from django_facebook.decorators import facebook_required
+        self.decorator = facebook_required
+    
+    def test_wrapping(self):
+        '''
+        Verify that the decorator wraps the original function
+        '''
+        
+        @self.decorator
+        def myfunc(request):
+            '''docs'''
+            pass
+        self.assertEqual(myfunc.__doc__, 'docs')
+        self.assertEqual(myfunc.__name__, 'myfunc')
+
+        @self.decorator()
+        def myfunc2(request):
+            '''docs2'''
+            pass
+        self.assertEqual(myfunc2.__doc__, 'docs2')
+        self.assertEqual(myfunc2.__name__, 'myfunc2')
+        
+
+class DecoratorTest(BaseDecoratorTest):
     '''
     Verify that the lazy and facebook_required decorator work as expected
 
@@ -65,13 +92,15 @@ class DecoratorTest(FacebookTest):
             If you click cancel ...
     '''
     def setUp(self):
+        BaseDecoratorTest.setUp(self)
         self.url = reverse('facebook_decorator_example')
         target_url = r'''https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birt
             hday%2Cuser_website&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fdecorator_
             example%2F%3Fattempt%3D1&client_id=215464901804004
         '''.replace(' ', '').replace('\n', '')
         self.target_url = target_url
-        FacebookTest.setUp(self)
+        from django_facebook.decorators import facebook_required
+        self.decorator = facebook_required
 
     def test_decorator_not_authenticated(self):
         '''
@@ -79,7 +108,7 @@ class DecoratorTest(FacebookTest):
         '''
         response = self.client.get(self.url, follow=True)
         self.assertRedirects(response, self.target_url, target_status_code=404)
-
+        
     def test_decorator_authenticated(self):
         '''
         Here we fake that we have permissions
@@ -106,10 +135,10 @@ class ScopedDecoratorTest(DecoratorTest):
     Tests the more complicated but faster lazy decorator
     '''
     def setUp(self):
+        DecoratorTest.setUp(self)
         self.url = reverse('facebook_decorator_example_scope')
         target_url = r'https://www.facebook.com/dialog/oauth?scope=publish_actions&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fdecorator_example_scope%2F%3Fattempt%3D1&client_id=215464901804004'
         self.target_url = target_url
-        FacebookTest.setUp(self)
 
 
 class LazyDecoratorTest(DecoratorTest):
@@ -117,14 +146,16 @@ class LazyDecoratorTest(DecoratorTest):
     Tests the more complicated but faster lazy decorator
     '''
     def setUp(self):
+        DecoratorTest.setUp(self)
         self.url = reverse('facebook_lazy_decorator_example')
         target_url = r'''https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birt
             hday%2Cuser_website&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Flazy_decorator_
             example%2F%3Fattempt%3D1&client_id=215464901804004
         '''.replace(' ', '').replace('\n', '')
         self.target_url = target_url
-        FacebookTest.setUp(self)
-
+        from django_facebook.decorators import facebook_required_lazy
+        self.decorator = facebook_required_lazy
+        
 
 class ConnectViewTest(FacebookTest):
     fixtures = ['users.json']
