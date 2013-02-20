@@ -149,7 +149,6 @@ class FacebookConnection(object):
                     response_file.close()
                 stop_statsd('facebook.%s' % statsd_path)
 
-
         # Faceboook response is either
         # Valid json
         # A string which is a querydict (a=b&c=d...etc)
@@ -186,7 +185,7 @@ class FacebookConnection(object):
         server_error = False
         if hasattr(e, 'code') and e.code == 500:
             server_error = True
-            
+
         # Facebook status codes are used for application logic
         # http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
         # The only way I know to detect an actual server error is to check if
@@ -196,14 +195,15 @@ class FacebookConnection(object):
             '<title>Facebook | Error</title>',
             'Sorry, something went wrong.'
         ]
-        is_error_page = all([matcher in response for matcher in error_matchers])
+        is_error_page = all(
+            [matcher in response for matcher in error_matchers])
         if is_error_page:
             server_error = True
 
         # if it looks like json, facebook is probably not down
         if is_json(response):
             server_error = False
-            
+
         return server_error
 
     @classmethod

@@ -151,7 +151,7 @@ class Test500Detection(OpenFacebookTest):
     def test_facebook_down(self):
         '''
         Facebook errors often look like 500s
-        
+
         After 3 attempts while facebook is down we raise a FacebookUnreachable
         Exception
 
@@ -163,7 +163,7 @@ class Test500Detection(OpenFacebookTest):
             from urllib2 import HTTPError
 
             opener = mock.MagicMock()
-            
+
             def side_effect(*args, **kwargs):
                 response = StringIO(u'''
                 <title>Facebook | Error</title>
@@ -171,15 +171,16 @@ class Test500Detection(OpenFacebookTest):
                 ''')
                 http_exception = HTTPError('bla', 505, 'bla', 'bla', response)
                 raise http_exception
-                
+
             opener.open.side_effect = side_effect
-            
+
             patched.return_value = opener
 
             def make_request():
                 graph.get('me')
-                
-            self.assertRaises(facebook_exceptions.FacebookUnreachable, make_request)
+
+            self.assertRaises(
+                facebook_exceptions.FacebookUnreachable, make_request)
 
 
 class TestPublishing(OpenFacebookTest):

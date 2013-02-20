@@ -58,12 +58,12 @@ class BaseDecoratorTest(FacebookTest):
         FacebookTest.setUp(self)
         from django_facebook.decorators import facebook_required
         self.decorator = facebook_required
-    
+
     def test_wrapping(self):
         '''
         Verify that the decorator wraps the original function
         '''
-        
+
         @self.decorator
         def myfunc(request):
             '''docs'''
@@ -77,7 +77,7 @@ class BaseDecoratorTest(FacebookTest):
             pass
         self.assertEqual(myfunc2.__doc__, 'docs2')
         self.assertEqual(myfunc2.__name__, 'myfunc2')
-        
+
 
 class DecoratorTest(BaseDecoratorTest):
     '''
@@ -112,7 +112,7 @@ class DecoratorTest(BaseDecoratorTest):
         '''
         response = self.client.get(self.url, follow=True)
         self.assertRedirects(response, self.target_url, target_status_code=404)
-        
+
     def test_decorator_authenticated(self):
         '''
         Here we fake that we have permissions
@@ -159,7 +159,7 @@ class LazyDecoratorTest(DecoratorTest):
         self.target_url = target_url
         from django_facebook.decorators import facebook_required_lazy
         self.decorator = facebook_required_lazy
-        
+
 
 class ConnectViewTest(FacebookTest):
     fixtures = ['users.json']
