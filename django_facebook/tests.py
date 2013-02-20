@@ -41,11 +41,15 @@ Done - Allow customization of the FacebookUserConverter class
 Done - Cleanup Test Utils directory
 Done - Python setup.py test support
 Done - Update connect tests with new decorator logic
+Done - Better detection when Facebook is down
 
 Setup.py import order errors
 Document customization of the FacebookUserConverter class
 Canvas support
+
+Docs on the new decorator usage
 Docs on celery vs no celery usage
+Docs clearly pointing to the Fashiolista Demo
 '''
 
 
