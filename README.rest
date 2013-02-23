@@ -250,9 +250,17 @@ Note that you can control which page to go to after connect using the next input
 <form action="{% url facebook_connect %}?facebook_login=1" method="post">
 <a href="javascript:void(0);" style="font-size: 20px;" onclick="F.connect(this.parentNode);">Register, login or connect with facebook</a>
 <input type="hidden" value="{{ request.path }}" name="next" />
+<input type="hidden" value="{{ request.path }}" name="register_next" />
+<input type="hidden" value="{{ request.path }}" name="error_next" />
 </form>
 
+Redirects
+---------
 
+For most applications you can simply use the next, register next and error next parameters to control the post registration flow.
+The "next" parameter provides the default next page for login, connect, error or register actions. "register_next" and "error_next" allow you to customize the next page for those specific scenarios. This is usefull when you for instance want to show an introduction page to new users.
+
+If the default customizability isn't adequate for your needs you can also subclass the default registration backend. 
 
 Signals
 -------
