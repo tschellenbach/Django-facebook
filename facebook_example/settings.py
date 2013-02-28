@@ -13,6 +13,7 @@ BASE_ROOT = os.path.abspath(
 MANAGERS = ADMINS
 
 # Database config
+USE_TZ = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.

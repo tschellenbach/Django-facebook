@@ -100,6 +100,10 @@ class UserenaBackend(NooptRegistrationBackend):
         return template
 
 
+class DjangoRegistrationBackend(NooptRegistrationBackend):
+    pass
+
+
 class OldDjangoRegistrationBackend(NooptRegistrationBackend):
     def get_form_class(self, request):
         from registration.forms import RegistrationFormUniqueEmail

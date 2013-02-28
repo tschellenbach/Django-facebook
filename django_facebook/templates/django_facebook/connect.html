@@ -187,6 +187,7 @@
             <form action="{% url facebook_connect %}?facebook_login=1" method="post">
 	            <h2>Register, login or connect with Facebook</h2>
 	            <br />
+	            {% csrf_token %}
 				<input type="hidden" value="{{ request.path }}" name="next" />
 				
 				<!--
@@ -291,6 +292,7 @@
                 <a href="javascript:void(0);" onclick="F.connect(this.parentNode);">Connect this account to Facebook</a> (used to connect non facebook accounts)
                 <input type="hidden" value="{{ request.path }}" name="next" />
                 <input type="hidden" name="connect_facebook" value="1">
+                {% csrf_token %}
             </form>
         {% endif %}
         
@@ -305,11 +307,13 @@
 	            <a href="javascript:void(0);" onclick="F.connect(this.parentNode);">Test fresh registration</a>
 				<input type="hidden" value="{{ request.path }}" name="next" />
 				<input type="hidden" value="1" name="force_registration_hard" />
+				{% csrf_token %}
 	        </form>
 	        <form action="{% url facebook_connect %}?facebook_login=1" method="post">
 	            <a href="javascript:void(0);" onclick="F.connect(this.parentNode);">Test registration</a>
 				<input type="hidden" value="{{ request.path }}" name="next" />
 				<input type="hidden" value="1" name="force_registration" />
+				{% csrf_token %}
 	        </form>
 		</div>
 	</div>

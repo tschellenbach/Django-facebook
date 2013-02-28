@@ -43,8 +43,10 @@ Done - Python setup.py test support
 Done - Update connect tests with new decorator logic
 Done - Better detection when Facebook is down
 Done - fix for http://sentry.goteam.be/default/group/54495/
+Done - Cleanup post registration flow
 
-Cleanup post registration flow
+Unit Test post registration flow
+Move the example to /example/
 
 ReAdd compatibility for Django Registration redirects
 
