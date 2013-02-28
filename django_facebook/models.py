@@ -88,18 +88,6 @@ class BaseFacebookProfileModel(models.Model):
         friends = FacebookUser.objects.filter(user_id=self.user_id)
         return friends
 
-    def post_facebook_registration(self, request):
-        '''
-        Behaviour after registering with facebook
-        '''
-        from django_facebook.utils import next_redirect
-        default_url = reverse('facebook_connect')
-        response = next_redirect(request, default=default_url,
-                                 next_key=['register_next', 'next'])
-        response.set_cookie('fresh_registration', self.user_id)
-
-        return response
-
     def disconnect_facebook(self):
         self.access_token = None
         self.facebook_id = None

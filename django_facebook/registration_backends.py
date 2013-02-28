@@ -1,11 +1,11 @@
 from django.conf import settings
-from django.contrib.auth import authenticate
-from django.contrib.auth import login
-
-from django_facebook import signals
+from django.contrib.auth import authenticate, login
+from django_facebook import settings as facebook_settings, signals
+from django_facebook.connect import CONNECT_ACTIONS
 from django_facebook.forms import FacebookRegistrationFormUniqueEmail
-from django_facebook import settings as facebook_settings
-from django_facebook.utils import get_user_model
+from django_facebook.utils import get_user_model, next_redirect, \
+    error_next_redirect
+from functional import partial
 
 
 class NooptRegistrationBackend(object):
@@ -29,11 +29,30 @@ class NooptRegistrationBackend(object):
     def registration_allowed(self, request):
         return getattr(settings, 'REGISTRATION_OPEN', True)
 
-    def post_registration_redirect(self, request, user):
+    def post_error(self, request, additional_params=None):
         '''
-        Handled by the Django Facebook app
+        Handles the redirect after connecting
         '''
-        response = user.get_profile().post_facebook_registration(request)
+        response = error_next_redirect(
+            request,
+            additional_params=additional_params)
+        return response
+
+    def post_connect(self, request, action):
+        '''
+        Handles the redirect after connecting
+        '''
+        default_url = facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT
+        base_next_redirect = partial(
+            next_redirect, request, default=default_url)
+
+        if action is CONNECT_ACTIONS.LOGIN:
+            response = base_next_redirect(next_key=['login_next', 'next'])
+        elif action is CONNECT_ACTIONS.CONNECT:
+            response = base_next_redirect(next_key=['connect_next', 'next'])
+        elif action is CONNECT_ACTIONS.REGISTER:
+            response = base_next_redirect(next_key=['register_next', 'next'])
+
         return response
 
     def post_activation_redirect(self, request, user):

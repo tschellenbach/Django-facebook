@@ -100,30 +100,24 @@ def _connect(request, facebook_login, graph):
             except facebook_exceptions.AlreadyConnectedError, e:
                 user_ids = [u.user_id for u in e.users]
                 ids_string = ','.join(map(str, user_ids))
-                return error_next_redirect(
-                    request,
-                    additional_params=dict(already_connected=ids_string))
+                additional_params = dict(already_connected=ids_string)
+                return backend.post_error(request, additional_params)
+
+            response = backend.post_connect(request, action)
 
             if action is CONNECT_ACTIONS.LOGIN:
-                response = next_redirect(request, default=facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT)
+                pass
             elif action is CONNECT_ACTIONS.CONNECT:
                 # connect means an existing account was attached to facebook
                 messages.info(request, _("You have connected your account "
                                          "to %s's facebook profile") % facebook_data['name'])
-                response = next_redirect(request, default=facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT)
             elif action is CONNECT_ACTIONS.REGISTER:
                 # hook for tying in specific post registration functionality
-                response = backend.post_registration_redirect(
-                    request, user)
-                # compatibility for Django registration backends which return redirect tuples instead of a response
-                if not isinstance(response, HttpResponse):
-                    to, args, kwargs = response
-                    response = redirect(to, *args, **kwargs)
+                response.set_cookie('fresh_registration', user.id)
         else:
             # the user denied the request
-            response = error_next_redirect(
-                request,
-                additional_params=dict(fb_error_or_cancel='1'))
+            additional_params = dict(fb_error_or_cancel='1')
+            response = backend.post_error(request, additional_params)
 
         return response
 
