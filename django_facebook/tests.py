@@ -46,19 +46,18 @@ Done - fix for http://sentry.goteam.be/default/group/54495/
 Done - Cleanup post registration flow
 Done - Move the example to /example/
 Done - Unit Test post registration flow
+Done - ReAdd compatibility for Django Registration redirects
 
 Done - Docs on using the provided registration backend not userena
 Done - Docs clearly pointing to the Fashiolista Demo
 
-ReAdd compatibility for Django Registration redirects
+
 
 Fix extra url issue, http://sentry.goteam.be/default/group/54725/
 
 Setup.py import order errors
 Document customization of the FacebookUserConverter class
 Canvas support
-
-
 
 Docs on the new decorator usage
 Docs on celery vs no celery usage
