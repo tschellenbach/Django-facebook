@@ -42,6 +42,7 @@ Done - Cleanup Test Utils directory
 Done - Python setup.py test support
 Done - Update connect tests with new decorator logic
 Done - Better detection when Facebook is down
+Done - fix for http://sentry.goteam.be/default/group/54495/
 
 Cleanup post registration flow
 
@@ -49,9 +50,7 @@ Setup.py import order errors
 Document customization of the FacebookUserConverter class
 Canvas support
 
-fix for
-http://sentry.goteam.be/default/group/54495/
-
+Docs on using the provided registration backend not userena
 Docs on the new decorator usage
 Docs on celery vs no celery usage
 Docs clearly pointing to the Fashiolista Demo

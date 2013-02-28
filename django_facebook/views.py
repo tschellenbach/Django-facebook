@@ -104,10 +104,13 @@ def _connect(request, facebook_login, graph):
                     request,
                     additional_params=dict(already_connected=ids_string))
 
-            if action is CONNECT_ACTIONS.CONNECT:
+            if action is CONNECT_ACTIONS.LOGIN:
+                response = next_redirect(request, default=facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT)
+            elif action is CONNECT_ACTIONS.CONNECT:
                 # connect means an existing account was attached to facebook
                 messages.info(request, _("You have connected your account "
                                          "to %s's facebook profile") % facebook_data['name'])
+                response = next_redirect(request, default=facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT)
             elif action is CONNECT_ACTIONS.REGISTER:
                 # hook for tying in specific post registration functionality
                 response = backend.post_registration_redirect(
@@ -116,15 +119,13 @@ def _connect(request, facebook_login, graph):
                 if not isinstance(response, HttpResponse):
                     to, args, kwargs = response
                     response = redirect(to, *args, **kwargs)
-                return response
         else:
             # the user denied the request
-            return error_next_redirect(
+            response = error_next_redirect(
                 request,
                 additional_params=dict(fb_error_or_cancel='1'))
 
-        # for CONNECT and LOGIN we simple redirect to the next page
-        return next_redirect(request, default=facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT)
+        return response
 
     return render_to_response('django_facebook/connect.html', context)
 
