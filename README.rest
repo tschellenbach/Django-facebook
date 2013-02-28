@@ -255,10 +255,22 @@ To add support for these systems we use the FACEBOOK_REGISTRATION_BACKEND settin
 
 
 **Django Registration support**
-Simply set your facebook registration backend to your preferred backend.
+Create a registration backend which subclasses both Django Facebook and Django Registration's
+registration backend. An example is included in facebook_example/registration_backends.py
 
 ::
+    # in registration_backends.py
+    class DjangoRegistrationDefaultBackend(DefaultBackend, NooptRegistrationBackend):
+        '''
+        The redirect behaviour will still be controlled by the
+            post_error
+            post_connect
+        functions
+        the form and other settings will be taken from the default backend
+        '''
+        pass
 
+    # in your settings file
     FACEBOOK_REGISTRATION_BACKEND = 'registration.backends.default.DefaultBackend'
 
 **Django Userena support**
