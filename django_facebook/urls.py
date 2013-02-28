@@ -10,6 +10,7 @@ urlpatterns = patterns('django_facebook.views',
                        )
 
 dev_patterns = patterns('django_facebook.example_views',
+                        url(r'^example/$', 'example', name='facebook_example'),
                         url(
                             r'^lazy_decorator_example/$', 'lazy_decorator_example',
                         name='facebook_lazy_decorator_example'),

@@ -50,6 +50,8 @@ Move the example to /example/
 
 ReAdd compatibility for Django Registration redirects
 
+Fix extra url issue, http://sentry.goteam.be/default/group/54725/
+
 Setup.py import order errors
 Document customization of the FacebookUserConverter class
 Canvas support
@@ -204,14 +206,9 @@ class ConnectViewTest(FacebookTest):
         '''
         # see if the basics don't give errors
         self.mock_authenticated()
+        # get is no longer allowed
         response = self.client.get('%s?facebook_login=a' % self.url)
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get('%s?facebook_login=0' % self.url)
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get('%s?facebook_login=' % self.url)
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 405)
 
     def test_connect(self):
         '''
@@ -220,12 +217,14 @@ class ConnectViewTest(FacebookTest):
         '''
         user = get_user_model().objects.all()[:1][0]
         url = self.url
+        example_url = reverse('facebook_example')
 
         # test registration flow
-        from django_facebook.connect import connect_user
         with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.REGISTER, user)) as wrapped_connect:
-            post_data = dict(access_token='short_username',
-                             next='%s?register=1' % url, facebook_login=1)
+            post_data = dict(
+                  access_token='short_username',
+                  next='%s?register=1' % example_url,
+            )
             response = self.client.post(url, post_data, follow=True)
             self.assertEqual(wrapped_connect.call_count, 1)
             self.assertIn('register', response.redirect_chain[0][0])
@@ -233,7 +232,10 @@ class ConnectViewTest(FacebookTest):
 
         # user register next instead of next
         with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.REGISTER, user)) as wrapped_connect:
-            post_data = dict(access_token='short_username', register_next='%s?register=1' % url, facebook_login=1)
+            post_data = dict(
+                 access_token='short_username',
+                 register_next='%s?register=1' % example_url
+            )
             response = self.client.post(url, post_data, follow=True)
             self.assertEqual(wrapped_connect.call_count, 1)
             self.assertIn('register', response.redirect_chain[0][0])
@@ -241,8 +243,10 @@ class ConnectViewTest(FacebookTest):
 
         # test login
         with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.LOGIN, user)) as wrapped_connect:
-            post_data = dict(access_token='short_username',
-                             next='%s?loggggg=1' % url, facebook_login=1)
+            post_data = dict(
+                  access_token='short_username',
+                  next='%s?loggggg=1' % example_url,
+            )
             response = self.client.post(url, post_data, follow=True)
             self.assertEqual(wrapped_connect.call_count, 1)
             self.assertIn('?loggggg=1', response.redirect_chain[0][0])
@@ -250,8 +254,10 @@ class ConnectViewTest(FacebookTest):
 
         # test connect
         with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.CONNECT, user)) as wrapped_connect:
-            post_data = dict(access_token='short_username',
-                             next='%s?loggggg=1' % url, facebook_login=1)
+            post_data = dict(
+                access_token='short_username',
+                next='%s?loggggg=1' % example_url
+            )
             response = self.client.post(url, post_data, follow=True)
             self.assertEqual(wrapped_connect.call_count, 1)
             assert '?loggggg=1' in response.redirect_chain[0][0]
@@ -263,7 +269,7 @@ class ConnectViewTest(FacebookTest):
         profile_error.form = None
         with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.REGISTER, user), side_effect=profile_error) as wrapped_connect:
             post_data = dict(access_token='short_username',
-                             next='%s?loggggg=1' % url, facebook_login=1)
+                             next='%s?loggggg=1' % example_url)
             response = self.client.post(url, post_data, follow=True)
             self.assertEqual(wrapped_connect.call_count, 1)
             self.assertEqual(response.status_code, 200)
@@ -276,6 +282,7 @@ class ConnectViewTest(FacebookTest):
         django_facebook.connect.connect_user
         '''
         url = reverse('facebook_connect')
+        example_url = reverse('facebook_example')
 
         # test super slow Facebook
         errors = [FacebookSSLError(), FacebookURLError(
@@ -284,8 +291,10 @@ class ConnectViewTest(FacebookTest):
             with patch('django_facebook.views.get_instance_for') as converter:
                 instance = converter.return_value
                 instance.is_authenticated = Mock(side_effect=error)
-                post_data = dict(access_token='short_username',
-                                 next='%s?loggggg=1' % url, facebook_login=1)
+                post_data = dict(
+                    access_token='short_username',
+                    next='%s?loggggg=1' % example_url
+                )
                 response = self.client.post(url, post_data, follow=True)
                 self.assertEqual(instance.is_authenticated.call_count, 1)
                 self.assertTrue(response.context)

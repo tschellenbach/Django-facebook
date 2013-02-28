@@ -8,6 +8,11 @@ from django_facebook import facebook_required_lazy, facebook_required, \
 from django_facebook.utils import next_redirect
 
 
+def example(request):
+    context = RequestContext(request)
+    return render_to_response('django_facebook/example.html', context)
+
+
 @facebook_required
 def decorator_example(request, graph):
     '''
