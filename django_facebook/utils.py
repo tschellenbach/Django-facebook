@@ -320,6 +320,9 @@ def simplify_class_decorator(class_decorator):
         return a function which accepts the *args and *kwargs intended
         for fn
     '''
+    # this makes sure the resulting decorator shows up as
+    # function FacebookRequired instead of outer
+    @wraps(class_decorator)
     def outer(fn=None, *decorator_args, **decorator_kwargs):
         # wraps isn't needed, the decorator should do the wrapping :)
         # @wraps(fn, assigned=available_attrs(fn))

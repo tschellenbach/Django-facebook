@@ -106,6 +106,10 @@ class FacebookRequired(object):
         try:
             result = view_func(*args, **kwargs)
         except TypeError, e:
+            # this might be another error type error, raise it
+            # the only way I know to check this is the message :(
+            if 'graph' not in e.message:
+                raise
             graph = kwargs.pop('graph', None)
             result = view_func(*args, **kwargs)
         return result

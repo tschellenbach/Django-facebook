@@ -47,6 +47,9 @@ Setup.py import order errors
 Document customization of the FacebookUserConverter class
 Canvas support
 
+fix for
+http://sentry.goteam.be/default/group/54495/
+
 Docs on the new decorator usage
 Docs on celery vs no celery usage
 Docs clearly pointing to the Fashiolista Demo
@@ -58,6 +61,10 @@ class BaseDecoratorTest(FacebookTest):
         FacebookTest.setUp(self)
         from django_facebook.decorators import facebook_required
         self.decorator = facebook_required
+        self.decorator_name = 'FacebookRequired'
+        
+    def test_naming(self):
+        self.assertEqual(self.decorator.__name__, self.decorator_name)
 
     def test_wrapping(self):
         '''
@@ -143,6 +150,22 @@ class ScopedDecoratorTest(DecoratorTest):
         self.url = reverse('facebook_decorator_example_scope')
         target_url = r'https://www.facebook.com/dialog/oauth?scope=publish_actions&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fdecorator_example_scope%2F%3Fattempt%3D1&client_id=215464901804004'
         self.target_url = target_url
+        
+    def test_type_error(self):
+        self.mock_authenticated()
+        
+        @self.decorator
+        def myview(request, graph):
+            def inner(a, b):
+                pass
+            inner(1, 2, c='nono')
+            
+        to_fail = partial(myview, self.request)
+        try:
+            to_fail()
+        except TypeError, e:
+            right_error = "inner() got an unexpected keyword argument 'c'"
+            self.assertEqual(e.message, right_error)
 
 
 class LazyDecoratorTest(DecoratorTest):
@@ -159,6 +182,7 @@ class LazyDecoratorTest(DecoratorTest):
         self.target_url = target_url
         from django_facebook.decorators import facebook_required_lazy
         self.decorator = facebook_required_lazy
+        self.decorator_name = 'FacebookRequiredLazy'
 
 
 class ConnectViewTest(FacebookTest):
