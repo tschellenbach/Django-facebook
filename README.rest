@@ -171,9 +171,12 @@ If you encounter any difficulties please open an issue.
 
 **Registration Backends**
 
-Django Facebook uses registration backends to integrate with various registration frameworks.
-No registration backend is required. However if you want to integrate with django registration,
-django userena or a custom backend you need to point us in the right direction.
+By default Django Facebook ships with its own registration system.
+It provides a basic manual registration flow and the option to connect with Facebook.
+
+If you are looking for something more complicated it's possible to integrate with Userena or Django Registration.
+To add support for these systems we use the FACEBOOK_REGISTRATION_BACKEND setting.
+
 
 **Django Registration support**
 Simply set your facebook registration backend to your preferred backend.
@@ -184,9 +187,9 @@ Simply set your facebook registration backend to your preferred backend.
 
 **Django Userena support**
 
-We recommend using Django Userena. It seems easier to work with than Django Registration.
-Both are supported and good packages though.
-To use django userena simply point to the userena compatability layer.
+Django Userena is easier to work with than Django Registration.
+It is however hard to setup unittesting with Userena, so the integration between Django Facebook and Userena might not work.
+Please report any bugs you run into.
 
 ::
 
@@ -196,14 +199,7 @@ To use django userena simply point to the userena compatability layer.
 Also have a look at the userena settings file in the facebook example project.
 It provides a clear example of how to configure Userena and Django Facebook to work together.
 
-**Old Django Registration Support**
-
-Even older version of Django Registration are supported. Simply point to the old django registration
-compatability backend.
-
-::
-
-    FACEBOOK_REGISTRATION_BACKEND = 'django_facebook.registration_backends.OldDjangoRegistrationBackend'
+**Other registration systems**
 
 Supporting any other registration system is quite easy.
 Adjust the above settings to point to your own code.
