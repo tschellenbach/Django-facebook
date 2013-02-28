@@ -14,4 +14,3 @@ class DjangoRegistrationDefaultBackend(DefaultBackend, NooptRegistrationBackend)
     the form and other settings will be taken from the default backend
     '''
     pass
-
