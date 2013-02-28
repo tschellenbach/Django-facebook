@@ -4,23 +4,18 @@ Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmo
 
 .. image:: https://secure.travis-ci.org/tschellenbach/Django-facebook.png?branch=master
 
-**New in 4.0**
+**New in 5.0**
 
-4.0 introduces improved compatiblity for the offline access migration.
-I highly recommend upgrading. These are some of the awesome new features:
+* Improved stability
+* More flexible decorators
 
-* Standalone registration support (we no longer require django userena and django registration)
-* Local image storage is now easy to setup and enabled by default
-* Automatic reauthentication for expired tokens (Great for the offline access migration)
-* Travis - `CI tested <http://travis-ci.org/#!/tschellenbach/Django-facebook/>`  
+**Todo**
 
-Backwards incompatible changes:
+* More testing for the canvas support
+* Improved docs
+* Support for real time updates
 
-* You need to explicitly send connect_facebook=1 to connect an existing account to your Facebook account
-* You need to specify a custom backend when using Django registration or Userena. See the section on django userena and django registration support.
-* You should make sure your media settings are ok to support image upload
-
-**The docs can also be found at: http://django-facebook.rtfd.org/**
+Contributions are strongly appreciated. Seriously, give github a try, fork and get started :)
 
 
 Demo & About
@@ -29,20 +24,17 @@ Demo & About
 Django Facebook enables your users to easily register using the Facebook API. 
 It converts the Facebook user data and creates regular User and Profile objects.
 This makes it easy to integrate with your existing Django application. 
-After registration it gives you access to user's graph. Allowing for applications such as:
+
+I've built it for my startup Fashiolista.com and it's currently used in production with thousands of signups per day.
+For a demo of the signup flow have a look at Fashiolista's landing page (`fashiolista.com <http://www.fashiolista.com/intro_wide_minimal/>`_)
+
+After registration Django Facebook gives you access to user's graph. Allowing for applications such as:
 
 * Open graph/ Timeline functionality
 * Seamless personalization
 * Inviting friends
 * Finding friends
 * Posting to a users profile
-
-I've built it for my startup Fashiolista.com and it's currently used in production there with thousands of signups per day.
-For a demo of the signup flow have a look at Fashiolista's landing page (`fashiolista.com <http://www.fashiolista.com/intro_wide_minimal/>`_)
-
-Before you get started building your application, know that contributions are very welcome.
-Seriously, if you see a bug or think of an improvement just open a pull request or issue.
-Feel free to contact me if you have questions.
 
 Updates and tutorials can be found on my blog `mellowmorning <http://www.mellowmorning.com/>`_
 
@@ -258,9 +250,17 @@ Note that you can control which page to go to after connect using the next input
 <form action="{% url facebook_connect %}?facebook_login=1" method="post">
 <a href="javascript:void(0);" style="font-size: 20px;" onclick="F.connect(this.parentNode);">Register, login or connect with facebook</a>
 <input type="hidden" value="{{ request.path }}" name="next" />
+<input type="hidden" value="{{ request.path }}" name="register_next" />
+<input type="hidden" value="{{ request.path }}" name="error_next" />
 </form>
 
+Redirects
+---------
 
+For most applications you can simply use the next, register next and error next parameters to control the post registration flow.
+The "next" parameter provides the default next page for login, connect, error or register actions. "register_next" and "error_next" allow you to customize the next page for those specific scenarios. This is usefull when you for instance want to show an introduction page to new users.
+
+If the default customizability isn't adequate for your needs you can also subclass the default registration backend. 
 
 Signals
 -------
