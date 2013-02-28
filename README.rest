@@ -160,14 +160,88 @@ Otherwise Django Facebook provides an abstract model which you can inherit like 
     
 Don't forget to update your database using syncdb or south after this step.
 
-
-Check the example & Customize!
-------------------------------
-
 Right now you should have a working registration/connect/login in flow available at /facebook/connect/
 Test if everything is working and ensure you didn't miss a step somewhere.
 If you encounter any difficulties please open an issue.
 
+
+**Customize and integrate into your site**
+
+Not it's time to customize things a little.
+For an example you can look at connect.html in the templates directory.
+
+First load the css:
+
+::
+
+    <link href="{{ STATIC_URL }}css/facebook.css" type="text/css" rel="stylesheet" media="all" />
+
+Secondly load the javascript:
+
+::
+
+    {% include 'django_facebook/_facebook_js.html' %}
+    
+If you encounter issues here you probably don't have django static files setup correctly. 
+Alternatively you might be missing the context processor.
+
+
+Subsequently implement a form which calls Facebook via javascript.
+Note that you can control which page to go to after connect using the next input field.
+
+::
+
+<form action="{% url facebook_connect %}?facebook_login=1" method="post">
+<a href="javascript:void(0);" style="font-size: 20px;" onclick="F.connect(this.parentNode);">Register, login or connect with facebook</a>
+<input type="hidden" value="{{ request.path }}" name="next" />
+<input type="hidden" value="{{ request.path }}" name="register_next" />
+<input type="hidden" value="{{ request.path }}" name="error_next" />
+</form>
+
+
+Redirects
+---------
+
+For most applications you can simply use the next, register next and error next parameters to control the post registration flow.
+The "next" parameter provides the default next page for login, connect, error or register actions. "register_next" and "error_next" allow you to customize the next page for those specific scenarios. This is usefull when you for instance want to show an introduction page to new users.
+
+Flows
+
+   * Login (login_next, next, default)
+   * Connect (connect_next, next, default)
+   * Register (register_next, next, default)
+   * Error (error_next, next, default)
+
+The default redirect is specified by the FACEBOOK_LOGIN_DEFAULT_REDIRECT setting.
+
+If the default customizability isn't adequate for your needs you can also subclass the default registration backend. 
+
+::
+
+class CustomBackend(FacebookRegistrationBackend):
+    def post_connect(action):
+        # go as crazy as you want, just be sure to return a response
+        response = HttpRedirect('/something/')
+        if action is CONNECT_ACTIONS.LOGIN:
+            response = HttpRedirect('/')
+        return response
+
+
+Common bugs
+-----------
+
+Django Facebook expects that you are using static files in order to load the required javascript.
+If you are not using staticfiles you should load facebook.js provided in the static directory manually.
+
+Another common issue are the url matching settings from Facebook. Facebook requires you to fill in a domain for your application.
+In order for things to work with local development you need to use the same domain. So if you production site is www.mellowmorning.com you
+should run your development server on something like local.mellowmorning.com in order for facebook to allow authentication.
+
+If you encounter any difficulties please open an issue.
+
+
+Registration Backends
+---------------------
 
 **Registration Backends**
 
@@ -205,58 +279,6 @@ Supporting any other registration system is quite easy.
 Adjust the above settings to point to your own code.
 Note that the form's save method needs to return the new user object.
 
-
-**Common bugs**
-
-Django Facebook expects that you are using static files in order to load the required javascript.
-If you are not using staticfiles you should load facebook.js provided in the static directory manually.
-
-Another common issue are the url matching settings from Facebook. Facebook requires you to fill in a domain for your application.
-In order for things to work with local development you need to use the same domain. So if you production site is www.mellowmorning.com you
-should run your development server on something like local.mellowmorning.com in order for facebook to allow authentication.
-
-If you encounter any difficulties please open an issue.
-
-**Customize and integrate into your site**
-
-Not it's time to customize things a little.
-For an example you can look at connect.html in the templates directory.
-
-First load the css:
-
-::
-
-    <link href="{{ STATIC_URL }}css/facebook.css" type="text/css" rel="stylesheet" media="all" />
-
-Secondly load the javascript:
-
-::
-
-    {% include 'django_facebook/_facebook_js.html' %}
-    
-If you encounter issues here you probably don't have django static files setup correctly. 
-Alternatively you might be missing the context processor.
-
-
-Subsequently implement a form which calls Facebook via javascript.
-Note that you can control which page to go to after connect using the next input field.
-
-::
-
-<form action="{% url facebook_connect %}?facebook_login=1" method="post">
-<a href="javascript:void(0);" style="font-size: 20px;" onclick="F.connect(this.parentNode);">Register, login or connect with facebook</a>
-<input type="hidden" value="{{ request.path }}" name="next" />
-<input type="hidden" value="{{ request.path }}" name="register_next" />
-<input type="hidden" value="{{ request.path }}" name="error_next" />
-</form>
-
-Redirects
----------
-
-For most applications you can simply use the next, register next and error next parameters to control the post registration flow.
-The "next" parameter provides the default next page for login, connect, error or register actions. "register_next" and "error_next" allow you to customize the next page for those specific scenarios. This is usefull when you for instance want to show an introduction page to new users.
-
-If the default customizability isn't adequate for your needs you can also subclass the default registration backend. 
 
 Signals
 -------
