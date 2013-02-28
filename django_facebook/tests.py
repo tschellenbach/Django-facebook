@@ -60,6 +60,7 @@ Document customization of the FacebookUserConverter class
 Canvas support
 
 Docs on the new decorator usage
+Docs, replace /connect/ with /example/
 
 '''
 
