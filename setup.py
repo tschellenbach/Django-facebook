@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from distutils.core import setup
 from distutils.util import convert_path
 from django_facebook import __version__, __maintainer__, __email__
 from fnmatch import fnmatchcase
@@ -113,9 +112,12 @@ CLASSIFIERS = [
     'Natural Language :: English',
     'Operating System :: OS Independent',
     'Programming Language :: Python',
+    'Programming Language :: Python :: 2.6',
+    'Programming Language :: Python :: 2.7',
     'Topic :: Scientific/Engineering :: Mathematics',
     'Topic :: Software Development :: Libraries :: Python Modules',
     'Framework :: Django'
+    'Environment :: Web Environment',
 ]
 
 DESCRIPTION = """Facebook open graph API client in python. Enables django applications to register users using facebook.
@@ -123,10 +125,13 @@ Fixes issues with the official but unsupported Facebook python-sdk. Enables mobi
 Canvas page authentication for facebook applications. FQL access via the server side api.
 """
 
+download_url = 'https://github.com/tschellenbach/Django-facebook/archive/v%s.tar.gz' % __version__
+
 setup(
     name='django-facebook',
     version=__version__,
     url='http://github.com/tschellenbach/Django-facebook',
+    download_url=download_url,
     author=__maintainer__,
     author_email=__email__,
     license=license_text,
