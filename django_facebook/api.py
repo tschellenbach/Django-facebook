@@ -315,7 +315,7 @@ class FacebookUserConverter(object):
         # make sure the first and last name are not too long
         if 'first_name' in user_data:
             user_data['first_name'] = user_data['first_name'][:30]
-        
+
         if 'last_name' in user_data:
             user_data['last_name'] = user_data['last_name'][:30]
 
