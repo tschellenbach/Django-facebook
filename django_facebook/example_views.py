@@ -3,8 +3,8 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_protect
-from django_facebook import facebook_required_lazy, facebook_required, \
-    get_persistent_graph, require_persistent_graph
+from django_facebook.api import get_persistent_graph, require_persistent_graph
+from django_facebook.decorators import facebook_required_lazy, facebook_required
 from django_facebook.utils import next_redirect
 
 

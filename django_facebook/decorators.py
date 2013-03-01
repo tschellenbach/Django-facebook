@@ -1,7 +1,7 @@
 from django.utils.decorators import available_attrs
 from django.utils.functional import wraps
-from django_facebook import get_persistent_graph, settings as fb_settings
-from django_facebook.api import require_persistent_graph
+from django_facebook import settings as fb_settings
+from django_facebook.api import get_persistent_graph, require_persistent_graph
 from django_facebook.utils import get_oauth_url, parse_scope, response_redirect, \
     has_permissions, simplify_class_decorator
 from open_facebook import exceptions as open_facebook_exceptions

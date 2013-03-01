@@ -24,16 +24,3 @@ http://www.pip-installer.org/en/latest/index.html
 pip install -e ./
 '''
 
-import logging
-logger = logging.getLogger(__name__)
-from django.core.exceptions import ImproperlyConfigured
-
-try:
-    from django_facebook.api import get_persistent_graph
-    from django_facebook.api import require_persistent_graph
-    from django_facebook.decorators import facebook_required
-    from django_facebook.decorators import facebook_required_lazy
-except (ImportError, ImproperlyConfigured), e:
-    logger.warn('Couldnt import django_facebook shortcuts, errors was %s', e)
-    #TODO ugly hack for running pip install (django isnt available at that point)
-    pass
