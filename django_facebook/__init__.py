@@ -23,4 +23,3 @@ setting up pip for editing
 http://www.pip-installer.org/en/latest/index.html
 pip install -e ./
 '''
-

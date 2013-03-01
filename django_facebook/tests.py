@@ -225,8 +225,8 @@ class ConnectViewTest(FacebookTest):
         # test registration flow
         with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.REGISTER, user)) as wrapped_connect:
             post_data = dict(
-                  access_token='short_username',
-                  next='%s?register=1' % example_url,
+                access_token='short_username',
+                next='%s?register=1' % example_url,
             )
             response = self.client.post(url, post_data, follow=True)
             self.assertEqual(wrapped_connect.call_count, 1)
@@ -236,8 +236,8 @@ class ConnectViewTest(FacebookTest):
         # user register next instead of next
         with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.REGISTER, user)) as wrapped_connect:
             post_data = dict(
-                 access_token='short_username',
-                 register_next='%s?register=1' % example_url
+                access_token='short_username',
+                register_next='%s?register=1' % example_url
             )
             response = self.client.post(url, post_data, follow=True)
             self.assertEqual(wrapped_connect.call_count, 1)
@@ -247,8 +247,8 @@ class ConnectViewTest(FacebookTest):
         # test login
         with patch('django_facebook.views.connect_user', return_value=(CONNECT_ACTIONS.LOGIN, user)) as wrapped_connect:
             post_data = dict(
-                  access_token='short_username',
-                  next='%s?loggggg=1' % example_url,
+                access_token='short_username',
+                next='%s?loggggg=1' % example_url,
             )
             response = self.client.post(url, post_data, follow=True)
             self.assertEqual(wrapped_connect.call_count, 1)
