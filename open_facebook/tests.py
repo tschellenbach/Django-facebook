@@ -260,4 +260,3 @@ class TestOpenFacebook(OpenFacebookTest):
         facebook = self.guy.graph()
         assert 'name' in facebook.me()
         assert facebook.get('fashiolista')
-
