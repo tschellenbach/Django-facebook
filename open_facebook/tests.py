@@ -261,36 +261,3 @@ class TestOpenFacebook(OpenFacebookTest):
         assert 'name' in facebook.me()
         assert facebook.get('fashiolista')
 
-    def test_album_upload(self):
-        facebook = self.tommy.graph()
-        photo_urls = [
-            'http://d.fashiocdn.com/images/entities/0/6/t/p/d/0.365x365.jpg',
-            'http://e.fashiocdn.com/images/entities/0/5/E/b/Q/0.365x365.jpg',
-        ]
-        #feed method
-        for photo in photo_urls:
-            facebook.set(
-                'me/feed', message='Fashiolista is awesome - part one',
-                picture=photo)
-
-        #app album method
-        #gives an unknown error for some reason
-#        for photo in photo_urls:
-#            uploaded = facebook.set('me/photos', url=photo, message='Fashiolista 2 is awesome - part two', name='FashiolistaTest2')
-        albums = facebook.get('me/albums')
-        album_names = [album['name'] for album in albums['data']]
-
-        album_name = 'FashiolistaSuperAlbum'
-        album_response = facebook.set('me/albums', params=dict(
-            name=album_name, message='Your latest fashion finds'))
-
-        albums = facebook.get('me/albums')
-        album_names = [album['name'] for album in albums['data']]
-        assert album_name in album_names
-
-        album_id = album_response['id']
-        for photo in photo_urls:
-            facebook.set(
-                '%s/photos' % album_id, url=photo,
-                message='the writing is one the wall tw',
-                name='FashiolistaTestt')
