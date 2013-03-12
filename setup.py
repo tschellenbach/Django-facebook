@@ -116,7 +116,7 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 2.7',
     'Topic :: Scientific/Engineering :: Mathematics',
     'Topic :: Software Development :: Libraries :: Python Modules',
-    'Framework :: Django'
+    'Framework :: Django',
     'Environment :: Web Environment',
 ]
 
@@ -131,7 +131,6 @@ setup(
     name='django-facebook',
     version=__version__,
     url='http://github.com/tschellenbach/Django-facebook',
-    download_url=download_url,
     author=__maintainer__,
     author_email=__email__,
     license=license_text,
