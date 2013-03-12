@@ -159,7 +159,7 @@ class ScopedDecoratorTest(DecoratorTest):
     def setUp(self):
         DecoratorTest.setUp(self)
         self.url = reverse('facebook_decorator_example_scope')
-        target_url = r'https://www.facebook.com/dialog/oauth?scope=publish_actions&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fdecorator_example_scope%2F%3Fattempt%3D1&client_id=215464901804004'
+        target_url = r'https://www.facebook.com/dialog/oauth?scope=publish_actions%2Cuser_status&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fdecorator_example_scope%2F%3Fattempt%3D1&client_id=215464901804004'
         self.target_url = target_url
 
     def test_type_error(self):

@@ -30,7 +30,7 @@ def decorator_example(request, graph):
         return HttpResponse('user denied or error')
 
 
-@facebook_required(scope=['publish_actions'])
+@facebook_required(scope=['publish_actions', 'user_status'])
 def decorator_example_scope(request, graph):
     '''
     Same as above, but with a custom scope
@@ -76,6 +76,23 @@ def wall_post(request):
         fb.set('me/feed', message=message)
         messages.info(request, 'Posted the message to your wall')
         return next_redirect(request)
+
+
+@facebook_required(scope=['user_status', 'friends_status'])
+def checkins(request):
+    '''
+    See the facebook docs:
+    https://developers.facebook.com/docs/reference/fql/location_post/
+    https://developers.facebook.com/docs/reference/api/checkin/
+
+    TODO:
+    Add a nice template to this
+    '''
+    fb = get_persistent_graph(request)
+
+    checkins = fb.get('me/checkins')
+
+    raise Exception(checkins)
 
 
 @facebook_required(scope='publish_stream,user_photos')
