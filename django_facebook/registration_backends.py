@@ -5,7 +5,7 @@ from django_facebook.connect import CONNECT_ACTIONS
 from django_facebook.forms import FacebookRegistrationFormUniqueEmail
 from django_facebook.utils import get_user_model, next_redirect, \
     error_next_redirect
-from functional import partial
+from functools import partial
 
 
 class NooptRegistrationBackend(object):
