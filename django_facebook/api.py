@@ -349,8 +349,8 @@ class FacebookUserConverter(object):
         seperation = re.compile('[ ,;\n\r]+')
         parts = seperation.split(text_url_field)
         for part in parts:
-            from django.forms import URLField
-            url_check = URLField(verify_exists=False)
+            from django_facebook.utils import get_url_field
+            url_check = get_url_field()
             try:
                 clean_url = url_check.clean(part)
                 return clean_url

@@ -22,6 +22,20 @@ import gc
 logger = logging.getLogger(__name__)
 
 
+def get_url_field():
+    '''
+    This should be compatible with both django 1.3, 1.4 and 1.5
+    In 1.5 the verify_exists argument is removed and always False
+    '''
+    from django.forms import URLField
+    field = URLField()
+    try:
+        field = URLField(verify_exists=False)
+    except TypeError, e:
+        pass
+    return field
+
+
 def clear_persistent_graph_cache(request):
     '''
     Clears the caches for the graph cache
