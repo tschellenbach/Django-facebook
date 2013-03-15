@@ -2,6 +2,7 @@ class local_dev::pil {
     notice('setting up libs for PIL')
     # required for PIL
     apt::builddep { "python-imaging": 
+      require => Exec["apt-get-update"]
     }
 
     # PIL requirements
