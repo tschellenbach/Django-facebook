@@ -1,7 +1,8 @@
 class local_dev::pil {
     notice('setting up libs for PIL')
     # required for PIL
-    apt::builddep { "python-imaging": }
+    apt::builddep { "python-imaging": 
+    }
 
     # PIL requirements
     package { "libjpeg8":
