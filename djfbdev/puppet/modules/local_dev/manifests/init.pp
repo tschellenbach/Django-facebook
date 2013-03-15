@@ -86,5 +86,6 @@ class local_dev {
         command => "/home/vagrant/Envs/django_facebook/bin/pip install --use-mirrors -r /vagrant/facebook_example/requirements/development.txt",
         require => Exec["create-virtualenv"],
         logoutput => true,
+        timeout => 600,
     }
 }
