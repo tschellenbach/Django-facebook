@@ -12,7 +12,7 @@ except ImportError:
 
 standard_exclude = ['*.py', '*.pyc', '*~', '.*', '*.bak']
 standard_exclude_directories = [
-    '.*', 'CVS', '_darcs', './build',
+    '.*', 'CVS', '_darcs', './build', './docs',
     './dist', 'EGG-INFO', '*.egg-info', 'facebook_profiles'
 ]
 
