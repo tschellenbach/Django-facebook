@@ -414,7 +414,7 @@ Assuming you have vagrant installed, simply type:
 * vagrant ssh
 * (on the vagrant machine) python manage.py runserver 0.0.0.0:8000
 
-To have a working Django Facebook example up and running at 192.168.50.42:8000.
+To have a working Django Facebook example up and running at 192.168.50.42:8000/facebook/example/.
 
 
 Django Jobs
