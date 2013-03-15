@@ -412,7 +412,7 @@ Assuming you have vagrant installed, simply type:
 * vagrant up
 * grab a coffee
 * vagrant ssh
-* (on the vagrant machine) python manage.py runserver 0.0.0.0:8000
+* (on the vagrant machine) python manage.py runserver 0:8000
 
 To have a working Django Facebook example up and running at 192.168.50.42:8000/facebook/example/.
 
