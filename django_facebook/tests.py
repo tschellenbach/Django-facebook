@@ -49,20 +49,18 @@ Done - Unit Test post registration flow
 Done - ReAdd compatibility for Django Registration redirects
 Done - Setup.py import order errors
 Done - Fix firstname not found error http://sentry.goteam.be/default/group/54457/
-
 Done - Docs on using the provided registration backend not userena
 Done - Docs clearly pointing to the Fashiolista Demo
 Done - Docs on celery vs no celery usage
+Done - Docs, replace /connect/ with /example/
+Done - Docs on the new decorator usage
 
+Include vagrant development setup
 
 Fix extra url issue, http://sentry.goteam.be/default/group/54725/
-
-
 Document customization of the FacebookUserConverter class
 Canvas support
 
-Docs on the new decorator usage
-Docs, replace /connect/ with /example/
 
 '''
 
