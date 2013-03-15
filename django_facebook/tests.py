@@ -302,7 +302,7 @@ class ConnectViewTest(FacebookTest):
                 self.assertEqual(instance.is_authenticated.call_count, 1)
                 self.assertTrue(response.context)
                 assert '?loggggg=1' in response.redirect_chain[0][0]
-                
+
     def get_response_template(self, response):
         if hasattr(response, 'template'):
             templates = [response.template]
