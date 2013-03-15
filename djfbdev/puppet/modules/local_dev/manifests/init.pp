@@ -88,4 +88,12 @@ class local_dev {
         logoutput => true,
         timeout => 600,
     }
+    
+    exec {"syncdb":
+        user => 'vagrant',
+        command => "/usr/bin/python manage.py syncdb --all --noinput",
+        require => Exec["install-requirements"],
+        logoutput => true,
+    }
+
 }
