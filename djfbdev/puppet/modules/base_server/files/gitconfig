@@ -9,3 +9,6 @@
     graft = !legit graft \"$@\"
     st = status
 
+[core]
+    autocrlf = input
+    eol = lf

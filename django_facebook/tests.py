@@ -276,7 +276,8 @@ class ConnectViewTest(FacebookTest):
             self.assertEqual(wrapped_connect.call_count, 1)
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context)
-            assert response.template.name in facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE or response.template.name == facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE
+            template = self.get_response_template(response)
+            assert template.name in facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE or template.name == facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE
 
     def test_slow_connect(self):
         '''
@@ -301,6 +302,14 @@ class ConnectViewTest(FacebookTest):
                 self.assertEqual(instance.is_authenticated.call_count, 1)
                 self.assertTrue(response.context)
                 assert '?loggggg=1' in response.redirect_chain[0][0]
+                
+    def get_response_template(self, response):
+        if hasattr(response, 'template'):
+            templates = [response.template]
+        else:
+            templates = response.templates
+        template = templates[0]
+        return template
 
 
 class TestUserTest(LiveFacebookTest):

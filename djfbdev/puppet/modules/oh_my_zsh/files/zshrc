@@ -38,8 +38,14 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/ga
 
 source $ZSH/oh-my-zsh.sh
 
-# Customize to your needs...
+# configure virtualenvwrapper
 export WORKON_HOME=/home/vagrant/Envs/
 source /usr/local/bin/virtualenvwrapper.sh
+
+# switch to the right directory and enable the virtualenv
 cd /vagrant/facebook_example/
 workon django_facebook
+
+# make sure we install django facebook in editable mode
+pip install -e /vagrant
+
