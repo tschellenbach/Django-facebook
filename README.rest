@@ -420,7 +420,9 @@ For the facebook login to work simply map that ip to local.mellowmorning.com
 
 You can run the test suite by typing:
 
-python manage.py test django_facebook
+:: 
+
+  python manage.py test django_facebook
 
 
 
