@@ -89,6 +89,15 @@ class local_dev {
         timeout => 600,
     }
     
+    # make sure django facebook is in editable mode
+    exec {"install-django-facebook":
+        user => 'vagrant',
+        command => "/home/vagrant/Envs/django_facebook/bin/pip install -e /vagrant",
+        require => Exec["install-requirements"],
+        logoutput => true,
+        timeout => 600,
+    }
+
     exec {"syncdb":
         user => 'vagrant',
         command => "/home/vagrant/Envs/django_facebook/bin/python /vagrant/facebook_example/manage.py syncdb --all --noinput",

@@ -47,5 +47,5 @@ cd /vagrant/facebook_example/
 workon django_facebook
 
 # make sure we install django facebook in editable mode
-pip install -e /vagrant
+# pip install -e /vagrant
 
