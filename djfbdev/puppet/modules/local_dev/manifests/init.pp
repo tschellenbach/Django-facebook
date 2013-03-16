@@ -91,7 +91,7 @@ class local_dev {
     
     exec {"syncdb":
         user => 'vagrant',
-        command => "/usr/bin/python manage.py syncdb --all --noinput",
+        command => "/home/vagrant/Envs/django_facebook/bin/python /vagrant/facebook_example/manage.py syncdb --all --noinput",
         require => Exec["install-requirements"],
         logoutput => true,
     }
