@@ -98,7 +98,7 @@ def _connect(request, graph):
             additional_params = dict(already_connected=ids_string)
             return backend.post_error(request, additional_params)
 
-        response = backend.post_connect(request, action)
+        response = backend.post_connect(request, user, action)
 
         if action is CONNECT_ACTIONS.LOGIN:
             pass

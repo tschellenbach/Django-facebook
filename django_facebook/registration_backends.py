@@ -38,7 +38,7 @@ class NooptRegistrationBackend(object):
             additional_params=additional_params)
         return response
 
-    def post_connect(self, request, action):
+    def post_connect(self, request, user, action):
         '''
         Handles the redirect after connecting
         '''
