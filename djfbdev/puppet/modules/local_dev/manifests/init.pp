@@ -70,6 +70,7 @@ class local_dev::requirements {
 class local_dev {
     require local_dev::requirements
     require local_dev::pil
+    require nginx
     notice('setting up the virtual env')
   
     # time to setup a virtual env
@@ -89,11 +90,21 @@ class local_dev {
         timeout => 600,
     }
     
-    exec {"syncdb":
+    # make sure django facebook is in editable mode
+    exec {"install-django-facebook":
         user => 'vagrant',
-        command => "/usr/bin/python manage.py syncdb --all --noinput",
+        command => "/home/vagrant/Envs/django_facebook/bin/pip install -e /vagrant",
         require => Exec["install-requirements"],
         logoutput => true,
+        timeout => 600,
+    }
+
+    # run syncdb after we are sure we have the latest version of django facebook
+    exec {"syncdb":
+        user => 'vagrant',
+        command => "/home/vagrant/Envs/django_facebook/bin/python /vagrant/facebook_example/manage.py syncdb --all --noinput",
+        logoutput => true,
+        require => Exec["install-django-facebook"],
     }
 
 }

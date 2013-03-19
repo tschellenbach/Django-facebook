@@ -54,12 +54,13 @@ Done - Docs clearly pointing to the Fashiolista Demo
 Done - Docs on celery vs no celery usage
 Done - Docs, replace /connect/ with /example/
 Done - Docs on the new decorator usage
+Done - Include vagrant development setup
+Postponed - Fix extra url issue, http://sentry.goteam.be/default/group/54725/
 
-Include vagrant development setup
 
-Fix extra url issue, http://sentry.goteam.be/default/group/54725/
-Document customization of the FacebookUserConverter class
 Canvas support
+Document customization of the FacebookUserConverter class
+
 
 
 '''
