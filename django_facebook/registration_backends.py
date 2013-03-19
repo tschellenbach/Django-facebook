@@ -6,6 +6,7 @@ from django_facebook.forms import FacebookRegistrationFormUniqueEmail
 from django_facebook.utils import get_user_model, next_redirect, \
     error_next_redirect
 from functools import partial
+from django.contrib.auth import get_backends
 
 
 class NooptRegistrationBackend(object):
@@ -85,9 +86,16 @@ class FacebookRegistrationBackend(NooptRegistrationBackend):
     def authenticate(self, request, username, password):
         # authenticate() always has to be called before login(), and
         # will return the user we just created.
-        new_user = authenticate(username=username, password=password)
-        login(request, new_user)
-        return new_user
+        authentication_details = dict(username=username, password=password)
+        user = authenticate(**authentication_details)
+        login(request, user)
+
+        if user is None or not user.is_authenticated():
+            backends = get_backends()
+            msg_format = 'Authentication using backends %s and data %s failed'
+            raise ValueError(msg_format % (backends, authentication_details))
+
+        return user
 
 
 class UserenaBackend(NooptRegistrationBackend):
