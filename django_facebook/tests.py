@@ -555,6 +555,24 @@ class UserConnectTest(FacebookTest):
         self.assertEqual(user.username, 'Test form')
 
 
+class SimpleRegisterViewTest(FacebookTest):
+    '''
+    Even the most simple views will break eventually if they are not tested
+    '''
+    def test_registration(self):
+        pw = 'tester1234'
+        data = dict(username='testertester', email='tester@testertester.com', password1=pw, password2=pw)
+        data['register_next'] = '/?a=bbbbcbbbb'
+        response = self.client.post('/accounts/register/', data, follow=True)
+        
+        assert response.redirect_chain, 'we are expecting a redirect!'
+        for url, status in response.redirect_chain:
+            if 'bbbbcbbbb' in url:
+                break
+        else:
+            raise ValueError, 'bbbbcbbbb isnt in %s' % response.redirect_chain
+
+
 class AuthBackend(FacebookTest):
     def test_auth_backend(self):
         backend = FacebookBackend()

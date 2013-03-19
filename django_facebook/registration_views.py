@@ -2,6 +2,7 @@ from django.template.context import RequestContext
 from django.shortcuts import render_to_response
 from django_facebook.utils import get_registration_backend
 from django.shortcuts import redirect
+from django_facebook.connect import CONNECT_ACTIONS
 
 
 def register(request):
@@ -16,9 +17,9 @@ def register(request):
         form = form_class(data=request.POST, files=request.FILES)
         if form.is_valid():
             new_user = backend.register(request, **form.cleaned_data)
-            response = backend.post_registration_redirect(request, new_user)
-            #keep the post behaviour exactly the same as django facebook
-
+            #keep the post behaviour exactly the same as django facebook's
+            #connect flow
+            response = backend.post_connect(request, CONNECT_ACTIONS.REGISTER)
             return response
     else:
         form = form_class()
