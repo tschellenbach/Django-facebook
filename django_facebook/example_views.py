@@ -75,10 +75,9 @@ def canvas(request, graph):
     if signed_request_string:
         signed_request = parse_signed_request(signed_request_string)
     context['signed_request'] = signed_request
-    fb = require_persistent_graph(request)
     likes = []
     if graph:
-        likes = fb.get('me/likes')['data']
+        likes = graph.get('me/likes')['data']
     context['likes'] = likes
 
     return render_to_response('django_facebook/canvas.html', context)
