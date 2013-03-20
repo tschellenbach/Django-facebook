@@ -5,12 +5,7 @@ from django.template.context import RequestContext
 from django.views.decorators.csrf import csrf_protect
 from django_facebook.api import get_persistent_graph, require_persistent_graph
 from django_facebook.decorators import facebook_required_lazy, facebook_required
-from django_facebook.utils import next_redirect
-
-
-def example(request):
-    context = RequestContext(request)
-    return render_to_response('django_facebook/example.html', context)
+from django_facebook.utils import next_redirect, parse_signed_request
 
 
 @facebook_required
@@ -119,11 +114,30 @@ def canvas(request):
     The facebook required and facebook required lazy decorator abstract this away
     '''
     context = RequestContext(request)
+    signed_request_string = request.POST.get('signed_request')
+    signed_request = {}
+    if signed_request_string:
+        signed_request = parse_signed_request(signed_request_string)
+    context['signed_request'] = signed_request
     fb = require_persistent_graph(request)
     likes = fb.get('me/likes')['data']
     context['likes'] = likes
 
     return render_to_response('django_facebook/canvas.html', context)
+
+
+@facebook_required_lazy(page_tab=True)
+def page_tab(request):
+    '''
+    Example of a simple page tab
+    '''
+    #get signed_request
+    context = RequestContext(request)
+    signed_request_string = request.POST['signed_request']
+    signed_request = parse_signed_request(signed_request_string)
+    context['signed_request'] = signed_request
+
+    return render_to_response('django_facebook/page_tab.html', context)
 
 
 @facebook_required(scope='publish_actions')

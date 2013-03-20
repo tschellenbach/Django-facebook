@@ -20,15 +20,16 @@ class FacebookRequired(object):
     and upon a permission error redirect to login_url
     Querying the permissions would slow down things
     """
-    def __init__(self, fn, scope=None, canvas=False, extra_params=None):
+    def __init__(self, fn, scope=None, canvas=False, page_tab=False, extra_params=None):
         self.fn = fn
         scope = fb_settings.FACEBOOK_DEFAULT_SCOPE if scope is None else scope
         self.scope = scope
         self.scope_list = parse_scope(scope)
         self.canvas = canvas
+        self.page_tab = page_tab
         self.extra_params = extra_params
         # canvas pages always need to be csrf excempt
-        csrf_exempt = canvas
+        csrf_exempt = canvas or page_tab
         self.csrf_exempt = csrf_exempt
 
     def authenticate(self, fn, request, *args, **kwargs):
@@ -40,8 +41,9 @@ class FacebookRequired(object):
         b.) We tried getting permissions and failed, abort...
         c.) We are about to ask for permissions
         '''
-        oauth_url, current_uri, redirect_uri = get_oauth_url(
-            request, self.scope_list, extra_params=self.extra_params)
+        redirect_uri = self.get_redirect_uri(request)
+        oauth_url = get_oauth_url(
+            self.scope_list, redirect_uri, extra_params=self.extra_params)
 
         graph = get_persistent_graph(request, redirect_uri=redirect_uri)
 
@@ -60,6 +62,17 @@ class FacebookRequired(object):
             response = self.oauth_redirect(oauth_url, redirect_uri)
 
         return response
+
+    def get_redirect_uri(self, request):
+        '''
+        return the redirect uri to use for oauth authorization
+        this needs to be the same for requesting and accepting the token
+        '''
+        if self.canvas:
+            uri = fb_settings.FACEBOOK_CANVAS_PAGE
+        else:
+            uri = request.build_absolute_uri()
+        return uri
 
     def __call__(self):
         '''
@@ -86,7 +99,15 @@ class FacebookRequired(object):
         logger.info(
             u'requesting access with redirect uri: %s, error was %s',
             redirect_uri, e)
-        response = response_redirect(oauth_url, canvas=self.canvas)
+
+        # for internal Facebook pages we should use a script to redirect
+        script_redirect = False
+        if self.canvas or self.page_tab:
+            script_redirect = True
+
+        # redirect using HTTP headers or a script
+        response = response_redirect(
+            oauth_url, script_redirect=script_redirect)
         return response
 
     def authentication_failed(self, fn, request, *args, **kwargs):
@@ -130,14 +151,16 @@ class FacebookRequiredLazy(FacebookRequired):
     Use this in combination with require_persistent_graph
     """
     def authenticate(self, fn, request, *args, **kwargs):
-        oauth_url, current_uri, redirect_uri = get_oauth_url(
-            request, self.scope_list, extra_params=self.extra_params)
+        redirect_uri = self.get_redirect_uri(request)
+        oauth_url = get_oauth_url(
+            self.scope_list, redirect_uri, extra_params=self.extra_params)
 
         graph = None
         try:
             # call get persistent graph and convert the
             # token with correct redirect uri
-            graph = require_persistent_graph(request, redirect_uri=current_uri)
+            graph = require_persistent_graph(
+                request, redirect_uri=redirect_uri)
             # Note we're not requiring a persistent graph here
             # You should require a persistent graph in the view when you start using this
             response = self.execute_view(

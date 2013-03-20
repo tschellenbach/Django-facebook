@@ -1,0 +1,17 @@
+{% extends "django_facebook/_canvas_base.html" %}
+
+
+
+{% block content %}
+
+
+<h4>Your info!</h4>
+<ul>
+    {% for key, value in signed_request.items %}
+        <li>{{ key }}: {{ value}}</li>
+    {% endfor %}
+</ul>
+
+{% endblock %} 
+				 
+				 

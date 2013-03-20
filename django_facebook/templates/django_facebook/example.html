@@ -367,12 +367,20 @@
         </div>
     </div>
 
-    <div id="page_Tab" style="margin: 60px 0px 20px 0px;">
-        <h2>Page tab</h2>
-        <a href="https://www.facebook.com/dialog/pagetab?app_id={{ FACEBOOK_APP_ID }}&next=http://local.mellowmorning.com:8000/facebook/canvas/">Add the test page tab</a>
+    <div id="canvas_page" style="margin: 60px 0px 20px 0px;">
+        <h2>Canvas page Example</h2>
+        Note for the page tab and canvas example to work you need to serve the example at:
+        https://local.mellowmorning.com/facebook/example/
+        <a href="http://apps.facebook.com/django_facebook_test/">Canvas page example</a>
     </div>
     
-    
+    <div id="page_tab" style="margin: 60px 0px 20px 0px;">
+        <h2>Page tab example</h2>
+        Note for the page tab and canvas example to work you need to serve the example at:
+        https://local.mellowmorning.com/facebook/example/
+        <a href="https://www.facebook.com/dialog/pagetab?app_id={{ FACEBOOK_APP_ID }}&next=https://local.mellowmorning.com/facebook/example/">Add the test page tab</a>
+    </div>
+
 </div>
 
 <script src="{{ STATIC_URL }}js/statictest.js" type="text/javascript"></script>

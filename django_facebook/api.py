@@ -2,7 +2,7 @@ from django.forms.util import ValidationError
 from django.utils import simplejson as json
 from django_facebook import settings as facebook_settings
 from django_facebook.utils import mass_get_or_create, cleanup_oauth_url, \
-    get_profile_class
+    get_profile_class, parse_signed_request
 from open_facebook.exceptions import OpenFacebookException
 from django_facebook.exceptions import FacebookException
 try:
@@ -110,36 +110,50 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
         _add_current_user_id(graph, request.user)
         return graph
 
+    # parse the signed request if we have it
+    signed_request = None
+    signed_request_string = request.REQUEST.get('signed_request')
+    if signed_request_string:
+        logger.info('Got signed data from facebook')
+        signed_request = parse_signed_request(signed_request_string)
+    if signed_request:
+        logger.info('We were able to parse the signed data')
+
+    # the easy case, we have an access token in the signed data
+    if signed_request and 'oauth_token' in signed_request:
+        access_token = signed_request['oauth_token']
+
     if not access_token:
         # easy case, code is in the get
         code = request.REQUEST.get('code')
         if code:
             logger.info('Got code from the request data')
+
         if not code:
             # signed request or cookie leading, base 64 decoding needed
-            signed_data = request.REQUEST.get('signed_request')
             cookie_name = 'fbsr_%s' % facebook_settings.FACEBOOK_APP_ID
             cookie_data = request.COOKIES.get(cookie_name)
 
             if cookie_data:
-                signed_data = cookie_data
+                signed_request_string = cookie_data
+                if signed_request_string:
+                    logger.info('Got signed data from cookie')
+                signed_request = parse_signed_request(signed_request_string)
+                if signed_request:
+                    logger.info('Parsed the cookie data')
                 # the javascript api assumes a redirect uri of ''
                 redirect_uri = ''
-            if signed_data:
-                logger.info('Got signed data from facebook')
-                parsed_data = FacebookAuthorization.parse_signed_data(
-                    signed_data)
-                if parsed_data:
-                    logger.info('Got parsed data from facebook')
-                    # parsed data can fail because of signing issues
-                    if 'oauth_token' in parsed_data:
-                        logger.info('Got access_token from parsed data')
-                        # we already have an active access token in the data
-                        access_token = parsed_data['oauth_token']
-                    else:
-                        logger.info('Got code from parsed data')
-                        # no access token, need to use this code to get one
-                        code = parsed_data.get('code', None)
+
+            if signed_request:
+                # parsed data can fail because of signing issues
+                if 'oauth_token' in parsed_data:
+                    logger.info('Got access_token from parsed data')
+                    # we already have an active access token in the data
+                    access_token = parsed_data['oauth_token']
+                else:
+                    logger.info('Got code from parsed data')
+                    # no access token, need to use this code to get one
+                    code = parsed_data.get('code', None)
 
         if not access_token:
             if code:

@@ -130,3 +130,8 @@ def disconnect(request):
         profile.save()
     response = next_redirect(request)
     return response
+
+
+def example(request):
+    context = RequestContext(request)
+    return render_to_response('django_facebook/example.html', context)

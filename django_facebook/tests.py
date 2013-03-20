@@ -57,8 +57,11 @@ Done - Docs on the new decorator usage
 Done - Include vagrant development setup
 Postponed - Fix extra url issue, http://sentry.goteam.be/default/group/54725/
 
+Rename CanvasRedirect to scriptredirect and support page tabs
 
 Canvas support
+Page Tab support
+Test page tab support
 Document customization of the FacebookUserConverter class
 
 

@@ -11,7 +11,7 @@ FACEBOOK_DEFAULT_SCOPE = getattr(settings, 'FACEBOOK_DEFAULT_SCOPE', [
 
 # Absolute canvas page url as per facebook standard
 FACEBOOK_CANVAS_PAGE = getattr(settings, 'FACEBOOK_CANVAS_PAGE',
-                               'http://apps.facebook.com/fashiolista_test/')
+                               'http://apps.facebook.com/django_facebook_test/')
 
 # Disable this setting if you don't want to store a local image
 FACEBOOK_STORE_LOCAL_IMAGE = getattr(

@@ -22,6 +22,17 @@ import gc
 logger = logging.getLogger(__name__)
 
 
+def parse_signed_request(signed_request_string):
+    '''
+    Just here for your convenience, actual logic is in the
+    FacebookAuthorization class
+    '''
+    from open_facebook.api import FacebookAuthorization
+    signed_request = FacebookAuthorization.parse_signed_data(
+        signed_request_string)
+    return signed_request
+
+
 def get_url_field():
     '''
     This should be compatible with both django 1.3, 1.4 and 1.5
@@ -85,19 +96,14 @@ def queryset_iterator(queryset, chunksize=1000, getfunc=getattr):
         gc.collect()
 
 
-def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
+def get_oauth_url(scope, redirect_uri, extra_params=None):
     '''
-    Returns the oAuth URL for the given request and scope
-    Request maybe shouldn't be tied to this function, but for now it seems
-    rather convenient
+    Returns the oAuth URL for the given scope and redirect_uri
     '''
-    from django_facebook import settings as facebook_settings
     scope = parse_scope(scope)
     query_dict = QueryDict('', True)
     query_dict['scope'] = ','.join(scope)
     query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
-    redirect_uri = redirect_uri or request.build_absolute_uri()
-    current_uri = redirect_uri
 
     # set attempt=1 to prevent endless redirect loops
     if 'attempt=1' not in redirect_uri:
@@ -109,10 +115,10 @@ def get_oauth_url(request, scope, redirect_uri=None, extra_params=None):
     query_dict['redirect_uri'] = redirect_uri
     oauth_url = 'https://www.facebook.com/dialog/oauth?'
     oauth_url += query_dict.urlencode()
-    return oauth_url, current_uri, redirect_uri
+    return oauth_url
 
 
-class CanvasRedirect(HttpResponse):
+class ScriptRedirect(HttpResponse):
     '''
     Redirect for Facebook Canvas pages
     '''
@@ -125,15 +131,15 @@ class CanvasRedirect(HttpResponse):
         js_redirect = render_to_string(
             'django_facebook/canvas_redirect.html', context)
 
-        super(CanvasRedirect, self).__init__(js_redirect)
+        super(ScriptRedirect, self).__init__(js_redirect)
 
 
-def response_redirect(redirect_url, canvas=False):
+def response_redirect(redirect_url, script_redirect=False):
     '''
     Abstract away canvas redirects
     '''
-    if canvas:
-        return CanvasRedirect(redirect_url)
+    if script_redirect:
+        return ScriptRedirect(redirect_url)
 
     return HttpResponseRedirect(redirect_url)
 

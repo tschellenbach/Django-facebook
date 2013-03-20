@@ -5,6 +5,13 @@
 {% block content %}
 
 
+<h4>Your info!</h4>
+<ul>
+    {% for key, value in signed_request.items %}
+        <li>{{ key }}: {{ value}}</li>
+    {% endfor %}
+</ul>
+
 <h4>Things you like!</h4>
 <ul>
     {% for like in likes %}
