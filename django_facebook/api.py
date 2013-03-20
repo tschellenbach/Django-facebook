@@ -103,7 +103,6 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
     # maybe, weird this...
     from open_facebook import OpenFacebook, FacebookAuthorization
     from django.core.cache import cache
-    parsed_data = None
     expires = None
     if hasattr(request, 'facebook') and request.facebook:
         graph = request.facebook
@@ -111,18 +110,18 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
         return graph
 
     # parse the signed request if we have it
-    signed_request = None
+    signed_data = None
     if request:
-        signed_request_string = request.REQUEST.get('signed_request')
+        signed_request_string = request.REQUEST.get('signed_data')
         if signed_request_string:
             logger.info('Got signed data from facebook')
-            signed_request = parse_signed_request(signed_request_string)
-        if signed_request:
+            signed_data = parse_signed_request(signed_request_string)
+        if signed_data:
             logger.info('We were able to parse the signed data')
 
     # the easy case, we have an access token in the signed data
-    if signed_request and 'oauth_token' in signed_request:
-        access_token = signed_request['oauth_token']
+    if signed_data and 'oauth_token' in signed_data:
+        access_token = signed_data['oauth_token']
 
     if not access_token:
         # easy case, code is in the get
@@ -139,22 +138,22 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                 signed_request_string = cookie_data
                 if signed_request_string:
                     logger.info('Got signed data from cookie')
-                signed_request = parse_signed_request(signed_request_string)
-                if signed_request:
+                signed_data = parse_signed_request(signed_request_string)
+                if signed_data:
                     logger.info('Parsed the cookie data')
                 # the javascript api assumes a redirect uri of ''
                 redirect_uri = ''
 
-            if signed_request:
+            if signed_data:
                 # parsed data can fail because of signing issues
-                if 'oauth_token' in parsed_data:
+                if 'oauth_token' in signed_data:
                     logger.info('Got access_token from parsed data')
                     # we already have an active access token in the data
-                    access_token = parsed_data['oauth_token']
+                    access_token = signed_data['oauth_token']
                 else:
                     logger.info('Got code from parsed data')
                     # no access token, need to use this code to get one
-                    code = parsed_data.get('code', None)
+                    code = signed_data.get('code', None)
 
         if not access_token:
             if code:
@@ -171,7 +170,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                     if not redirect_uri:
                         redirect_uri = ''
 
-                    # we need to drop signed_request, code and state
+                    # we need to drop signed_data, code and state
                     redirect_uri = cleanup_oauth_url(redirect_uri)
 
                     try:
@@ -213,7 +212,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                 else:
                     return None
 
-    graph = OpenFacebook(access_token, parsed_data, expires=expires)
+    graph = OpenFacebook(access_token, signed_data, expires=expires)
     # add user specific identifiers
     if request:
         _add_current_user_id(graph, request.user)
