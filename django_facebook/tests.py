@@ -55,16 +55,13 @@ Done - Docs on celery vs no celery usage
 Done - Docs, replace /connect/ with /example/
 Done - Docs on the new decorator usage
 Done - Include vagrant development setup
+Done - Rename CanvasRedirect to scriptredirect and support page tabs
+Done - Canvas support
+Done - Page Tab support
 Postponed - Fix extra url issue, http://sentry.goteam.be/default/group/54725/
 
-Rename CanvasRedirect to scriptredirect and support page tabs
-
-Canvas support
-Page Tab support
-Test page tab support
+Unittest canvas support
 Document customization of the FacebookUserConverter class
-
-
 
 '''
 
