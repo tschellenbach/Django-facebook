@@ -62,19 +62,54 @@ def lazy_decorator_example(request, graph):
         return HttpResponse('user denied or error')
 
 
+@facebook_required(canvas=True)
+def canvas(request, graph):
+    '''
+    Example of a canvas page.
+    Canvas pages require redirects to work using javascript instead of http headers
+    The facebook required and facebook required lazy decorator abstract this away
+    '''
+    context = RequestContext(request)
+    signed_request_string = request.POST.get('signed_request')
+    signed_request = {}
+    if signed_request_string:
+        signed_request = parse_signed_request(signed_request_string)
+    context['signed_request'] = signed_request
+    fb = require_persistent_graph(request)
+    likes = []
+    if graph:
+        likes = fb.get('me/likes')['data']
+    context['likes'] = likes
+
+    return render_to_response('django_facebook/canvas.html', context)
+
+
+@facebook_required_lazy(page_tab=True)
+def page_tab(request, graph):
+    '''
+    Example of a simple page tab
+    '''
+    #get signed_request
+    context = RequestContext(request)
+    signed_request_string = request.POST['signed_request']
+    signed_request = parse_signed_request(signed_request_string)
+    context['signed_request'] = signed_request
+
+    return render_to_response('django_facebook/page_tab.html', context)
+
+
 @facebook_required(scope='publish_stream')
 @csrf_protect
-def wall_post(request):
-    fb = get_persistent_graph(request)
+def wall_post(request, graph):
     message = request.POST.get('message')
     if message:
-        fb.set('me/feed', message=message)
+        graph.set('me/feed', message=message)
         messages.info(request, 'Posted the message to your wall')
         return next_redirect(request)
 
 
 @facebook_required(scope=['user_status', 'friends_status'])
-def checkins(request):
+def checkins(request, graph):
     '''
     See the facebook docs:
     https://developers.facebook.com/docs/reference/fql/location_post/
@@ -83,9 +118,7 @@ def checkins(request):
     TODO:
     Add a nice template to this
     '''
-    fb = get_persistent_graph(request)
-
-    checkins = fb.get('me/checkins')
+    checkins = graph.get('me/checkins')
 
     raise Exception(checkins)
 
@@ -104,40 +137,6 @@ def image_upload(request):
         messages.info(request, 'The images have been added to your profile!')
 
         return next_redirect(request)
-
-
-@facebook_required_lazy(canvas=True)
-def canvas(request):
-    '''
-    Example of a canvas page.
-    Canvas pages require redirects to work using javascript instead of http headers
-    The facebook required and facebook required lazy decorator abstract this away
-    '''
-    context = RequestContext(request)
-    signed_request_string = request.POST.get('signed_request')
-    signed_request = {}
-    if signed_request_string:
-        signed_request = parse_signed_request(signed_request_string)
-    context['signed_request'] = signed_request
-    fb = require_persistent_graph(request)
-    likes = fb.get('me/likes')['data']
-    context['likes'] = likes
-
-    return render_to_response('django_facebook/canvas.html', context)
-
-
-@facebook_required_lazy(page_tab=True)
-def page_tab(request):
-    '''
-    Example of a simple page tab
-    '''
-    #get signed_request
-    context = RequestContext(request)
-    signed_request_string = request.POST['signed_request']
-    signed_request = parse_signed_request(signed_request_string)
-    context['signed_request'] = signed_request
-
-    return render_to_response('django_facebook/page_tab.html', context)
 
 
 @facebook_required(scope='publish_actions')
