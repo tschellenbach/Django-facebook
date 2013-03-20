@@ -158,7 +158,6 @@ def error_next_redirect(request, default='/', additional_params=None, next_key=N
 
 def next_redirect(request, default='/', additional_params=None,
                   next_key='next', redirect_url=None, canvas=False):
-    from django_facebook import settings as facebook_settings
     if facebook_settings.FACEBOOK_DEBUG_REDIRECTS:
         return HttpResponse(
             '<html><head></head><body><div>Debugging</div></body></html>')
@@ -182,7 +181,7 @@ def next_redirect(request, default='/', additional_params=None,
         redirect_url += seperator + query_params.urlencode()
 
     if canvas:
-        return CanvasRedirect(redirect_url)
+        return ScriptRedirect(redirect_url)
 
     return HttpResponseRedirect(redirect_url)
 
@@ -243,7 +242,6 @@ def get_form_class(backend, request):
     2. backend.get_form_class(request) from django-registration 0.8
     3. RegistrationFormUniqueEmail from django-registration < 0.8
     '''
-    from django_facebook import settings as facebook_settings
     form_class = None
 
     # try the setting

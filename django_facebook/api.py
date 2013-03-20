@@ -112,12 +112,13 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
 
     # parse the signed request if we have it
     signed_request = None
-    signed_request_string = request.REQUEST.get('signed_request')
-    if signed_request_string:
-        logger.info('Got signed data from facebook')
-        signed_request = parse_signed_request(signed_request_string)
-    if signed_request:
-        logger.info('We were able to parse the signed data')
+    if request:
+        signed_request_string = request.REQUEST.get('signed_request')
+        if signed_request_string:
+            logger.info('Got signed data from facebook')
+            signed_request = parse_signed_request(signed_request_string)
+        if signed_request:
+            logger.info('We were able to parse the signed data')
 
     # the easy case, we have an access token in the signed data
     if signed_request and 'oauth_token' in signed_request:

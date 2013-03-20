@@ -7,12 +7,12 @@ Created on Jan 9, 2013
 from urlparse import urlparse
 from open_facebook.api import FacebookAuthorization, OpenFacebook
 from django_facebook.canvas import generate_oauth_url
-from django_facebook.utils import CanvasRedirect
+from django_facebook.utils import ScriptRedirect
 from django_facebook.connect import connect_user
 from django.contrib.auth import logout
 from django_facebook import settings
 
-redirect_login_oauth = CanvasRedirect(redirect_to=generate_oauth_url(),
+redirect_login_oauth = ScriptRedirect(redirect_to=generate_oauth_url(),
                                       show_body=False)
 
 

@@ -15,7 +15,7 @@ from django_facebook.middleware import FacebookCanvasMiddleWare
 from django_facebook.test_utils.mocks import RequestMock
 from django_facebook.test_utils.testcases import FacebookTest, LiveFacebookTest
 from django_facebook.utils import cleanup_oauth_url, get_profile_class, \
-    CanvasRedirect, get_user_model
+    ScriptRedirect, get_user_model
 from functools import partial
 from mock import Mock, patch
 from open_facebook.api import FacebookConnection, FacebookAuthorization, \
@@ -689,13 +689,13 @@ class FacebookCanvasMiddlewareTest(FacebookTest):
         self.assertIsNone(self.middleware.process_request(request))
         request = self.get_canvas_url()
         response = self.middleware.process_request(request)
-        self.assertIsInstance(response, CanvasRedirect)
+        self.assertIsInstance(response, ScriptRedirect)
 
     def test_user_denied(self):
         request = self.factory.get('/?error_reason=user_denied&error=access_denied&error_description=The+user+denied+your+request.')
         request.META['HTTP_REFERER'] = 'https://apps.facebook.com/canvas/'
         response = self.middleware.process_request(request)
-        self.assertIsInstance(response, CanvasRedirect)
+        self.assertIsInstance(response, ScriptRedirect)
 
     @patch.object(FacebookAuthorization, 'parse_signed_data')
     def test_non_auth_user(self, mocked_method=FacebookAuthorization.parse_signed_data):
@@ -704,7 +704,7 @@ class FacebookCanvasMiddlewareTest(FacebookTest):
         request = self.get_canvas_url(data=data)
         response = self.middleware.process_request(request)
         self.assertTrue(mocked_method.called)
-        self.assertIsInstance(response, CanvasRedirect)
+        self.assertIsInstance(response, ScriptRedirect)
 
     @patch('django_facebook.middleware.connect_user', fake_connect)
     @patch.object(OpenFacebook, 'permissions')
