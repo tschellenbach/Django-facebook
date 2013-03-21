@@ -20,7 +20,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@require_POST
 @csrf_exempt
 @facebook_required_lazy(extra_params=dict(facebook_login='1'))
 def connect(request, graph):
@@ -45,7 +44,7 @@ def connect(request, graph):
         warn_message = warning_format % (type(e), e.message)
         send_warning(warn_message, e=e)
         additional_params = dict(fb_error_or_cancel=1)
-        return backend.post_error(request, additional_params)
+        response = backend.post_error(request, additional_params)
 
     return response
 
