@@ -54,6 +54,8 @@ class NooptRegistrationBackend(object):
         elif action is CONNECT_ACTIONS.REGISTER:
             response = base_next_redirect(next_key=['register_next', 'next'])
 
+        print response, default_url
+
         return response
 
     def post_activation_redirect(self, request, user):

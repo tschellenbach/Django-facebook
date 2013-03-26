@@ -58,13 +58,13 @@ Done - Include vagrant development setup
 Done - Rename CanvasRedirect to scriptredirect and support page tabs
 Done - Canvas support
 Done - Page Tab support
+Done - Endless loop bug in the redirect based oauth flow
 Postponed - Fix extra url issue, http://sentry.goteam.be/default/group/54725/
 
 Unittest canvas support
 Document customization of the FacebookUserConverter class
 
 Bug with userdata getting overwritten even if it exists
-Endless loop bug in the redirect based oauth flow
 
 '''
 
@@ -204,7 +204,8 @@ class ConnectViewTest(FacebookTest):
     def setUp(self):
         FacebookTest.setUp(self)
 
-        base_url = 'http://testserver'
+        self.base_url = base_url = 'http://testserver'
+        self.absolute_default_url = base_url + facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT
         self.url = reverse('facebook_connect')
         self.absolute_url = base_url + reverse('facebook_connect')
         self.example_url = reverse('facebook_example')
@@ -238,6 +239,14 @@ class ConnectViewTest(FacebookTest):
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
         self.assertEqual(redirect_url, self.absolute_example_url)
+
+    def test_connect_redirect_default(self):
+        # Now try without next
+        self.mock_authenticated()
+        accepted_url = self.url + '?attempt=1&client_id=215464901804004'
+        response = self.client.get(accepted_url, follow=True)
+        redirect_url = response.redirect_chain[0][0]
+        self.assertEqual(redirect_url, self.absolute_default_url)
 
     def test_connect_redirect_not_authenticated(self):
         # Meanwhile at Facebook they redirect the request

@@ -185,7 +185,7 @@
         <div class="inner_content">
             
             <!--form to call registration via facebook -->
-            <form action="{% url 'facebook_connect' %}?facebook_login=1" method="post">
+            <form action="{% url 'facebook_connect' %}" method="post">
                 <h2>Register, login or connect with Facebook</h2>
                 <br />
                 {% csrf_token %}
@@ -201,8 +201,8 @@
                 </div>
                 <br /><br />
                 <div id="facebook_login_redirect">
-                <input type="image" src="http://e.fashiocdn.com/images/b_signin_facebook_small.png" /><br />
-                (redirect version)
+                    <input type="image" src="http://e.fashiocdn.com/images/b_signin_facebook_small.png" /><br />
+                    (redirect version)
                 </div>
             </form>
             
