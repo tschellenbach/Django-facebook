@@ -53,7 +53,7 @@ class FacebookTest(TestCase):
             'django_facebook.decorators.get_persistent_graph', graph)
         self.create_patch(
             'django_facebook.decorators.require_persistent_graph', graph)
-        
+
 
 class LiveFacebookTest(TestCase):
     '''

@@ -72,14 +72,14 @@ class FacebookRequired(object):
             redirect_uri = fb_settings.FACEBOOK_CANVAS_PAGE
         else:
             redirect_uri = request.build_absolute_uri()
-            
+
         # set attempt=1 to prevent endless redirect loops
         if 'attempt=1' not in redirect_uri:
             if '?' not in redirect_uri:
                 redirect_uri += '?attempt=1'
             else:
                 redirect_uri += '&attempt=1'
-            
+
         return redirect_uri
 
     def __call__(self):

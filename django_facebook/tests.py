@@ -205,22 +205,24 @@ class ConnectViewTest(FacebookTest):
         FacebookTest.setUp(self)
 
         self.base_url = base_url = 'http://testserver'
-        self.absolute_default_url = base_url + facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT
+        self.absolute_default_url = base_url + \
+            facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT
         self.url = reverse('facebook_connect')
         self.absolute_url = base_url + reverse('facebook_connect')
         self.example_url = reverse('facebook_example')
         self.absolute_example_url = base_url + reverse('facebook_example')
-        
+
     def test_connect_redirect(self):
         '''
         The redirect flow for facebook works as follows
-        
+
         - request the decorated url, /facebook/connect/
         - the decorator (facebook_required) redirect the user to the oauth url
         - after accepting the auth dialog facebook redirects us to the next url
         '''
         # STEP 1, verify that we redirect to facebook with the correct details
-        response = self.client.post(self.url, next=self.example_url, follow=True)
+        response = self.client.post(
+            self.url, next=self.example_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
         oauth_url = 'https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birthday%2Cuser_website&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fconnect%2F%3Fattempt%3D1&client_id=215464901804004'
         self.assertEqual(redirect_url, oauth_url)
@@ -251,7 +253,8 @@ class ConnectViewTest(FacebookTest):
     def test_connect_redirect_not_authenticated(self):
         # Meanwhile at Facebook they redirect the request
         # STEP 2 Not Authenticated, verify that the connect view redirects to the example
-        accepted_url = self.url + '?attempt=1&client_id=215464901804004&next=%s' % self.example_url
+        accepted_url = self.url + \
+            '?attempt=1&client_id=215464901804004&next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
         error_url = self.absolute_example_url + '?fb_error_or_cancel=1'
