@@ -40,6 +40,7 @@ def connect_user(request, access_token=None, facebook_graph=None):
     '''
     user = None
     graph = facebook_graph or get_facebook_graph(request, access_token)
+    
     converter = get_instance_for('user_conversion', graph)
 
     assert converter.is_authenticated()

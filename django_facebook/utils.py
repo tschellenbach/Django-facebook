@@ -105,13 +105,6 @@ def get_oauth_url(scope, redirect_uri, extra_params=None):
     query_dict['scope'] = ','.join(scope)
     query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
 
-    # set attempt=1 to prevent endless redirect loops
-    if 'attempt=1' not in redirect_uri:
-        if '?' not in redirect_uri:
-            redirect_uri += '?attempt=1'
-        else:
-            redirect_uri += '&attempt=1'
-
     query_dict['redirect_uri'] = redirect_uri
     oauth_url = 'https://www.facebook.com/dialog/oauth?'
     oauth_url += query_dict.urlencode()

@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
-@facebook_required_lazy(extra_params=dict(facebook_login='1'))
+@facebook_required_lazy
 def connect(request, graph):
     '''
     Exception and validation functionality around the _connect view

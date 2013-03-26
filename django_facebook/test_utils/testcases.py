@@ -44,12 +44,16 @@ class FacebookTest(TestCase):
         '''
         Fake that we are authenticated
         '''
+        from django_facebook.test_utils.mocks import MockFacebookAPI, MockFacebookAuthorization, RequestMock
+        graph = MockFacebookAPI('short_username')
         self.create_patch('django_facebook.decorators.has_permissions', True)
         self.create_patch(
-            'django_facebook.decorators.get_persistent_graph', True)
+            'django_facebook.connect.get_facebook_graph', graph)
         self.create_patch(
-            'django_facebook.decorators.require_persistent_graph', True)
-
+            'django_facebook.decorators.get_persistent_graph', graph)
+        self.create_patch(
+            'django_facebook.decorators.require_persistent_graph', graph)
+        
 
 class LiveFacebookTest(TestCase):
     '''
