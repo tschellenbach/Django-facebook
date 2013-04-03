@@ -407,12 +407,25 @@ facebook_example/manage.py test django_facebook
 **Vagrant**
 
 A vagrant development setup is included in the GIT repo.
-Assuming you have vagrant installed, simply type:
+Assuming you have vagrant installed, simply type the following in your shell:
 
-* vagrant up
-* grab a coffee
-* vagrant ssh
-* (on the vagrant machine) python manage.py runserver 0:8000
+::
+
+    # First get a fresh Django-Facebook checkout
+    git clone git@github.com:tschellenbach/Django-facebook.git django-facebook
+    
+    # Go to the directory:
+    cd django-facebook
+
+    # Currently Vagrant is only support on branch `five`, so until this has been merged you need to switch branches:
+    git checkout five
+
+    # Time to start Vagrant (grab a cup of coffee after this command, it'll take a while) :)
+    vagrant up
+
+    # Finally done?
+    vagrant ssh
+    python manage.py runserver 0:8080
 
 To have a working Django Facebook example up and running at 192.168.50.42:8000/facebook/example/.
 For the facebook login to work simply map that ip to local.mellowmorning.com
