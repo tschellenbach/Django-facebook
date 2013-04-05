@@ -428,7 +428,7 @@ Assuming you have vagrant installed, simply type the following in your shell:
     python manage.py runserver 0:8080
 
 To have a working Django Facebook example up and running at 192.168.50.42:8000/facebook/example/.
-For the facebook login to work simply map that ip to local.mellowmorning.com
+For the facebook login to work simply map that ip to vagrant.mellowmorning.com
 (Since Facebook checks the domain)
 
 You can run the test suite by typing:
