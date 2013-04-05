@@ -28,6 +28,7 @@ class base_server {
       'mc', 
       'sysstat', 
       'iotop', 
+      'tmux',
       'nmon', 
       'aptitude',
     ]
