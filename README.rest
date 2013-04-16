@@ -169,7 +169,7 @@ If you encounter any difficulties please open an issue.
 
 **Customize and integrate into your site**
 
-Not it's time to customize things a little.
+Now it's time to customize things a little.
 For an example you can look at connect.html in the templates directory.
 
 First load the css:
