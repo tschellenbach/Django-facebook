@@ -66,7 +66,8 @@ facebookClass.prototype = {
         this.connectLoading(gettext('A Facebook pop-up has opened, please follow the instructions to sign in.'));
         var scope = this;
         FB.login(function(response) {
-            if (response.authResponse) {
+            var authResponse = response.authResponse;
+            if (authResponse) {
                 //showloading
                 scope.connectLoading(gettext('Now loading your profile...'));
                 //submit the form
