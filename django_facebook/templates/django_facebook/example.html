@@ -180,7 +180,7 @@
     
     <div style="margin-top: 60px;">
         
-        {% if not request.user.is_authenticated %}
+        {% if not user.is_authenticated %}
         
         <div class="inner_content">
             
@@ -215,8 +215,8 @@
             
         <div id="header_bar">
         
-        {% if request.user.is_authenticated %}
-            <h1>Welcome {{ request.user }}</h1><a href="{% url 'auth_logout' %}?next={{ request.path|urlencode }}">logout</a><br />
+        {% if user.is_authenticated %}
+            <h1>Welcome {{ user }}</h1><a href="{% url 'auth_logout' %}?next={{ request.path|urlencode }}">logout</a><br />
             
             <p>
             Thank you for logging in with Facebook.
@@ -231,40 +231,40 @@
                     </tr>
                 </thead>
                 <tr>
-                    <td>First Name:</td><td>{{ request.user.first_name }}</td>
+                    <td>First Name:</td><td>{{ user.first_name }}</td>
                 </tr>
                 <tr>
-                    <td>Last Name:</td><td>{{ request.user.last_name }}</td>
+                    <td>Last Name:</td><td>{{ user.last_name }}</td>
                 </tr>
                 <tr>
-                    <td>Gender:</td><td>{{ request.user.get_profile.gender }}</td>
+                    <td>Gender:</td><td>{{ user.get_profile.gender }}</td>
                 </tr>
                 <tr>
-                    <td>About me:</td><td>{{ request.user.get_profile.about_me }}</td>
+                    <td>About me:</td><td>{{ user.get_profile.about_me }}</td>
                 </tr>
                 <tr>
-                    <td>Facebook profile url:</td><td>{{ request.user.get_profile.facebook_profile_url }}</td>
+                    <td>Facebook profile url:</td><td>{{ user.get_profile.facebook_profile_url }}</td>
                 </tr>
                 <tr>
-                    <td>Facebook ID:</td><td>{{ request.user.get_profile.facebook_id }}</td>
+                    <td>Facebook ID:</td><td>{{ user.get_profile.facebook_id }}</td>
                 </tr>
                 <tr>
-                    <td>Date of Birth:</td><td>{{ request.user.get_profile.date_of_birth }}</td>
+                    <td>Date of Birth:</td><td>{{ user.get_profile.date_of_birth }}</td>
                 </tr>
                 <tr>
-                    <td>Website Url:</td><td>{{ request.user.get_profile.website_url }}</td>
+                    <td>Website Url:</td><td>{{ user.get_profile.website_url }}</td>
                 </tr>
                 <tr>
-                    <td>Local Image:</td><td><img src="{{ request.user.get_profile.image.url }}" title="local copy" /></td>
+                    <td>Local Image:</td><td><img src="{{ user.get_profile.image.url }}" title="local copy" /></td>
                 </tr>
                 <tr>
-                    <td>Hotlinked Image:</td><td><img src="http://graph.facebook.com/{{ request.user.get_profile.facebook_id }}/picture?type=large" title="facebook stored image" /><br /></td>
+                    <td>Hotlinked Image:</td><td><img src="http://graph.facebook.com/{{ user.get_profile.facebook_id }}/picture?type=large" title="facebook stored image" /><br /></td>
                 </tr>
                 <tr>
                     <td>Likes:</td>
                     <td>
                         <ul>
-                        {% for like in request.user.get_profile.likes|slice:":5" %}
+                        {% for like in user.get_profile.likes|slice:":5" %}
                             <li>{{ like.name }}</li>
                         {% endfor %}
                         </ul>
@@ -274,7 +274,7 @@
                     <td>Friends:</td>
                     <td>
                         <ul>
-                        {% for friend in request.user.get_profile.friends|slice:":5" %}
+                        {% for friend in user.get_profile.friends|slice:":5" %}
                             <li>{{ friend.name }}</li>
                         {% endfor %}
                         </ul>
