@@ -3,14 +3,30 @@ import re
 import sys
 import functools
 
-try:
-    import django_statsd
-except ImportError:
-    django_statsd = None
-
 logger = logging.getLogger(__name__)
 URL_PARAM_RE = re.compile('(?P<k>[^(=|&)]+)=(?P<v>[^&]+)(&|$)')
 URL_PARAM_NO_VALUE_RE = re.compile('(?P<k>[^(&|?)]+)(&|$)')
+
+
+def import_statsd():
+    '''
+    Import only the statd by wolph not the mozilla statsd
+    TODO: Move to mozilla statds which is more widely used
+    '''
+    try:
+        # check to see if the django_statsd we found
+        # supports start (stop) timing.
+        import django_statsd
+        is_wolphs_statsd = hasattr(
+            django_statsd, 'start') and hasattr(django_statsd, 'stop')
+        if not is_wolphs_statsd:
+            django_statsd = None
+    except ImportError:
+        django_statsd = None
+
+    return django_statsd
+
+django_statsd = import_statsd()
 
 
 def start_statsd(path):

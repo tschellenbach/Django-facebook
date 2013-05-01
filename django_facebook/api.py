@@ -2,7 +2,7 @@ from django.forms.util import ValidationError
 from django.utils import simplejson as json
 from django_facebook import settings as facebook_settings
 from django_facebook.utils import mass_get_or_create, cleanup_oauth_url, \
-    get_profile_class, parse_signed_request
+    get_profile_class, parse_signed_request, hash_key
 from open_facebook.exceptions import OpenFacebookException
 from django_facebook.exceptions import FacebookException
 try:
@@ -157,7 +157,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
 
         if not access_token:
             if code:
-                cache_key = 'convert_code_%s' % code
+                cache_key = hash_key('convert_code_%s' % code)
                 access_token = cache.get(cache_key)
                 if not access_token:
                     # exchange the code for an access token

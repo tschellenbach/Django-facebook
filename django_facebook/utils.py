@@ -22,6 +22,12 @@ import gc
 logger = logging.getLogger(__name__)
 
 
+def hash_key(key):
+    import hashlib
+    hashed = hashlib.md5(key).hexdigest()
+    return hashed
+
+
 def parse_signed_request(signed_request_string):
     '''
     Just here for your convenience, actual logic is in the
