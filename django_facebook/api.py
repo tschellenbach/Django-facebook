@@ -1,5 +1,5 @@
 from django.forms.util import ValidationError
-from django.utils import simplejson as json
+import json
 from django_facebook import settings as facebook_settings
 from django_facebook.utils import mass_get_or_create, cleanup_oauth_url, \
     get_profile_class, parse_signed_request, hash_key

@@ -21,6 +21,67 @@ import gc
 
 logger = logging.getLogger(__name__)
 
+class NOTHING:
+    pass
+
+'''
+TODO, write an abstraction class for reading and writing users/profile models
+'''
+
+def get_user_attribute(user, profile, attribute, default=NOTHING):
+    profile_fields = []
+    if profile:
+        profile_fields = [f.name for f in profile._meta.fields]
+    user_fields = [f.name for f in user._meta.fields]
+    is_profile_field = lambda f: f in profile_fields and hasattr(profile, f)
+    is_user_field = lambda f: f in user_fields and hasattr(user, f)
+    
+    if is_profile_field(attribute):
+        value = getattr(profile, attribute)
+    elif is_user_field(attribute):
+        value = getattr(user, attribute)
+    elif default is not NOTHING:
+        value = default
+    else:
+        raise AttributeError('user or profile didnt have attribute %s' % attribute)
+        
+    return value
+    
+    
+
+def update_user_fields(user, profile, attributes_dict):
+    '''
+    Write the attributes either to the user or profile instance
+    '''
+    profile_fields = [f.name for f in profile._meta.fields]
+    user_fields = [f.name for f in user._meta.fields]
+    
+    is_profile_field = lambda f: f in profile_fields and hasattr(profile, f)
+    is_user_field = lambda f: f in user_fields and hasattr(user, f)
+    
+    for f, value in attributes_dict.items():
+        if is_profile_field(f):
+            setattr(profile, f, value)
+            profile._fb_is_dirty = True
+        elif is_user_field(f):
+            setattr(user, f, value)
+            user._fb_is_dirty = True
+        else:
+            logger.info('skipping update of field %s', f)
+
+
+def get_user_field():
+    pass
+
+
+def try_get_profile(user):
+    try:
+        p = user.get_profile()
+    except:
+        p = None
+    return p
+    
+
 
 def hash_key(key):
     import hashlib

@@ -4,12 +4,13 @@ from django.core.files.temp import NamedTemporaryFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db import transaction
 from django.db.utils import IntegrityError
-from django.utils import simplejson as json
+import json
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings, signals
 from django_facebook.api import get_facebook_graph
 from django_facebook.utils import get_registration_backend, get_form_class, \
-    get_profile_class, to_bool, get_user_model, get_instance_for
+    get_profile_class, to_bool, get_user_model, get_instance_for,\
+    get_user_attribute, try_get_profile
 from random import randint
 import logging
 import sys
@@ -71,7 +72,9 @@ def connect_user(request, access_token=None, facebook_graph=None):
             # email address?
             # It is after all quite common to use email addresses for usernames
             update = getattr(auth_user, 'fb_update_required', False)
-            if not auth_user.get_profile().facebook_id:
+            profile = try_get_profile(auth_user)
+            current_facebook_id = get_user_attribute(auth_user, profile, 'facebook_id')
+            if not current_facebook_id:
                 update = True
             # login the user
             user = _login_user(request, converter, auth_user, update=update)
@@ -282,64 +285,58 @@ def _update_user(user, facebook, overwrite=True):
     facebook_data = facebook.facebook_registration_data(username=False)
     facebook_fields = ['facebook_name', 'facebook_profile_url', 'gender',
                        'date_of_birth', 'about_me', 'website_url', 'first_name', 'last_name']
-    user_dirty = profile_dirty = False
-    profile = user.get_profile()
+    
+    profile = try_get_profile(user)
+    # which attributes to update
+    attributes_dict = {}
 
+    # send the signal that we're updating
     signals.facebook_pre_update.send(sender=get_profile_class(),
                                      profile=profile, facebook_data=facebook_data)
 
-    profile_field_names = [f.name for f in profile._meta.fields]
-    user_field_names = [f.name for f in user._meta.fields]
-
     # set the facebook id and make sure we are the only user with this id
-    facebook_id_changed = facebook_data['facebook_id'] != profile.facebook_id
-    overwrite_allowed = overwrite or not profile.facebook_id
+    current_facebook_id = get_user_attribute(user, profile, 'facebook_id')
+    facebook_id_changed = facebook_data['facebook_id'] != current_facebook_id
+    overwrite_allowed = overwrite or not current_facebook_id
 
     # update the facebook id and access token
+    facebook_id_overwritten = False
     if facebook_id_changed and overwrite_allowed:
         # when not overwriting we only update if there is no profile.facebook_id
         logger.info('profile facebook id changed from %s to %s',
                     repr(facebook_data['facebook_id']),
-                    repr(profile.facebook_id))
-        profile.facebook_id = facebook_data['facebook_id']
-        profile_dirty = True
-        _remove_old_connections(profile.facebook_id, user.id)
+                    repr(current_facebook_id))
+        attributes_dict['facebook_id'] = facebook_data['facebook_id']
+        facebook_id_overwritten = True
 
     # update all fields on both user and profile
     for f in facebook_fields:
         facebook_value = facebook_data.get(f, False)
         if facebook_value:
-            if (f in profile_field_names and hasattr(profile, f)):
-                logger.debug('profile field %s changed from %s to %s', f,
-                             getattr(profile, f), facebook_value)
-                setattr(profile, f, facebook_value)
-                profile_dirty = True
-            elif (f in user_field_names and hasattr(user, f)):
-                logger.debug('user field %s changed from %s to %s', f,
-                             getattr(user, f), facebook_value)
-                setattr(user, f, facebook_value)
-                user_dirty = True
+            attributes_dict[f] = facebook_value
 
     # write the raw data in case we missed something
-    if hasattr(profile, 'raw_data'):
-        serialized_fb_data = json.dumps(facebook.facebook_profile_data())
-        if profile.raw_data != serialized_fb_data:
-            logger.debug('profile raw data changed from %s to %s',
-                         profile.raw_data, serialized_fb_data)
-            profile.raw_data = serialized_fb_data
-            profile_dirty = True
+    serialized_fb_data = json.dumps(facebook.facebook_profile_data())
+    current_raw_data = get_user_attribute(user, profile, 'raw_data')
+    if current_raw_data != serialized_fb_data:
+        attributes_dict['raw_data'] = serialized_fb_data
 
     image_url = facebook_data['image']
     # update the image if we are allowed and have to
     if facebook_settings.FACEBOOK_STORE_LOCAL_IMAGE:
-        if hasattr(profile, 'image') and not profile.image:
-            profile_dirty = _update_image(profile, image_url)
+        image_field = get_user_attribute(user, profile, 'image', True)
+        if not image_field:
+            image_name, image_file = _update_image(profile, image_url)
+            image_field.save(image_name, image_file)
 
     # save both models if they changed
-    if user_dirty:
+    if getattr(user, '_fb_is_dirty', False):
         user.save()
-    if profile_dirty:
+    if getattr(profile, '_fb_is_dirty', False):
         profile.save()
+        
+    if facebook_id_overwritten:
+        _remove_old_connections(facebook_data['facebook_id'], user.id)
 
     signals.facebook_post_update.send(sender=get_profile_class(),
                                       profile=profile, facebook_data=facebook_data)
@@ -347,13 +344,13 @@ def _update_user(user, facebook, overwrite=True):
     return user
 
 
-def _update_image(profile, image_url):
+def _update_image(facebook_id, image_url):
     '''
     Updates the user profile's image to the given image url
     Unfortunately this is quite a pain to get right with Django
     Suggestions to improve this are welcome
     '''
-    image_name = 'fb_image_%s.jpg' % profile.facebook_id
+    image_name = 'fb_image_%s.jpg' % facebook_id
     image_temp = NamedTemporaryFile()
     image_response = urllib2.urlopen(image_url)
     image_content = image_response.read()
@@ -366,10 +363,8 @@ def _update_image(profile, image_url):
         content_type=content_type, size=image_size, charset=None
     )
     image_file.seek(0)
-    profile.image.save(image_name, image_file)
     image_temp.flush()
-    profile_dirty = True
-    return profile_dirty
+    return image_name, image_file
 
 
 def update_connection(request, graph):

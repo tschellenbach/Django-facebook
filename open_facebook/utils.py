@@ -95,13 +95,9 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
         return s
 
 
-try:
-    from django.utils import simplejson as json
-except ImportError:
-    try:
-        import simplejson as json
-    except ImportError:
-        import json
+# we are no longer supporting python 2.5
+# so we can simply assume import json works
+import json
 
 
 def send_warning(message, request=None, e=None, **extra_data):

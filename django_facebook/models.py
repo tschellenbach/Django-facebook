@@ -46,7 +46,7 @@ class FACEBOOK_OG_STATE:
 
 class BaseFacebookProfileModel(models.Model):
     '''
-    Abstract class to add to your profile model.
+    Abstract class to add to your profile or user model.
     NOTE: If you don't use this this abstract class, make sure you copy/paste
     the fields in.
     '''
@@ -163,6 +163,8 @@ class FacebookProfileModel(BaseFacebookProfileModel):
     class Meta:
         abstract = True
 
+# better name for the mixin now that it can also be used for user models
+FacebookModel = FacebookProfileModel
 
 class FacebookUser(models.Model):
     '''
