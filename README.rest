@@ -4,19 +4,6 @@ Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmo
 
 .. image:: https://secure.travis-ci.org/tschellenbach/Django-facebook.png?branch=master
 
-**New in 5.0**
-
-* Clear docs for controlling the next page after connecting with Facebook
-* Improved stability
-* More flexible decorators
-
-
-**Todo**
-
-* More testing for the canvas support
-* Improved docs
-* Support for real time updates
-
 Contributions are strongly appreciated. Seriously, give github a try, fork and get started :)
 
 
