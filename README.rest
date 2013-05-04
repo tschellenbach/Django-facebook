@@ -98,29 +98,32 @@ Add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS`` settin
 
     'django_facebook.context_processors.facebook',
 
-The full setting on a new django 1.4 app looks like this::
+The full setting on a new django 1.5 app looks like this::
 
-    TEMPLATE_CONTEXT_PROCESSORS = (
-        'django_facebook.context_processors.facebook',
-        'django.contrib.auth.context_processors.auth',
-        'django.core.context_processors.debug',
-        'django.core.context_processors.i18n',
-        'django.core.context_processors.media',
-        'django.core.context_processors.static',
-        'django.core.context_processors.tz',
-        'django.contrib.messages.context_processors.messages',
-    )
+  TEMPLATE_CONTEXT_PROCESSORS = (
+      'django.contrib.auth.context_processors.auth',
+      'django.core.context_processors.debug',
+      'django.core.context_processors.i18n',
+      'django.core.context_processors.media',
+      'django.core.context_processors.static',
+      'django.core.context_processors.tz',
+  #    'django.core.context_processors.request',
+      'django.contrib.messages.context_processors.messages',
+      'django_facebook.context_processors.facebook',
+  )
+
 
 Add this to your ``AUTHENTICATION_BACKENDS`` setting::
 
     'django_facebook.auth_backends.FacebookBackend',
 
-The full setting on a new django 1.4 app looks like this::
+The full setting on a new django 1.5 app looks like this::
 
-    AUTHENTICATION_BACKENDS = (
-        'django_facebook.auth_backends.FacebookBackend',
-        'django.contrib.auth.backends.ModelBackend',
-    )
+  AUTHENTICATION_BACKENDS = (
+      'django_facebook.auth_backends.FacebookBackend',
+      'django.contrib.auth.backends.ModelBackend',
+  )
+
 
 Now, add this line to your url config::
 
@@ -130,8 +133,18 @@ Now, add this line to your url config::
 
 **Update your models**
 
-Django uses a custom Profile model to store additional user information. 
-Read more about this topic in the `Django Docs <https://docs.djangoproject.com/en/dev/topics/auth/#storing-additional-information-about-users>`_.
+The following step depends on your version of Django. Django versions before 1.5 need to use a custom profile model.
+Whereas Django 1.5 and up can use a custom user model.
+
+**Django 1.5**
+
+If you don't already have a custom user model, simply uses the provided model by setting your AUTH_USER_MODEL to FacebookUser::
+
+AUTH_USER_MODEL = 'member.FacebookUser'
+
+Alternatively use the abstract model provided in django_facebook.models.FacebookProfileModel
+
+**Django < 1.5**
 
 If you don't already have a custom Profile model, simply uses the provided model by setting your AUTH_PROFILE_MODULE to FacebookProfile::
 
@@ -162,7 +175,8 @@ Don't forget to update your database using syncdb or south after this step.
 
 Note: You need a profile model attached to every user model. For new accounts this will get created automatically, but you will need to migrate older accounts.
 
-Right now you should have a working registration/connect/login in flow available at /facebook/example/
+**Congratulations**
+Right now you should have a working registration/connect/login in flow available at /facebook/example/!
 Test if everything is working and ensure you didn't miss a step somewhere.
 If you encounter any difficulties please open an issue.
 
