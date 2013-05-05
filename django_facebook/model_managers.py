@@ -39,10 +39,10 @@ class FacebookUserManager(models.Manager):
         assert gender in (
             None, 'M', 'F'), 'Gender %s wasnt recognized' % gender
 
-        from django_facebook.utils import get_profile_class
+        from django_facebook.utils import get_profile_model
         facebook_cache_key = 'facebook_users_%s' % user.id
         non_members = cache.get(facebook_cache_key)
-        profile_class = get_profile_class()
+        profile_class = get_profile_model()
         if not non_members:
             facebook_users = list(
                 self.filter(user_id=user.id, gender=gender)[:50])

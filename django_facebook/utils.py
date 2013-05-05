@@ -28,6 +28,57 @@ class NOTHING:
 TODO, write an abstraction class for reading and writing users/profile models
 '''
 
+def get_profile_model():
+    '''
+    Get the profile model if present otherwise return None
+    '''
+    model = None
+    profile_string = getattr(settings, 'AUTH_PROFILE_MODULE', None)
+    if profile_string:
+        app_label, model_label = profile_string.split('.')
+        model = models.get_model(app_label, model_label)
+    return model
+
+def get_user_model():
+    '''
+    For Django < 1.5 backward compatibility
+    '''
+    if hasattr(django.contrib.auth, 'get_user_model'):
+        return django.contrib.auth.get_user_model()
+    else:
+        return django.contrib.auth.models.User
+    
+def get_model_for_attribute(field):
+    user_model = get_user_model()
+    profile_model = get_profile_model()
+    profile_fields = []
+    if profile_model:
+        profile_fields = [f.name for f in profile_model._meta.fields]
+    user_fields = [f.name for f in user_model._meta.fields]
+    is_profile_field = lambda f: f in profile_fields
+    is_user_field = lambda f: f in user_fields
+    
+    if is_profile_field(field):
+        model = profile_model
+    else:
+        model = user_model
+    return model
+
+def get_instance_for_attribute(user, profile, attribute):
+    profile_fields = []
+    if profile:
+        profile_fields = [f.name for f in profile._meta.fields]
+    user_fields = [f.name for f in user._meta.fields]
+    is_profile_field = lambda f: f in profile_fields and hasattr(profile, f)
+    is_user_field = lambda f: f in user_fields and hasattr(user, f)
+    
+    instance = None
+    if is_profile_field(attribute):
+        instance = profile
+    elif is_user_field(attribute):
+        instance = user
+    return instance
+
 def get_user_attribute(user, profile, attribute, default=NOTHING):
     profile_fields = []
     if profile:
@@ -68,10 +119,6 @@ def update_user_fields(user, profile, attributes_dict):
             user._fb_is_dirty = True
         else:
             logger.info('skipping update of field %s', f)
-
-
-def get_user_field():
-    pass
 
 
 def try_get_profile(user):
@@ -244,22 +291,6 @@ def next_redirect(request, default='/', additional_params=None,
         return ScriptRedirect(redirect_url)
 
     return HttpResponseRedirect(redirect_url)
-
-
-def get_profile_class():
-    profile_string = settings.AUTH_PROFILE_MODULE
-    app_label, model = profile_string.split('.')
-
-    return models.get_model(app_label, model)
-
-
-def get_user_model():
-    """For Django < 1.5 backward compatibility
-    """
-    if hasattr(django.contrib.auth, 'get_user_model'):
-        return django.contrib.auth.get_user_model()
-    else:
-        return django.contrib.auth.models.User
 
 
 @transaction.commit_on_success

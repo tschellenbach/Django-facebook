@@ -7,7 +7,8 @@ from django.db.models.base import ModelBase
 from django_facebook import model_managers, settings as facebook_settings
 from open_facebook.utils import json, camel_to_underscore
 from datetime import timedelta
-from django_facebook.utils import compatible_datetime as datetime
+from django_facebook.utils import compatible_datetime as datetime,\
+    get_model_for_attribute, get_user_attribute
 from django_facebook.utils import get_user_model
 
 import logging
@@ -44,7 +45,7 @@ class FACEBOOK_OG_STATE:
         pass
 
 
-class BaseFacebookProfileModel(models.Model):
+class BaseFacebookModel(models.Model):
     '''
     Abstract class to add to your profile or user model.
     NOTE: If you don't use this this abstract class, make sure you copy/paste
@@ -69,6 +70,26 @@ class BaseFacebookProfileModel(models.Model):
 
     class Meta:
         abstract = True
+        
+    def get_user(self):
+        '''
+        Since this mixin can be used both for profile and user models
+        '''
+        if hasattr(self, 'user'):
+            user = self.user
+        else:
+            user = self
+        return user
+    
+    def get_user_id(self):
+        '''
+        Since this mixin can be used both for profile and user_id models
+        '''
+        if hasattr(self, 'user_id'):
+            user_id = self.user_id
+        else:
+            user_id = self.id
+        return user_id
 
     @property
     def facebook_og_state(self):
@@ -81,11 +102,11 @@ class BaseFacebookProfileModel(models.Model):
         return state
 
     def likes(self):
-        likes = FacebookLike.objects.filter(user_id=self.user_id)
+        likes = FacebookLike.objects.filter(user_id=self.get_user_id())
         return likes
 
     def friends(self):
-        friends = FacebookUser.objects.filter(user_id=self.user_id)
+        friends = FacebookUser.objects.filter(user_id=self.get_user_id())
         return friends
 
     def disconnect_facebook(self):
@@ -105,7 +126,7 @@ class BaseFacebookProfileModel(models.Model):
 
         The token can be extended multiple times, supposedly on every visit
         '''
-        logger.info('extending access token for user %s', self.user)
+        logger.info('extending access token for user %s', self.get_user())
         results = None
         if facebook_settings.FACEBOOK_CELERY_TOKEN_EXTEND:
             from django_facebook import tasks
@@ -146,9 +167,10 @@ class BaseFacebookProfileModel(models.Model):
             graph = OpenFacebook(access_token=self.access_token)
             graph.current_user_id = self.facebook_id
             return graph
+        
+BaseFacebookProfileModel = BaseFacebookModel
 
-
-class FacebookProfileModel(BaseFacebookProfileModel):
+class FacebookModel(BaseFacebookModel):
     '''
     the image field really destroys the subclassability of an abstract model
     you always need to customize the upload settings and storage settings
@@ -159,12 +181,21 @@ class FacebookProfileModel(BaseFacebookProfileModel):
     '''
     image = models.ImageField(blank=True, null=True,
                               upload_to=PROFILE_IMAGE_PATH, max_length=255)
+    
+    def profile_or_self(self):
+        user_or_profile_model = get_model_for_attribute('facebook_id')
+        user_model = get_user_model()
+        if user_or_profile_model == user_model:
+            return self
+        else:
+            return self.get_profile()
 
     class Meta:
         abstract = True
+        
 
 # better name for the mixin now that it can also be used for user models
-FacebookModel = FacebookProfileModel
+FacebookProfileModel = FacebookModel
 
 class FacebookUser(models.Model):
     '''
@@ -367,7 +398,8 @@ class OpenGraphShare(BaseModel):
 
     def save(self, *args, **kwargs):
         if self.user and not self.facebook_user_id:
-            self.facebook_user_id = self.user.get_profile().facebook_id
+            profile = self.user.get_profile()
+            self.facebook_user_id = get_user_attribute(self.user, profile, 'facebook_id')
         return BaseModel.save(self, *args, **kwargs)
 
     def send(self, graph=None):

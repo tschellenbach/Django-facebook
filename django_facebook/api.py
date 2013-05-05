@@ -2,7 +2,7 @@ from django.forms.util import ValidationError
 import json
 from django_facebook import settings as facebook_settings
 from django_facebook.utils import mass_get_or_create, cleanup_oauth_url, \
-    get_profile_class, parse_signed_request, hash_key
+    get_profile_model, parse_signed_request, hash_key
 from open_facebook.exceptions import OpenFacebookException
 from django_facebook.exceptions import FacebookException
 try:
@@ -550,7 +550,7 @@ class FacebookUserConverter(object):
 
         # fire an event, so u can do things like personalizing the users' account
         # based on the likes
-        signals.facebook_post_store_likes.send(sender=get_profile_class(),
+        signals.facebook_post_store_likes.send(sender=get_profile_model(),
                                                user=user, likes=likes, current_likes=current_likes,
                                                inserted_likes=inserted_likes,
                                                )
@@ -643,7 +643,7 @@ class FacebookUserConverter(object):
 
         # fire an event, so u can do things like personalizing suggested users
         # to follow
-        signals.facebook_post_store_friends.send(sender=get_profile_class(),
+        signals.facebook_post_store_friends.send(sender=get_profile_model(),
                                                  user=user, friends=friends, current_friends=current_friends,
                                                  inserted_friends=inserted_friends,
                                                  )
@@ -655,8 +655,7 @@ class FacebookUserConverter(object):
         Returns all profile models which are already registered on your site
         and a list of friends which are not on your site
         '''
-        from django_facebook.utils import get_profile_class
-        profile_class = get_profile_class()
+        profile_class = get_profile_model()
         friends = self.get_friends(limit=1000)
 
         if friends:

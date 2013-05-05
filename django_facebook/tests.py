@@ -14,7 +14,7 @@ from django_facebook.connect import _register_user, connect_user, \
 from django_facebook.middleware import FacebookCanvasMiddleWare
 from django_facebook.test_utils.mocks import RequestMock
 from django_facebook.test_utils.testcases import FacebookTest, LiveFacebookTest
-from django_facebook.utils import cleanup_oauth_url, get_profile_class, \
+from django_facebook.utils import cleanup_oauth_url, get_profile_model, \
     ScriptRedirect, get_user_model
 from functools import partial
 from mock import Mock, patch
@@ -554,7 +554,7 @@ class UserConnectTest(FacebookTest):
         def pre_update(sender, profile, facebook_data, **kwargs):
             profile.pre_update_signal = True
 
-        Profile = get_profile_class()
+        Profile = get_profile_model()
         signals.facebook_pre_update.connect(pre_update, sender=Profile)
         facebook = get_facebook_graph(access_token='tschellenbach')
 
@@ -696,7 +696,7 @@ class SignalTest(FacebookTest):
         def post_update(sender, profile, facebook_data, **kwargs):
             profile.post_update_signal = True
 
-        Profile = get_profile_class()
+        Profile = get_profile_model()
         signals.facebook_user_registered.connect(
             user_registered, sender=get_user_model())
         signals.facebook_pre_update.connect(pre_update, sender=Profile)

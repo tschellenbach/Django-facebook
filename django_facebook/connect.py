@@ -9,8 +9,9 @@ from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings, signals
 from django_facebook.api import get_facebook_graph
 from django_facebook.utils import get_registration_backend, get_form_class, \
-    get_profile_class, to_bool, get_user_model, get_instance_for,\
-    get_user_attribute, try_get_profile
+    get_profile_model, to_bool, get_user_model, get_instance_for,\
+    get_user_attribute, try_get_profile, get_model_for_attribute,\
+    get_instance_for_attribute
 from random import randint
 import logging
 import sys
@@ -158,20 +159,21 @@ def _update_access_token(user, graph):
     '''
     Conditionally updates the access token in the database
     '''
-    profile = user.get_profile()
+    profile = try_get_profile(user)
+    model_or_profile = get_instance_for_attribute(user, profile, 'access_token')
     # store the access token for later usage if the profile model supports it
-    if hasattr(profile, 'access_token'):
+    if model_or_profile:
         # update if not equal to the current token
-        new_token = graph.access_token != profile.access_token
+        new_token = graph.access_token != model_or_profile.access_token
         token_message = 'a new' if new_token else 'the same'
         logger.info('found %s token', token_message)
         if new_token:
             logger.info('access token changed, updating now')
-            profile.access_token = graph.access_token
-            profile.save()
+            model_or_profile.access_token = graph.access_token
+            model_or_profile.save()
             # see if we can extend the access token
             # this runs in a task, after extending the token we fire an event
-            profile.extend_access_token()
+            model_or_profile.extend_access_token()
 
 
 def _register_user(request, facebook, profile_callback=None,
@@ -256,12 +258,19 @@ def _get_old_connections(facebook_id, current_user_id=None):
     Gets other accounts connected to this facebook id, which are not
     attached to the current user
     '''
-    profile_class = get_profile_class()
-    other_facebook_accounts = profile_class.objects.filter(
+    user_or_profile_model = get_model_for_attribute('facebook_id')
+    other_facebook_accounts = user_or_profile_model.objects.filter(
         facebook_id=facebook_id)
+    kwargs = {}
+    
     if current_user_id:
-        other_facebook_accounts = other_facebook_accounts.exclude(
-            user__id=current_user_id)
+        # if statement since we need to support both
+        user_model = get_user_model()
+        if user_or_profile_model == user_model:
+            kwargs['id'] = current_user_id
+        else:
+            kwargs['user_id'] = current_user_id
+        other_facebook_accounts = other_facebook_accounts.exclude(**kwargs)
     return other_facebook_accounts
 
 
@@ -291,7 +300,7 @@ def _update_user(user, facebook, overwrite=True):
     attributes_dict = {}
 
     # send the signal that we're updating
-    signals.facebook_pre_update.send(sender=get_profile_class(),
+    signals.facebook_pre_update.send(sender=get_profile_model(),
                                      profile=profile, facebook_data=facebook_data)
 
     # set the facebook id and make sure we are the only user with this id
@@ -338,7 +347,7 @@ def _update_user(user, facebook, overwrite=True):
     if facebook_id_overwritten:
         _remove_old_connections(facebook_data['facebook_id'], user.id)
 
-    signals.facebook_post_update.send(sender=get_profile_class(),
+    signals.facebook_post_update.send(sender=get_profile_model(),
                                       profile=profile, facebook_data=facebook_data)
 
     return user

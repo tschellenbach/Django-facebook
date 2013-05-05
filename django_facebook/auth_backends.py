@@ -1,6 +1,6 @@
 from django.contrib.auth import models, backends
 from django.db.utils import DatabaseError
-from django_facebook.utils import get_profile_class
+from django_facebook.utils import get_profile_model
 from django_facebook import settings as facebook_settings
 from django_facebook.utils import get_user_model
 from django.db.models.query_utils import Q
@@ -15,7 +15,7 @@ class FacebookBackend(backends.ModelBackend):
         their facebook ID using email.
         '''
         if facebook_id or facebook_email:
-            profile_class = get_profile_class()
+            profile_class = get_profile_model()
             profile_query = profile_class.objects.all().order_by('user')
             profile_query = profile_query.select_related('user')
             profile = None

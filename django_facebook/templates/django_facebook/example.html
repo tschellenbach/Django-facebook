@@ -237,34 +237,34 @@
                     <td>Last Name:</td><td>{{ user.last_name }}</td>
                 </tr>
                 <tr>
-                    <td>Gender:</td><td>{{ user.get_profile.gender }}</td>
+                    <td>Gender:</td><td>{{ user.profile_or_self.gender }}</td>
                 </tr>
                 <tr>
-                    <td>About me:</td><td>{{ user.get_profile.about_me }}</td>
+                    <td>About me:</td><td>{{ user.profile_or_self.about_me }}</td>
                 </tr>
                 <tr>
-                    <td>Facebook profile url:</td><td>{{ user.get_profile.facebook_profile_url }}</td>
+                    <td>Facebook profile url:</td><td>{{ user.profile_or_self.facebook_profile_url }}</td>
                 </tr>
                 <tr>
-                    <td>Facebook ID:</td><td>{{ user.get_profile.facebook_id }}</td>
+                    <td>Facebook ID:</td><td>{{ user.profile_or_self.facebook_id }}</td>
                 </tr>
                 <tr>
-                    <td>Date of Birth:</td><td>{{ user.get_profile.date_of_birth }}</td>
+                    <td>Date of Birth:</td><td>{{ user.profile_or_self.date_of_birth }}</td>
                 </tr>
                 <tr>
-                    <td>Website Url:</td><td>{{ user.get_profile.website_url }}</td>
+                    <td>Website Url:</td><td>{{ user.profile_or_self.website_url }}</td>
                 </tr>
                 <tr>
-                    <td>Local Image:</td><td><img src="{{ user.get_profile.image.url }}" title="local copy" /></td>
+                    <td>Local Image:</td><td><img src="{{ user.profile_or_self.image.url }}" title="local copy" /></td>
                 </tr>
                 <tr>
-                    <td>Hotlinked Image:</td><td><img src="http://graph.facebook.com/{{ user.get_profile.facebook_id }}/picture?type=large" title="facebook stored image" /><br /></td>
+                    <td>Hotlinked Image:</td><td><img src="http://graph.facebook.com/{{ user.profile_or_self.facebook_id }}/picture?type=large" title="facebook stored image" /><br /></td>
                 </tr>
                 <tr>
                     <td>Likes:</td>
                     <td>
                         <ul>
-                        {% for like in user.get_profile.likes|slice:":5" %}
+                        {% for like in user.profile_or_self.likes|slice:":5" %}
                             <li>{{ like.name }}</li>
                         {% endfor %}
                         </ul>
@@ -274,7 +274,7 @@
                     <td>Friends:</td>
                     <td>
                         <ul>
-                        {% for friend in user.get_profile.friends|slice:":5" %}
+                        {% for friend in user.profile_or_self.friends|slice:":5" %}
                             <li>{{ friend.name }}</li>
                         {% endfor %}
                         </ul>
