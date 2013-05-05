@@ -1,7 +1,7 @@
 [
     {
         "pk": 1, 
-        "model": "auth.user", 
+        "model": "member.facebookuser", 
         "fields": {
             "username": "tschellenbach", 
             "first_name": "", 

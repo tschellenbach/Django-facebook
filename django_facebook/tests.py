@@ -32,39 +32,7 @@ __doctests__ = ['django_facebook.api']
 '''
 TODO
 
-Done - Decorator Testing
-Done - Example views
-Done - Refactor test permissions
-Done - Class based decorator
-Done - Clean up connect view
-Done - Allow customization of the FacebookUserConverter class
-Done - Cleanup Test Utils directory
-Done - Python setup.py test support
-Done - Update connect tests with new decorator logic
-Done - Better detection when Facebook is down
-Done - fix for http://sentry.goteam.be/default/group/54495/
-Done - Cleanup post registration flow
-Done - Move the example to /example/
-Done - Unit Test post registration flow
-Done - ReAdd compatibility for Django Registration redirects
-Done - Setup.py import order errors
-Done - Fix firstname not found error http://sentry.goteam.be/default/group/54457/
-Done - Docs on using the provided registration backend not userena
-Done - Docs clearly pointing to the Fashiolista Demo
-Done - Docs on celery vs no celery usage
-Done - Docs, replace /connect/ with /example/
-Done - Docs on the new decorator usage
-Done - Include vagrant development setup
-Done - Rename CanvasRedirect to scriptredirect and support page tabs
-Done - Canvas support
-Done - Page Tab support
-Done - Endless loop bug in the redirect based oauth flow
-Postponed - Fix extra url issue, http://sentry.goteam.be/default/group/54725/
-
-Unittest canvas support
-Document customization of the FacebookUserConverter class
-
-Bug with userdata getting overwritten even if it exists
+Fix tests
 
 '''
 
