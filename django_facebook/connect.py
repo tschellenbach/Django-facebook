@@ -11,7 +11,7 @@ from django_facebook.api import get_facebook_graph
 from django_facebook.utils import get_registration_backend, get_form_class, \
     get_profile_model, to_bool, get_user_model, get_instance_for,\
     get_user_attribute, try_get_profile, get_model_for_attribute,\
-    get_instance_for_attribute
+    get_instance_for_attribute, update_user_attributes
 from random import randint
 import logging
 import sys
@@ -339,6 +339,8 @@ def _update_user(user, facebook, overwrite=True):
             image_field.save(image_name, image_file)
 
     # save both models if they changed
+    update_user_attributes(user, profile, attributes_dict)
+    print attributes_dict, getattr(user, '_fb_is_dirty', False), getattr(profile, '_fb_is_dirty', False)
     if getattr(user, '_fb_is_dirty', False):
         user.save()
     if getattr(profile, '_fb_is_dirty', False):

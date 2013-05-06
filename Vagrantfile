@@ -6,7 +6,7 @@ require 'json'
 
 def configure_box(index, config)
   name = "local_dev-#{index}".intern
-  config.vm.customize ["modifyvm", :id, "--memory", 1024*6]
+  config.vm.customize ["modifyvm", :id, "--memory", 1024*2]
   ip = "192.168.50.42"
   
   config.vm.define name do |slave_conf|

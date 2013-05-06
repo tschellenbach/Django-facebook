@@ -43,12 +43,13 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'facebook_example_test_db',                      # Or path to database file if using sqlite3.
+        'NAME': 'facebook_example_db',                      # Or path to database file if using sqlite3.
         # The following settings are not used with sqlite3:
         'USER': '',
         'PASSWORD': '',
         'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
         'PORT': '',                      # Set to empty string for default.
+        'TEST_NAME': 'facebook_example_db_test',
     }
 }
 
@@ -144,6 +145,7 @@ INSTALLED_APPS = (
     'django_facebook',
     'member',
     'south',
+    'open_facebook',
 )
 
 

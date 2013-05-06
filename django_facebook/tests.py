@@ -29,12 +29,6 @@ logger = logging.getLogger(__name__)
 __doctests__ = ['django_facebook.api']
 
 
-'''
-TODO
-
-Fix tests
-
-'''
 
 
 class BaseDecoratorTest(FacebookTest):
@@ -167,7 +161,7 @@ class LazyDecoratorTest(DecoratorTest):
 
 
 class ConnectViewTest(FacebookTest):
-    fixtures = ['users.json']
+    #fixtures = ['users.json']
 
     def setUp(self):
         FacebookTest.setUp(self)
@@ -421,7 +415,7 @@ class UserConnectTest(FacebookTest):
     '''
     Tests the connect user functionality
     '''
-    fixtures = ['users.json']
+    #fixtures = ['users.json']
 
     def test_persistent_graph(self):
         request = RequestMock().get('/')

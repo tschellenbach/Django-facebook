@@ -100,7 +100,7 @@ def get_user_attribute(user, profile, attribute, default=NOTHING):
     
     
 
-def update_user_fields(user, profile, attributes_dict):
+def update_user_attributes(user, profile, attributes_dict):
     '''
     Write the attributes either to the user or profile instance
     '''
