@@ -104,7 +104,9 @@ def update_user_attributes(user, profile, attributes_dict):
     '''
     Write the attributes either to the user or profile instance
     '''
-    profile_fields = [f.name for f in profile._meta.fields]
+    profile_fields = []
+    if profile:
+        profile_fields = [f.name for f in profile._meta.fields]
     user_fields = [f.name for f in user._meta.fields]
     
     is_profile_field = lambda f: f in profile_fields and hasattr(profile, f)
