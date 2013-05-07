@@ -3,13 +3,18 @@ from django_facebook.models import FacebookModel
 from django_facebook.models import get_user_model
 from django.conf import settings
 
+try:
+    from django.contrib.auth.models import AbstractUser, UserManager
+except ImportError, e:
+    AbstractUser = None
 
-from django.contrib.auth.models import AbstractUser, UserManager
-class FacebookUser(AbstractUser, FacebookModel):
-    '''
-    The django 1.5 approach to adding the facebook related fields
-    '''
-    objects = UserManager()
+if AbstractUser:
+    class FacebookUser(AbstractUser, FacebookModel):
+        '''
+        The django 1.5 approach to adding the facebook related fields
+        '''
+        objects = UserManager()
+
 
 
 # Create your models here.

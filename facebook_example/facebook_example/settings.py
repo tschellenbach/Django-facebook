@@ -20,6 +20,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 AUTH_USER_MODEL = 'member.FacebookUser'
+AUTH_USER_MODEL = 'auth.User'
 
 
 BASE_ROOT = os.path.abspath(
