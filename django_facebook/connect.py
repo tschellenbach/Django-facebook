@@ -74,7 +74,8 @@ def connect_user(request, access_token=None, facebook_graph=None):
             # It is after all quite common to use email addresses for usernames
             update = getattr(auth_user, 'fb_update_required', False)
             profile = try_get_profile(auth_user)
-            current_facebook_id = get_user_attribute(auth_user, profile, 'facebook_id')
+            current_facebook_id = get_user_attribute(
+                auth_user, profile, 'facebook_id')
             if not current_facebook_id:
                 update = True
             # login the user
@@ -160,7 +161,8 @@ def _update_access_token(user, graph):
     Conditionally updates the access token in the database
     '''
     profile = try_get_profile(user)
-    model_or_profile = get_instance_for_attribute(user, profile, 'access_token')
+    model_or_profile = get_instance_for_attribute(
+        user, profile, 'access_token')
     # store the access token for later usage if the profile model supports it
     if model_or_profile:
         # update if not equal to the current token
@@ -262,7 +264,7 @@ def _get_old_connections(facebook_id, current_user_id=None):
     other_facebook_accounts = user_or_profile_model.objects.filter(
         facebook_id=facebook_id)
     kwargs = {}
-    
+
     if current_user_id:
         # if statement since we need to support both
         user_model = get_user_model()
@@ -294,13 +296,13 @@ def _update_user(user, facebook, overwrite=True):
     facebook_data = facebook.facebook_registration_data(username=False)
     facebook_fields = ['facebook_name', 'facebook_profile_url', 'gender',
                        'date_of_birth', 'about_me', 'website_url', 'first_name', 'last_name']
-    
+
     profile = try_get_profile(user)
     # which attributes to update
     attributes_dict = {}
 
     # send the signal that we're updating
-    signals.facebook_pre_update.send(sender=get_profile_model(),
+    signals.facebook_pre_update.send(sender=get_user_model(), user=user,
                                      profile=profile, facebook_data=facebook_data)
 
     # set the facebook id and make sure we are the only user with this id
@@ -340,17 +342,16 @@ def _update_user(user, facebook, overwrite=True):
 
     # save both models if they changed
     update_user_attributes(user, profile, attributes_dict)
-    print attributes_dict, getattr(user, '_fb_is_dirty', False), getattr(profile, '_fb_is_dirty', False)
     if getattr(user, '_fb_is_dirty', False):
         user.save()
     if getattr(profile, '_fb_is_dirty', False):
         profile.save()
-        
+
     if facebook_id_overwritten:
         _remove_old_connections(facebook_data['facebook_id'], user.id)
 
-    signals.facebook_post_update.send(sender=get_profile_model(),
-                                      profile=profile, facebook_data=facebook_data)
+    signals.facebook_post_update.send(sender=get_user_model(),
+                                      user=user, profile=profile, facebook_data=facebook_data)
 
     return user
 

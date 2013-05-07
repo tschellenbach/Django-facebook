@@ -8,7 +8,8 @@ from django_facebook import model_managers, settings as facebook_settings
 from open_facebook.utils import json, camel_to_underscore
 from datetime import timedelta
 from django_facebook.utils import compatible_datetime as datetime,\
-    get_model_for_attribute, get_user_attribute
+    get_model_for_attribute, get_user_attribute, get_instance_for_attribute,\
+    try_get_profile
 from django_facebook.utils import get_user_model
 
 import logging
@@ -70,7 +71,7 @@ class BaseFacebookModel(models.Model):
 
     class Meta:
         abstract = True
-        
+
     def get_user(self):
         '''
         Since this mixin can be used both for profile and user models
@@ -80,7 +81,7 @@ class BaseFacebookModel(models.Model):
         else:
             user = self
         return user
-    
+
     def get_user_id(self):
         '''
         Since this mixin can be used both for profile and user_id models
@@ -151,9 +152,10 @@ class BaseFacebookModel(models.Model):
             self.save()
 
         from django_facebook.signals import facebook_token_extend_finished
-        facebook_token_extend_finished.send(sender=self, profile=self,
-                                            token_changed=token_changed, old_token=old_token
-                                            )
+        facebook_token_extend_finished.send(
+            sender=get_user_model(), user=self.get_user(), profile=self,
+            token_changed=token_changed, old_token=old_token
+        )
 
         return results
 
@@ -167,8 +169,9 @@ class BaseFacebookModel(models.Model):
             graph = OpenFacebook(access_token=self.access_token)
             graph.current_user_id = self.facebook_id
             return graph
-        
+
 BaseFacebookProfileModel = BaseFacebookModel
+
 
 class FacebookModel(BaseFacebookModel):
     '''
@@ -181,7 +184,7 @@ class FacebookModel(BaseFacebookModel):
     '''
     image = models.ImageField(blank=True, null=True,
                               upload_to=PROFILE_IMAGE_PATH, max_length=255)
-    
+
     def profile_or_self(self):
         user_or_profile_model = get_model_for_attribute('facebook_id')
         user_model = get_user_model()
@@ -192,10 +195,11 @@ class FacebookModel(BaseFacebookModel):
 
     class Meta:
         abstract = True
-        
+
 
 # better name for the mixin now that it can also be used for user models
 FacebookProfileModel = FacebookModel
+
 
 class FacebookUser(models.Model):
     '''
@@ -399,7 +403,8 @@ class OpenGraphShare(BaseModel):
     def save(self, *args, **kwargs):
         if self.user and not self.facebook_user_id:
             profile = self.user.get_profile()
-            self.facebook_user_id = get_user_attribute(self.user, profile, 'facebook_id')
+            self.facebook_user_id = get_user_attribute(
+                self.user, profile, 'facebook_id')
         return BaseModel.save(self, *args, **kwargs)
 
     def send(self, graph=None):
@@ -409,9 +414,10 @@ class OpenGraphShare(BaseModel):
         self.save()
 
         #see if the graph is enabled
-        profile = self.user.get_profile()
-        graph = graph or profile.get_offline_graph()
-        user_enabled = profile.facebook_open_graph and self.facebook_user_id
+        profile = try_get_profile(self.user)
+        user_or_profile = get_instance_for_attribute(self.user, profile, 'access_token')
+        graph = graph or user_or_profile.get_offline_graph()
+        user_enabled = user_or_profile.facebook_open_graph and self.facebook_user_id
 
         #start sharing
         if graph and user_enabled:

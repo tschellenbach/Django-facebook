@@ -19,32 +19,35 @@ class FacebookBackend(backends.ModelBackend):
         else:
             user = self.profile_authenticate(*args, **kwargs)
         return user
-    
+
     def user_authenticate(self, facebook_id=None, facebook_email=None):
         '''
         Authenticate the facebook user by id OR facebook_email
         We filter using an OR to allow existing members to connect with
         their facebook ID using email.
-        
+
         This decorator works with django's custom user model
         '''
         user_model = get_user_model()
         if facebook_id or facebook_email:
             # match by facebook id or email
-            email_condition = Q(email__iexact=facebook_email)
-            auth_condition = Q(facebook_id=facebook_id) | email_condition
-            
+
+            auth_condition = Q(facebook_id=facebook_id)
+            if facebook_email:
+                auth_condition = auth_condition | Q(
+                    email__iexact=facebook_email)
+
             # get the users in one query
             users = list(user_model.objects.filter(auth_condition))
-            
+
             # id matches vs email matches
             id_matches = [u for u in users if u.facebook_id == facebook_id]
             email_matches = [u for u in users if u.facebook_id != facebook_id]
-            
+
             # error checking
             if len(id_matches) > 1:
                 raise ValueError('found multiple facebook id matches. this shouldnt be allowed, check your unique constraints. users found %s' % users)
-            
+
             # give the right user
             user = None
             if id_matches:
@@ -52,7 +55,7 @@ class FacebookBackend(backends.ModelBackend):
             elif email_matches:
                 user = email_matches[0]
 
-            if facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN:
+            if user and facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN:
                 user.fb_update_required = True
             return user
 
@@ -93,5 +96,3 @@ class FacebookBackend(backends.ModelBackend):
                 if facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN:
                     user.fb_update_required = True
                 return user
-
-

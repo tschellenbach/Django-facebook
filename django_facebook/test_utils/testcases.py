@@ -8,6 +8,9 @@ class FacebookTest(TestCase):
     '''
     def setUp(self):
         from django_facebook.test_utils.mocks import MockFacebookAPI, MockFacebookAuthorization, RequestMock
+        import sys
+        import StringIO
+        self.prints = sys.stdout = StringIO.StringIO()
 
         from open_facebook import api
         import open_facebook
@@ -27,6 +30,10 @@ class FacebookTest(TestCase):
         import open_facebook
         open_facebook.OpenFacebook = api.OpenFacebook = self.originalAPI
         open_facebook.FacebookAuthorization = api.FacebookAuthorization = self.originalAuthorization
+        
+        content = self.prints.read()
+        if content:
+            raise ValueError('print statement found, output %s' % content)
 
     def create_patch(self, name, return_value=None):
         '''

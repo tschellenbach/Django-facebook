@@ -15,7 +15,8 @@ from django_facebook.middleware import FacebookCanvasMiddleWare
 from django_facebook.test_utils.mocks import RequestMock
 from django_facebook.test_utils.testcases import FacebookTest, LiveFacebookTest
 from django_facebook.utils import cleanup_oauth_url, get_profile_model, \
-    ScriptRedirect, get_user_model
+    ScriptRedirect, get_user_model, get_user_attribute, try_get_profile,\
+    get_instance_for_attribute
 from functools import partial
 from mock import Mock, patch
 from open_facebook.api import FacebookConnection, FacebookAuthorization, \
@@ -23,12 +24,10 @@ from open_facebook.api import FacebookConnection, FacebookAuthorization, \
 from open_facebook.exceptions import FacebookSSLError, FacebookURLError
 import logging
 import mock
-
+from django.utils import unittest
 
 logger = logging.getLogger(__name__)
 __doctests__ = ['django_facebook.api']
-
-
 
 
 class BaseDecoratorTest(FacebookTest):
@@ -161,7 +160,7 @@ class LazyDecoratorTest(DecoratorTest):
 
 
 class ConnectViewTest(FacebookTest):
-    #fixtures = ['users.json']
+    fixtures = ['users.json']
 
     def setUp(self):
         FacebookTest.setUp(self)
@@ -368,13 +367,12 @@ class OpenGraphShareTest(FacebookTest):
         kwargs = dict(item=user_url)
         user = get_user_model().objects.all()[:1][0]
         from django.contrib.contenttypes.models import ContentType
-        love_content_type = ContentType.objects.get(
-            app_label='auth', model='user')
+        some_content_type = ContentType.objects.all()[:1][0]
         share = OpenGraphShare.objects.create(
             user_id=user.id,
             facebook_user_id=13123123,
             action_domain='fashiolista:follow',
-            content_type=love_content_type,
+            content_type=some_content_type,
             object_id=user.id,
         )
         share.set_share_dict(kwargs)
@@ -386,18 +384,18 @@ class OpenGraphShareTest(FacebookTest):
         user_url = 'http://www.fashiolista.com/style/neni/'
         kwargs = dict(item=user_url)
         user = get_user_model().objects.all()[:1][0]
-        profile = user.get_profile()
-        profile.facebook_open_graph = True
-        profile.save()
+        profile = try_get_profile(user)
+        user_or_profile = get_instance_for_attribute(user, profile, 'facebook_open_graph')
+        user_or_profile.facebook_open_graph = True
+        user_or_profile.save()
 
         from django.contrib.contenttypes.models import ContentType
-        love_content_type = ContentType.objects.get(
-            app_label='auth', model='user')
+        some_content_type = ContentType.objects.all()[:1][0]
         share = OpenGraphShare.objects.create(
             user_id=user.id,
             facebook_user_id=13123123,
             action_domain='fashiolista:follow',
-            content_type=love_content_type,
+            content_type=some_content_type,
             object_id=user.id,
         )
         share.set_share_dict(kwargs)
@@ -415,7 +413,7 @@ class UserConnectTest(FacebookTest):
     '''
     Tests the connect user functionality
     '''
-    #fixtures = ['users.json']
+    fixtures = ['users.json']
 
     def test_persistent_graph(self):
         request = RequestMock().get('/')
@@ -438,7 +436,9 @@ class UserConnectTest(FacebookTest):
         data = converter.facebook_registration_data()
         self.assertEqual(data['gender'], 'm')
         action, user = connect_user(self.request, facebook_graph=graph)
-        self.assertEqual(user.get_profile().gender, 'm')
+        profile = try_get_profile(user)
+        gender = get_user_attribute(user, profile, 'gender')
+        self.assertEqual(gender, 'm')
 
     def test_long_username(self):
         request = RequestMock().get('/')
@@ -513,8 +513,8 @@ class UserConnectTest(FacebookTest):
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
 
     def test_fb_update_required(self):
-        def pre_update(sender, profile, facebook_data, **kwargs):
-            profile.pre_update_signal = True
+        def pre_update(sender, user, profile, facebook_data, **kwargs):
+            user.pre_update_signal = True
 
         Profile = get_profile_model()
         signals.facebook_pre_update.connect(pre_update, sender=Profile)
@@ -523,12 +523,12 @@ class UserConnectTest(FacebookTest):
         facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = True
         action, user = connect_user(self.request, facebook_graph=facebook)
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
-        self.assertTrue(hasattr(user.get_profile(), 'pre_update_signal'))
+        self.assertTrue(hasattr(user, 'pre_update_signal'))
 
         facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = False
         action, user = connect_user(self.request, facebook_graph=facebook)
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
-        self.assertFalse(hasattr(user.get_profile(), 'pre_update_signal'))
+        self.assertFalse(hasattr(user, 'pre_update_signal'))
 
     def test_new_user(self):
         facebook = get_facebook_graph(access_token='new_user')
@@ -597,7 +597,9 @@ class AuthBackend(FacebookTest):
         facebook = get_facebook_graph(access_token='new_user')
         action, user = connect_user(self.request, facebook_graph=facebook)
         facebook_email = user.email
-        facebook_id = user.get_profile().facebook_id
+        profile = try_get_profile(user)
+        user_or_profile = get_instance_for_attribute(user, profile, 'facebook_id')
+        facebook_id = user_or_profile.facebook_id
         auth_user = backend.authenticate(facebook_email=facebook_email)
         self.assertEqual(auth_user, user)
 
@@ -652,11 +654,11 @@ class SignalTest(FacebookTest):
         def user_registered(sender, user, facebook_data, **kwargs):
             user.registered_signal = True
 
-        def pre_update(sender, profile, facebook_data, **kwargs):
-            profile.pre_update_signal = True
+        def pre_update(sender, user, profile, facebook_data, **kwargs):
+            user.pre_update_signal = True
 
-        def post_update(sender, profile, facebook_data, **kwargs):
-            profile.post_update_signal = True
+        def post_update(sender, user, profile, facebook_data, **kwargs):
+            user.post_update_signal = True
 
         Profile = get_profile_model()
         signals.facebook_user_registered.connect(
@@ -668,10 +670,8 @@ class SignalTest(FacebookTest):
         facebook = FacebookUserConverter(graph)
         user = _register_user(self.request, facebook)
         self.assertEqual(hasattr(user, 'registered_signal'), True)
-        self.assertEqual(hasattr(user.get_profile(),
-                                 'pre_update_signal'), True)
-        self.assertEqual(hasattr(user.get_profile(),
-                                 'post_update_signal'), True)
+        self.assertEqual(hasattr(user, 'pre_update_signal'), True)
+        self.assertEqual(hasattr(user, 'post_update_signal'), True)
 
 
 def fake_connect(request, access_tokon, graph):

@@ -21,12 +21,14 @@ import gc
 
 logger = logging.getLogger(__name__)
 
+
 class NOTHING:
     pass
 
 '''
 TODO, write an abstraction class for reading and writing users/profile models
 '''
+
 
 def get_profile_model():
     '''
@@ -39,6 +41,7 @@ def get_profile_model():
         model = models.get_model(app_label, model_label)
     return model
 
+
 def get_user_model():
     '''
     For Django < 1.5 backward compatibility
@@ -47,8 +50,8 @@ def get_user_model():
         return django.contrib.auth.get_user_model()
     else:
         return django.contrib.auth.models.User
-    
-    
+
+
 def get_model_for_attribute(attribute):
     if is_profile_attribute(attribute):
         model = get_profile_model()
@@ -78,13 +81,14 @@ def get_instance_for_attribute(user, profile, attribute):
     user_fields = [f.name for f in user._meta.fields]
     is_profile_field = lambda f: f in profile_fields and hasattr(profile, f)
     is_user_field = lambda f: f in user_fields and hasattr(user, f)
-    
+
     instance = None
     if is_profile_field(attribute):
         instance = profile
     elif is_user_field(attribute):
         instance = user
     return instance
+
 
 def get_user_attribute(user, profile, attribute, default=NOTHING):
     profile_fields = []
@@ -93,7 +97,7 @@ def get_user_attribute(user, profile, attribute, default=NOTHING):
     user_fields = [f.name for f in user._meta.fields]
     is_profile_field = lambda f: f in profile_fields and hasattr(profile, f)
     is_user_field = lambda f: f in user_fields and hasattr(user, f)
-    
+
     if is_profile_field(attribute):
         value = getattr(profile, attribute)
     elif is_user_field(attribute):
@@ -101,11 +105,11 @@ def get_user_attribute(user, profile, attribute, default=NOTHING):
     elif default is not NOTHING:
         value = default
     else:
-        raise AttributeError('user or profile didnt have attribute %s' % attribute)
-        
+        raise AttributeError(
+            'user or profile didnt have attribute %s' % attribute)
+
     return value
-    
-    
+
 
 def update_user_attributes(user, profile, attributes_dict):
     '''
@@ -115,10 +119,10 @@ def update_user_attributes(user, profile, attributes_dict):
     if profile:
         profile_fields = [f.name for f in profile._meta.fields]
     user_fields = [f.name for f in user._meta.fields]
-    
+
     is_profile_field = lambda f: f in profile_fields and hasattr(profile, f)
     is_user_field = lambda f: f in user_fields and hasattr(user, f)
-    
+
     for f, value in attributes_dict.items():
         if is_profile_field(f):
             setattr(profile, f, value)
@@ -136,7 +140,6 @@ def try_get_profile(user):
     except:
         p = None
     return p
-    
 
 
 def hash_key(key):
