@@ -30,7 +30,7 @@ class FacebookTest(TestCase):
         import open_facebook
         open_facebook.OpenFacebook = api.OpenFacebook = self.originalAPI
         open_facebook.FacebookAuthorization = api.FacebookAuthorization = self.originalAuthorization
-        
+
         content = self.prints.read()
         if content:
             raise ValueError('print statement found, output %s' % content)

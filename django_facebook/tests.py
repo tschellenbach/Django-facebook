@@ -385,7 +385,8 @@ class OpenGraphShareTest(FacebookTest):
         kwargs = dict(item=user_url)
         user = get_user_model().objects.all()[:1][0]
         profile = try_get_profile(user)
-        user_or_profile = get_instance_for_attribute(user, profile, 'facebook_open_graph')
+        user_or_profile = get_instance_for_attribute(
+            user, profile, 'facebook_open_graph')
         user_or_profile.facebook_open_graph = True
         user_or_profile.save()
 
@@ -598,7 +599,8 @@ class AuthBackend(FacebookTest):
         action, user = connect_user(self.request, facebook_graph=facebook)
         facebook_email = user.email
         profile = try_get_profile(user)
-        user_or_profile = get_instance_for_attribute(user, profile, 'facebook_id')
+        user_or_profile = get_instance_for_attribute(
+            user, profile, 'facebook_id')
         facebook_id = user_or_profile.facebook_id
         auth_user = backend.authenticate(facebook_email=facebook_email)
         self.assertEqual(auth_user, user)
