@@ -1,7 +1,10 @@
 # Django settings for facebook_example project.
 import os
 
+import sys
+from pprint import pprint
 
+pprint(os.environ)
 FACEBOOK_APP_ID = '215464901804004'
 FACEBOOK_APP_SECRET = '0aceba27823a9dfefa955f76949fa4b4'
 TEMPLATE_CONTEXT_PROCESSORS = (
