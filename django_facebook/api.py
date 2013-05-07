@@ -338,6 +338,7 @@ class FacebookUserConverter(object):
     @classmethod
     def _extract_url(cls, text_url_field):
         '''
+        >>> from django_facebook.api import FacebookApi
         >>> url_text = 'http://www.google.com blabla'
         >>> FacebookAPI._extract_url(url_text)
         u'http://www.google.com/'
@@ -353,10 +354,6 @@ class FacebookUserConverter(object):
         >>> url_text = 'http://www.fahiolista.com/www.myspace.com/www.google.com'
         >>> FacebookAPI._extract_url(url_text)
         u'http://www.fahiolista.com/www.myspace.com/www.google.com'
-
-        >>> url_text = u"""http://fernandaferrervazquez.blogspot.com/\r\nhttp://twitter.com/fferrervazquez\r\nhttp://comunidad.redfashion.es/profile/fernandaferrervazquez\r\nhttp://www.facebook.com/group.php?gid3D40257259997&ref3Dts\r\nhttp://fernandaferrervazquez.spaces.live.com/blog/cns!EDCBAC31EE9D9A0C!326.trak\r\nhttp://www.linkedin.com/myprofile?trk3Dhb_pro\r\nhttp://www.youtube.com/account#profile\r\nhttp://www.flickr.com/\r\n Mi galer\xeda\r\nhttp://www.flickr.com/photos/wwwfernandaferrervazquez-showroomrecoletacom/ \r\n\r\nhttp://www.facebook.com/pages/Buenos-Aires-Argentina/Fernanda-F-Showroom-Recoleta/200218353804?ref3Dts\r\nhttp://fernandaferrervazquez.wordpress.com/wp-admin/"""
-        >>> FacebookAPI._extract_url(url_text)
-        u'http://fernandaferrervazquez.blogspot.com/a'
         '''
         import re
         text_url_field = text_url_field.encode('utf8')
