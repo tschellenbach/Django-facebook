@@ -48,21 +48,28 @@ def get_user_model():
     else:
         return django.contrib.auth.models.User
     
-def get_model_for_attribute(field):
-    user_model = get_user_model()
+    
+def get_model_for_attribute(attribute):
+    if is_profile_attribute(attribute):
+        model = get_profile_model()
+    else:
+        model = get_user_model()
+    return model
+
+
+def is_profile_attribute(attribute):
     profile_model = get_profile_model()
     profile_fields = []
     if profile_model:
         profile_fields = [f.name for f in profile_model._meta.fields]
+    return attribute in profile_fields
+
+
+def is_user_attribute(attribute):
+    user_model = get_user_model()
     user_fields = [f.name for f in user_model._meta.fields]
-    is_profile_field = lambda f: f in profile_fields
-    is_user_field = lambda f: f in user_fields
-    
-    if is_profile_field(field):
-        model = profile_model
-    else:
-        model = user_model
-    return model
+    return attribute in user_fields
+
 
 def get_instance_for_attribute(user, profile, attribute):
     profile_fields = []

@@ -16,7 +16,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django_facebook.context_processors.facebook',
 )
 AUTHENTICATION_BACKENDS = (
-    'django_facebook.auth_backends.FacebookUserBackend',
+    'django_facebook.auth_backends.FacebookBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 AUTH_USER_MODEL = 'member.FacebookUser'

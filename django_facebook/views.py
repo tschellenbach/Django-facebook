@@ -92,7 +92,7 @@ def _connect(request, graph):
                 context_instance=context,
             )
         except facebook_exceptions.AlreadyConnectedError, e:
-            user_ids = [u.user_id for u in e.users]
+            user_ids = [u.get_user_id() for u in e.users]
             ids_string = ','.join(map(str, user_ids))
             additional_params = dict(already_connected=ids_string)
             return backend.post_error(request, additional_params)
