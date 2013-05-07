@@ -5,8 +5,10 @@ from django.conf import settings
 
 try:
     from django.contrib.auth.models import AbstractUser, UserManager
+    parents = (AbstractUser, FacebookModel)
 except ImportError, e:
     AbstractUser = None
+    parents = (object,)
 
 if AbstractUser:
     class FacebookUser(AbstractUser, FacebookModel):
@@ -14,7 +16,6 @@ if AbstractUser:
         The django 1.5 approach to adding the facebook related fields
         '''
         objects = UserManager()
-
 
 
 # Create your models here.

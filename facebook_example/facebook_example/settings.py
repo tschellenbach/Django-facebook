@@ -1,10 +1,13 @@
 # Django settings for facebook_example project.
 import os
 
-import sys
-from pprint import pprint
+# some complications related to our travis testing setup
+DJANGO = os.environ.get('DJANGO', '1.5.1')
+MODE = os.environ.get('MODE', 'standalone')
+CUSTOM_USER_MODEL = bool(os.environ.get('CUSTOM_USER_MODEL', '1'))
+if DJANGO != '1.5.1':
+    CUSTOM_USER_MODEL = False
 
-pprint(os.environ)
 FACEBOOK_APP_ID = '215464901804004'
 FACEBOOK_APP_SECRET = '0aceba27823a9dfefa955f76949fa4b4'
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -22,8 +25,11 @@ AUTHENTICATION_BACKENDS = (
     'django_facebook.auth_backends.FacebookBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
-AUTH_USER_MODEL = 'member.FacebookUser'
-AUTH_USER_MODEL = 'auth.User'
+
+if CUSTOM_USER_MODEL:
+    AUTH_USER_MODEL = 'member.FacebookUser'
+else:
+    AUTH_USER_MODEL = 'auth.User'
 
 
 BASE_ROOT = os.path.abspath(
@@ -202,3 +208,29 @@ CACHES = {
     }
 }
 
+
+if MODE == 'django_registration':
+    FACEBOOK_REGISTRATION_BACKEND = 'registration_backends.DjangoRegistrationDefaultBackend'
+    INSTALLED_APPS += (
+        'registration',
+    )
+elif MODE == 'userena':
+    '''
+    Settings based on these docs
+    http://docs.django-userena.org/en/latest/installation.html#installing-django-userena
+    '''
+    FACEBOOK_REGISTRATION_BACKEND = 'django_facebook.registration_backends.UserenaBackend'
+    AUTHENTICATION_BACKENDS = (
+        'django_facebook.auth_backends.FacebookBackend',
+        'userena.backends.UserenaAuthenticationBackend',
+        'django.contrib.auth.backends.ModelBackend',
+    )
+    EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
+    LOGIN_REDIRECT_URL = '/accounts/%(username)s/'
+    LOGIN_URL = '/accounts/signin/'
+    LOGOUT_URL = '/accounts/signout/'
+    ANONYMOUS_USER_ID = 1
+    INSTALLED_APPS += (
+        'userena',
+        'guardian',
+    )
