@@ -224,6 +224,11 @@ def camel_to_underscore(name):
 
 
 def validate_is_instance(instance, classes):
+    '''
+    Usage
+    validate_is_instance(10, int)
+    validate_is_instance('a', (str, unicode))
+    '''
     if not isinstance(classes, tuple):
         classes = (classes,)
     correct_instance = isinstance(instance, classes)

@@ -1,6 +1,6 @@
 # Django settings for facebook_example project.
 import os
-
+import django
 # some complications related to our travis testing setup
 DJANGO = os.environ.get('DJANGO', '1.5.1')
 MODE = os.environ.get('MODE', 'standalone')
@@ -30,6 +30,7 @@ if CUSTOM_USER_MODEL:
     AUTH_USER_MODEL = 'member.FacebookUser'
 else:
     AUTH_USER_MODEL = 'auth.User'
+    AUTH_PROFILE_MODULE = 'member.UserProfile'
 
 
 BASE_ROOT = os.path.abspath(
