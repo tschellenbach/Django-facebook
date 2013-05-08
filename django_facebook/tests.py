@@ -515,7 +515,8 @@ class UserConnectTest(FacebookTest):
             user.pre_update_signal = True
 
         Profile = get_profile_model()
-        signals.facebook_pre_update.connect(pre_update, sender=Profile)
+        user_model = get_user_model()
+        signals.facebook_pre_update.connect(pre_update, sender=user_model)
         facebook = get_facebook_graph(access_token='tschellenbach')
 
         facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = True
@@ -660,10 +661,11 @@ class SignalTest(FacebookTest):
             user.post_update_signal = True
 
         Profile = get_profile_model()
+        user_model = get_user_model()
         signals.facebook_user_registered.connect(
-            user_registered, sender=get_user_model())
-        signals.facebook_pre_update.connect(pre_update, sender=Profile)
-        signals.facebook_post_update.connect(post_update, sender=Profile)
+            user_registered, sender=user_model)
+        signals.facebook_pre_update.connect(pre_update, sender=user_model)
+        signals.facebook_post_update.connect(post_update, sender=user_model)
 
         graph = get_facebook_graph(access_token='short_username')
         facebook = FacebookUserConverter(graph)
