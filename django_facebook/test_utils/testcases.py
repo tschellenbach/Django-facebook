@@ -25,14 +25,14 @@ class FacebookTest(TestCase):
         rf = RequestMock()
         self.request = rf.get('/')
         self.client = Client()
-        
+
         # time to setup the test user
         user_model = get_user_model()
         user_dict = dict(
-            username = 'tschellenbach',
-            is_staff = False,
-            is_active = True,
-            email = "fake@mellowmorning.com",
+            username='tschellenbach',
+            is_staff=False,
+            is_active=True,
+            email="fake@mellowmorning.com",
         )
         user_model.objects.create(**user_dict)
 

@@ -233,7 +233,8 @@ def validate_is_instance(instance, classes):
         classes = (classes,)
     correct_instance = isinstance(instance, classes)
     if not correct_instance:
-        raise ValueError('Expected instance type %s found %s' % (classes, type(instance)))
+        raise ValueError(
+            'Expected instance type %s found %s' % (classes, type(instance)))
 
 
 def is_json(content):
