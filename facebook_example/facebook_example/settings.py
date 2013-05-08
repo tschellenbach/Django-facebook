@@ -21,6 +21,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
     'django.contrib.messages.context_processors.messages',
     'django_facebook.context_processors.facebook',
 ]
+
 if django_version >= (1, 4, 0):
     TEMPLATE_CONTEXT_PROCESSORS.append('django.core.context_processors.tz')
     
@@ -42,7 +43,6 @@ MEDIA_ROOT = os.path.join(BASE_ROOT, 'media/')
 STATICFILES_ROOT = os.path.join(BASE_ROOT, 'static/')
 
 
-MODE = 'standalone'
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -218,12 +218,12 @@ CACHES = {
     }
 }
 
-
 if MODE == 'django_registration':
-    FACEBOOK_REGISTRATION_BACKEND = 'registration_backends.DjangoRegistrationDefaultBackend'
+    FACEBOOK_REGISTRATION_BACKEND = 'facebook_example.registration_backends.DjangoRegistrationDefaultBackend'
     INSTALLED_APPS += (
         'registration',
     )
+    ACCOUNT_ACTIVATION_DAYS = 10
 elif MODE == 'userena':
     '''
     Settings based on these docs
