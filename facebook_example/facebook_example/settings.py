@@ -1,6 +1,7 @@
 # Django settings for facebook_example project.
 import os
 import django
+django_version = django.VERSION
 # some complications related to our travis testing setup
 DJANGO = os.environ.get('DJANGO', '1.5.1')
 MODE = os.environ.get('MODE', 'standalone')
@@ -52,12 +53,12 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'facebook_example_db',                      # Or path to database file if using sqlite3.
+        'NAME': 'facebook_example_db',  # Or path to database file if using sqlite3.
         # The following settings are not used with sqlite3:
         'USER': '',
         'PASSWORD': '',
-        'HOST': '',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '',                      # Set to empty string for default.
+        'HOST': '',  # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'PORT': '',  # Set to empty string for default.
     }
 }
 
@@ -163,20 +164,21 @@ INSTALLED_APPS = (
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
+FILTERS = {
+    'require_debug_false': {
+        '()': 'django.utils.log.RequireDebugFalse'
+    }
+}
+
+MAIL_ADMINS = {
+    'level': 'ERROR',
+    'class': 'django.utils.log.AdminEmailHandler'
+}
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'filters': {
-         'require_debug_false': {
-             '()': 'django.utils.log.RequireDebugFalse'
-         }
-     },
     'handlers': {
-         'mail_admins': {
-             'level': 'ERROR',
-             'filters': ['require_debug_false'],
-             'class': 'django.utils.log.AdminEmailHandler'
-         },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -200,6 +202,12 @@ LOGGING = {
         },
     }
 }
+LOGGING['handlers']['mail_admins'] = MAIL_ADMINS
+
+if django_version > (1, 4, 0):
+    LOGGING['filters'] = FILTERS
+    MAIL_ADMINS['filters'] = ['require_debug_false']
+    LOGGING['handlers']['mail_admins'] = MAIL_ADMINS
 
 CACHES = {
     'default': {
