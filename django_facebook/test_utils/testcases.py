@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.test.client import Client
+from django_facebook.utils import get_user_model
 
 
 class FacebookTest(TestCase):
@@ -24,6 +25,16 @@ class FacebookTest(TestCase):
         rf = RequestMock()
         self.request = rf.get('/')
         self.client = Client()
+        
+        # time to setup the test user
+        user_model = get_user_model()
+        user_dict = dict(
+            username = 'tschellenbach',
+            is_staff = False,
+            is_active = True,
+            email = "fake@mellowmorning.com",
+        )
+        user_model.objects.create(**user_dict)
 
     def tearDown(self):
         from open_facebook import api

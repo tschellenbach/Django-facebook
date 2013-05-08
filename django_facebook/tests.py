@@ -160,7 +160,6 @@ class LazyDecoratorTest(DecoratorTest):
 
 
 class ConnectViewTest(FacebookTest):
-    fixtures = ['users.json']
 
     def setUp(self):
         FacebookTest.setUp(self)
@@ -359,7 +358,6 @@ class ExtendTokenTest(LiveFacebookTest):
 
 
 class OpenGraphShareTest(FacebookTest):
-    fixtures = ['users.json']
 
     def test_follow_og_share(self):
         from django_facebook.models import OpenGraphShare
@@ -414,7 +412,6 @@ class UserConnectTest(FacebookTest):
     '''
     Tests the connect user functionality
     '''
-    fixtures = ['users.json']
 
     def test_persistent_graph(self):
         request = RequestMock().get('/')
