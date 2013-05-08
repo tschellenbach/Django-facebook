@@ -84,6 +84,8 @@ add django facebook to your installed apps::
 Add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS`` setting)::
 
     'django_facebook.context_processors.facebook',
+    # and add request if you didn't do so already
+    'django.core.context_processors.request',
 
 The full setting on a new django 1.5 app looks like this::
 
@@ -94,7 +96,7 @@ The full setting on a new django 1.5 app looks like this::
       'django.core.context_processors.media',
       'django.core.context_processors.static',
       'django.core.context_processors.tz',
-  #    'django.core.context_processors.request',
+      'django.core.context_processors.request',
       'django.contrib.messages.context_processors.messages',
       'django_facebook.context_processors.facebook',
   )
