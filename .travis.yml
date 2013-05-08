@@ -9,8 +9,8 @@ env:
   - REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook DJANGO=1.5.1 MODE=standalone CUSTOM_USER_MODEL=0
   - REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook DJANGO=1.5.1 MODE=standalone CUSTOM_USER_MODEL=1
   # test django registration integration
-  - REQUIREMENTS=django_registration SETTINGS=facebook_example.django_registration_settings TESTS=django_facebook open_facebook DJANGO=1.3.7 MODE=django_registration CUSTOM_USER_MODEL=0
-  - REQUIREMENTS=django_registration SETTINGS=facebook_example.django_registration_settings TESTS=django_facebook open_facebook DJANGO=1.4.5 MODE=django_registration CUSTOM_USER_MODEL=0
+  - REQUIREMENTS=django_registration SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook DJANGO=1.3.7 MODE=django_registration CUSTOM_USER_MODEL=0
+  - REQUIREMENTS=django_registration SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook DJANGO=1.4.5 MODE=django_registration CUSTOM_USER_MODEL=0
   # userena currently doesn't support testing :(
 postgres:
   adapter: sqlite3
