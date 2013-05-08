@@ -223,6 +223,14 @@ def camel_to_underscore(name):
     return name.strip('_').lower()
 
 
+def validate_is_instance(instance, classes):
+    if not isinstance(classes, tuple):
+        classes = (classes,)
+    correct_instance = isinstance(instance, classes)
+    if not correct_instance:
+        raise ValueError('Expected instance type %s found %s' % (classes, type(instance)))
+
+
 def is_json(content):
     '''
     Unfortunately facebook returns 500s which mean they are down

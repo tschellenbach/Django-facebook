@@ -14,7 +14,7 @@ from django_facebook.utils import get_user_model
 import datetime
 import logging
 from open_facebook import exceptions as open_facebook_exceptions
-from open_facebook.utils import send_warning
+from open_facebook.utils import send_warning, validate_is_instance
 from django_facebook import signals
 
 logger = logging.getLogger(__name__)
@@ -247,7 +247,7 @@ class FacebookUserConverter(object):
     def __init__(self, open_facebook):
         from open_facebook.api import OpenFacebook
         self.open_facebook = open_facebook
-        assert isinstance(open_facebook, OpenFacebook)
+        validate_is_instance(open_facebook, OpenFacebook)
         self._profile = None
 
     def is_authenticated(self):
