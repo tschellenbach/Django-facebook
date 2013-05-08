@@ -592,6 +592,7 @@ class SimpleRegisterViewTest(FacebookTest):
 
 class AuthBackend(FacebookTest):
     def test_auth_backend(self):
+        # the auth backend
         backend = FacebookBackend()
         facebook = get_facebook_graph(access_token='new_user')
         action, user = connect_user(self.request, facebook_graph=facebook)
@@ -601,6 +602,7 @@ class AuthBackend(FacebookTest):
             user, profile, 'facebook_id')
         facebook_id = user_or_profile.facebook_id
         auth_user = backend.authenticate(facebook_email=facebook_email)
+        logger.info('%s %s %s', auth_user.email, user.email, facebook_email)
         self.assertEqual(auth_user, user)
 
         auth_user = backend.authenticate(facebook_id=facebook_id)

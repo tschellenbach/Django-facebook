@@ -4,6 +4,7 @@ from django.db.utils import DatabaseError
 from django_facebook import settings as facebook_settings
 from django_facebook.utils import get_profile_model, is_user_attribute, \
     get_user_model
+import operator
 
 
 class FacebookBackend(backends.ModelBackend):
@@ -31,11 +32,13 @@ class FacebookBackend(backends.ModelBackend):
         user_model = get_user_model()
         if facebook_id or facebook_email:
             # match by facebook id or email
-
-            auth_condition = Q(facebook_id=facebook_id)
+            auth_conditions = []
+            if facebook_id:
+                auth_conditions.append(Q(facebook_id=facebook_id))
             if facebook_email:
-                auth_condition = auth_condition | Q(
-                    email__iexact=facebook_email)
+                auth_conditions.append(Q(email__iexact=facebook_email))
+            # or the operations
+            auth_condition = reduce(operator.or_, auth_conditions)
 
             # get the users in one query
             users = list(user_model.objects.filter(auth_condition))
