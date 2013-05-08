@@ -271,7 +271,7 @@ def _get_old_connections(facebook_id, current_user_id=None):
         if user_or_profile_model == user_model:
             kwargs['id'] = current_user_id
         else:
-            kwargs['user_id'] = current_user_id
+            kwargs['user'] = current_user_id
         other_facebook_accounts = other_facebook_accounts.exclude(**kwargs)
     return other_facebook_accounts
 
