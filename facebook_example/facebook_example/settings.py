@@ -32,7 +32,6 @@ else:
     AUTH_USER_MODEL = 'auth.User'
     AUTH_PROFILE_MODULE = 'member.UserProfile'
 
-
 BASE_ROOT = os.path.abspath(
     os.path.join(os.path.split(__file__)[0]))
 MEDIA_URL = '/media/'
