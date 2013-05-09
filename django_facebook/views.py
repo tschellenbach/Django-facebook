@@ -81,7 +81,7 @@ def _connect(request, graph):
         except facebook_exceptions.IncompleteProfileError, e:
             # show them a registration form to add additional data
             warning_format = u'Incomplete profile data encountered with error %s'
-            warn_message = warning_format % e.message
+            warn_message = warning_format % unicode(e)
             send_warning(warn_message, e=e,
                          facebook_data=facebook_data)
 
