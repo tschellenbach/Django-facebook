@@ -6,6 +6,9 @@ Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmo
 
 Contributions are strongly appreciated. Seriously, give github a try, fork and get started :)
 
+News
+----
+Now with support for django custom user models
 
 Demo & About
 ------------
