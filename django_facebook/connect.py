@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class CONNECT_ACTIONS:
+
     class LOGIN:
         pass
 
@@ -82,14 +83,16 @@ def connect_user(request, access_token=None, facebook_graph=None):
             user = _login_user(request, converter, auth_user, update=update)
         else:
             action = CONNECT_ACTIONS.REGISTER
-            # when force registration is active we should remove the old profile
+            # when force registration is active we should remove the old
+            # profile
             try:
                 user = _register_user(request, converter,
                                       remove_old_connections=force_registration)
             except facebook_exceptions.AlreadyRegistered, e:
                 # in Multithreaded environments it's possible someone beats us to
                 # the punch, in that case just login
-                logger.info('parallel register encountered, slower thread is doing a login')
+                logger.info(
+                    'parallel register encountered, slower thread is doing a login')
                 auth_user = authenticate(
                     facebook_id=facebook_data['id'], **kwargs)
                 action = CONNECT_ACTIONS.LOGIN
@@ -231,11 +234,12 @@ def _register_user(request, facebook, profile_callback=None,
         # fall back to the form approach
         if new_user is None:
             # For backward compatibility, if django-registration form is used
-            raise ValueError('new_user is None, note that backward compatability for the older versions of django registration has been dropped.')
-            #try:
-                #new_user = form.save(profile_callback=profile_callback)
-            #except TypeError:
-                #new_user = form.save()
+            raise ValueError(
+                'new_user is None, note that backward compatability for the older versions of django registration has been dropped.')
+            # try:
+                # new_user = form.save(profile_callback=profile_callback)
+            # except TypeError:
+                # new_user = form.save()
     except IntegrityError, e:
         # this happens when users click multiple times, the first request registers
         # the second one raises an error
@@ -313,7 +317,8 @@ def _update_user(user, facebook, overwrite=True):
     # update the facebook id and access token
     facebook_id_overwritten = False
     if facebook_id_changed and overwrite_allowed:
-        # when not overwriting we only update if there is no profile.facebook_id
+        # when not overwriting we only update if there is no
+        # profile.facebook_id
         logger.info('profile facebook id changed from %s to %s',
                     repr(facebook_data['facebook_id']),
                     repr(current_facebook_id))

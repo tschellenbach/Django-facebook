@@ -4,3 +4,6 @@ south
 PIL
 mock
 python-memcached
+pep8
+git+http://github.com/dcramer/pyflakes.git#egg=pyflakes
+autopep8

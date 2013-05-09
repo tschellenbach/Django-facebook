@@ -24,13 +24,16 @@ else:
 
 
 class FACEBOOK_OG_STATE:
+
     class NOT_CONNECTED:
+
         '''
         The user has not connected their profile with Facebook
         '''
         pass
 
     class CONNECTED:
+
         '''
         The user has connected their profile with Facebook, but isn't
         setup for Facebook sharing
@@ -40,6 +43,7 @@ class FACEBOOK_OG_STATE:
         pass
 
     class SHARING(CONNECTED):
+
         '''
         The user is connected to Facebook and sharing is enabled
         '''
@@ -47,6 +51,7 @@ class FACEBOOK_OG_STATE:
 
 
 class BaseFacebookModel(models.Model):
+
     '''
     Abstract class to add to your profile or user model.
     NOTE: If you don't use this this abstract class, make sure you copy/paste
@@ -64,7 +69,8 @@ class BaseFacebookModel(models.Model):
     gender = models.CharField(max_length=1, choices=(
         ('m', 'Male'), ('f', 'Female')), blank=True, null=True)
     raw_data = models.TextField(blank=True, null=True)
-    facebook_open_graph = models.BooleanField(default=True, help_text='Determines if this user want to share via open graph')
+    facebook_open_graph = models.BooleanField(
+        default=True, help_text='Determines if this user want to share via open graph')
 
     def __unicode__(self):
         return self.user.__unicode__()
@@ -174,6 +180,7 @@ BaseFacebookProfileModel = BaseFacebookModel
 
 
 class FacebookModel(BaseFacebookModel):
+
     '''
     the image field really destroys the subclassability of an abstract model
     you always need to customize the upload settings and storage settings
@@ -202,6 +209,7 @@ FacebookProfileModel = FacebookModel
 
 
 class FacebookUser(models.Model):
+
     '''
     Model for storing a users friends
     '''
@@ -223,6 +231,7 @@ class FacebookUser(models.Model):
 
 
 class FacebookLike(models.Model):
+
     '''
     Model for storing all of a users fb likes
     '''
@@ -239,6 +248,7 @@ class FacebookLike(models.Model):
 
 
 class FacebookProfile(FacebookProfileModel):
+
     '''
     Not abstract version of the facebook profile model
     Use this by setting
@@ -248,6 +258,7 @@ class FacebookProfile(FacebookProfileModel):
 
 
 class BaseModelMetaclass(ModelBase):
+
     '''
     Cleaning up the table naming conventions
     '''
@@ -262,7 +273,7 @@ class BaseModelMetaclass(ModelBase):
         django_default = '%s_%s' % (app_label, name.lower())
         if not getattr(super_new._meta, 'proxy', False):
             db_table_is_default = django_default == super_new._meta.db_table
-            #Don't overwrite when people customize the db_table
+            # Don't overwrite when people customize the db_table
             if db_table_is_default:
                 super_new._meta.db_table = db_table
 
@@ -270,6 +281,7 @@ class BaseModelMetaclass(ModelBase):
 
 
 class BaseModel(models.Model):
+
     '''
     Stores the fields common to all incentive models
     '''
@@ -294,13 +306,14 @@ class BaseModel(models.Model):
 
 
 class CreatedAtAbstractBase(BaseModel):
+
     '''
     Stores the fields common to all incentive models
     '''
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    #determine if we should clean this model
+    # determine if we should clean this model
     auto_clean = False
 
     def save(self, *args, **kwargs):
@@ -334,6 +347,7 @@ class CreatedAtAbstractBase(BaseModel):
 
 
 class OpenGraphShare(BaseModel):
+
     '''
     Object for tracking all shares to Facebook
     Used for statistics and evaluating how things are going
@@ -372,28 +386,28 @@ class OpenGraphShare(BaseModel):
 
     user = models.ForeignKey(get_user_model())
 
-    #domain stores
+    # domain stores
     action_domain = models.CharField(max_length=255)
     facebook_user_id = models.BigIntegerField()
 
-    #what we are sharing, dict and object
+    # what we are sharing, dict and object
     share_dict = models.TextField(blank=True, null=True)
     content_type = models.ForeignKey(ContentType, blank=True, null=True)
     object_id = models.PositiveIntegerField(blank=True, null=True)
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
-    #completion data
+    # completion data
     error_message = models.TextField(blank=True, null=True)
     last_attempt = models.DateTimeField(
         blank=True, null=True, auto_now_add=True)
     retry_count = models.IntegerField(blank=True, null=True)
-    #only written if we actually succeed
+    # only written if we actually succeed
     share_id = models.CharField(blank=True, null=True, max_length=255)
     completed_at = models.DateTimeField(blank=True, null=True)
-    #tracking removals
+    # tracking removals
     removed_at = models.DateTimeField(blank=True, null=True)
 
-    #updated at and created at, last one needs an index
+    # updated at and created at, last one needs an index
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
@@ -409,18 +423,18 @@ class OpenGraphShare(BaseModel):
 
     def send(self, graph=None):
         result = None
-        #update the last attempt
+        # update the last attempt
         self.last_attempt = datetime.now()
         self.save()
 
-        #see if the graph is enabled
+        # see if the graph is enabled
         profile = try_get_profile(self.user)
         user_or_profile = get_instance_for_attribute(
             self.user, profile, 'access_token')
         graph = graph or user_or_profile.get_offline_graph()
         user_enabled = user_or_profile.facebook_open_graph and self.facebook_user_id
 
-        #start sharing
+        # start sharing
         if graph and user_enabled:
             graph_location = '%s/%s' % (
                 self.facebook_user_id, self.action_domain)
@@ -430,7 +444,8 @@ class OpenGraphShare(BaseModel):
                 result = graph.set(graph_location, **share_dict)
                 share_id = result.get('id')
                 if not share_id:
-                    error_message = 'No id in Facebook response, found %s for url %s with data %s' % (result, graph_location, share_dict)
+                    error_message = 'No id in Facebook response, found %s for url %s with data %s' % (
+                        result, graph_location, share_dict)
                     logger.error(error_message)
                     raise OpenFacebookException(error_message)
                 self.share_id = share_id
@@ -459,12 +474,12 @@ class OpenGraphShare(BaseModel):
         profile = self.user.get_profile()
         graph = graph or profile.get_offline_graph()
 
-        #update the share dict so a retry will do the right thing
-        #just in case we fail the first time
+        # update the share dict so a retry will do the right thing
+        # just in case we fail the first time
         shared = self.update_share_dict(data)
         self.save()
 
-        #broadcast the change to facebook
+        # broadcast the change to facebook
         if self.share_id:
             result = graph.set(self.share_id, **shared)
 
@@ -473,7 +488,7 @@ class OpenGraphShare(BaseModel):
     def remove(self, graph=None):
         if not self.share_id:
             raise ValueError('Can only delete shares which have an id')
-        #see if the graph is enabled
+        # see if the graph is enabled
         profile = self.user.get_profile()
         graph = graph or profile.get_offline_graph()
         response = None
@@ -489,10 +504,10 @@ class OpenGraphShare(BaseModel):
 
         if reset_retries:
             self.retry_count = 0
-        #handle the case where self.retry_count = None
+        # handle the case where self.retry_count = None
         self.retry_count = self.retry_count + 1 if self.retry_count else 1
 
-        #actually retry now
+        # actually retry now
         result = self.send(graph=graph)
         return result
 
@@ -518,14 +533,14 @@ class FacebookInvite(CreatedAtAbstractBase):
     message = models.TextField(blank=True, null=True)
     type = models.CharField(blank=True, null=True, max_length=255)
 
-    #status data
+    # status data
     wallpost_id = models.CharField(blank=True, null=True, max_length=255)
     error = models.BooleanField(default=False)
     error_message = models.TextField(blank=True, null=True)
     last_attempt = models.DateTimeField(
         blank=True, null=True, auto_now_add=True)
 
-    #reminder data
+    # reminder data
     reminder_wallpost_id = models.CharField(
         blank=True, null=True, max_length=255)
     reminder_error = models.BooleanField(default=False)

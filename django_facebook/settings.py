@@ -32,7 +32,7 @@ FACEBOOK_CELERY_TOKEN_EXTEND = getattr(
 
 FACEBOOK_DEBUG_REDIRECTS = getattr(settings, 'FACEBOOK_DEBUG_REDIRECTS', False)
 
-#READ only mode, convenient when doing load testing etc.
+# READ only mode, convenient when doing load testing etc.
 FACEBOOK_READ_ONLY = getattr(settings, 'FACEBOOK_READ_ONLY', False)
 
 # Allow custom registration template
@@ -47,7 +47,7 @@ default_registration_backend = 'django_facebook.registration_backends.FacebookRe
 FACEBOOK_REGISTRATION_BACKEND = getattr(
     settings, 'FACEBOOK_REGISTRATION_BACKEND', default_registration_backend)
 
-#Fall back redirect location when no other location was found
+# Fall back redirect location when no other location was found
 FACEBOOK_LOGIN_DEFAULT_REDIRECT = getattr(
     settings, 'FACEBOOK_LOGIN_DEFAULT_REDIRECT', '/')
 
@@ -56,9 +56,10 @@ FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = getattr(
     settings, 'FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN', False)
 
 
-#Retry an open graph share 6 times (once every 15 minutes)
+# Retry an open graph share 6 times (once every 15 minutes)
 FACEBOOK_OG_SHARE_RETRIES = getattr(settings, 'FACEBOOK_OG_SHARE_RETRIES', 6)
-#Retry a failed open graph share (when we have an updated token) for this number of days
+# Retry a failed open graph share (when we have an updated token) for this
+# number of days
 FACEBOOK_OG_SHARE_RETRY_DAYS = getattr(
     settings, 'FACEBOOK_OG_SHARE_RETRY_DAYS', 7)
 FACEBOOK_OG_SHARE_DB_TABLE = getattr(
@@ -87,4 +88,5 @@ for setting_name in required_settings:
 
 # Make sure the settings make sense
 if (FACEBOOK_STORE_LIKES or FACEBOOK_STORE_FRIENDS) and not FACEBOOK_CELERY_STORE:
-    logger.warn('storing Facebook likes or friends while not using Celery really slows down Facebook authentication. Either disable FACEBOOK_STORE_FRIENDS or enable FACEBOOK_CELERY_STORE')
+    logger.warn(
+        'storing Facebook likes or friends while not using Celery really slows down Facebook authentication. Either disable FACEBOOK_STORE_FRIENDS or enable FACEBOOK_CELERY_STORE')

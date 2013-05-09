@@ -4,6 +4,7 @@ from django.core.handlers.base import BaseHandler
 
 
 class RequestMock(RequestFactory):
+
     '''
     Didn't see another solution for this. Decided to read some snippets
     and modded them into the requestfactory class
@@ -42,7 +43,8 @@ class MockFacebookAPI(OpenFacebook):
 
     def get(self, path, **kwargs):
         if 'likes' in path:
-            like = dict(name="Vogue Nederland", category="Media/news/publishing", id="136067283169158")
+            like = dict(
+                name="Vogue Nederland", category="Media/news/publishing", id="136067283169158")
             response = dict(data=[like])
             return response
         if 'friends' or 'friend' in path:
@@ -63,6 +65,7 @@ class MockFacebookAPI(OpenFacebook):
 
 
 class MockFacebookAuthorization(FacebookAuthorization):
+
     @classmethod
     def extend_access_token(cls, access_token):
         '''

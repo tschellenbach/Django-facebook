@@ -24,7 +24,8 @@ def setup_users():
     '''
     Since this is soo slow we only do this once for all tests
     '''
-    #caching because these apis are just too damn slow for test driven development
+    # caching because these apis are just too damn slow for test driven
+    # development
     from django.core.cache import cache
     global TEST_USER_OBJECTS
     if TEST_USER_OBJECTS is None:
@@ -47,6 +48,7 @@ def setup_users():
 
 
 class OpenFacebookTest(unittest.TestCase):
+
     def setUp(self):
         setup_users()
         for user_slug, user_object in TEST_USER_OBJECTS.items():
@@ -118,6 +120,7 @@ class TestErrorMapping(OpenFacebookTest):
 
 
 class Test500Detection(OpenFacebookTest):
+
     def test_application_error(self):
         '''
         Facebook errors often look like 500s
@@ -184,6 +187,7 @@ class Test500Detection(OpenFacebookTest):
 
 
 class TestPublishing(OpenFacebookTest):
+
     def test_wallpost(self):
         graph = self.thi.graph()
         now = datetime.datetime.now()
@@ -191,7 +195,7 @@ class TestPublishing(OpenFacebookTest):
         self.assertTrue(result['id'])
         graph.delete(result['id'])
 
-        #we have no permissions, this should fail
+        # we have no permissions, this should fail
         guy_graph = self.guy.graph()
         try:
             guy_graph.set('me/feed', message='Nonnonono')
@@ -201,19 +205,19 @@ class TestPublishing(OpenFacebookTest):
 
     def test_og_follow(self):
         return
-        #perform an og follow
+        # perform an og follow
         graph = self.thi.graph()
         path = 'me/og.follows'
         result = graph.set(path, profile=self.guy.id)
         self.assertTrue(result['id'])
 
-        #now try removing it
+        # now try removing it
         remove_path = result['id']
         deleted = graph.delete(remove_path)
 
     def test_og_adjust(self):
         return
-        #perform an og follow
+        # perform an og follow
         graph = self.thi.graph()
         path = 'me/og.follows'
         result = graph.set(path, profile=self.guy.id)
@@ -224,7 +228,7 @@ class TestPublishing(OpenFacebookTest):
 
     def test_og_explicit_share(self):
         return
-        #perform an og follow
+        # perform an og follow
         graph = self.thi.graph()
         path = 'me/og.follows'
         result = graph.set(
@@ -233,6 +237,7 @@ class TestPublishing(OpenFacebookTest):
 
 
 class TestOpenFacebook(OpenFacebookTest):
+
     def test_cookie_parsing(self):
         cookie = 'F7cndfQuSIkcVHWIgg_SHQ4LIDJXeeHhiXUNjesOw5g.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImNvZGUiOiJVMTZuMFNoWVUxSTJ5VEFJMVZ0RmlvZTdhRVRaaEZ4cGV5d1hwYnZvOUprLmV5SnBkaUk2SW1OcmFGVXlWR053ZDA1VlMwSTRlUzFzZDA1WmFtY2lmUS5rZl9RTUhCMnVFTVh5YW83UU5UcnFGMlJzOGxxQUxrM1AxYm8zazBLMm5YUXpOZW5LSVlfczBVV3ZNbE1jTXAzcE04TXNLNVVDQUpjWlQ1N1ZaZXFkS3ZPeXRFbmdoODFxTmczTXVDeTBHNjB6WjFBOWZGZlpHenVDejdKSEVSSCIsImlzc3VlZF9hdCI6MTMxMTYwMDEyNywidXNlcl9pZCI6Nzg0Nzg1NDMwfQ'
         parsed_cookie = FacebookAuthorization.parse_signed_data(cookie)
@@ -240,9 +245,10 @@ class TestOpenFacebook(OpenFacebookTest):
 
     def test_code_conversion(self):
         from open_facebook import exceptions as open_facebook_exceptions
-        # before testing update this with a valid code, hope facebook comes with a way to automate this
+        # before testing update this with a valid code, hope facebook comes
+        # with a way to automate this
         code = 'AQDByzD95HCaQLIY3PyQFvCJ67bkYx5f692TylEXARQ0p6_XK0mXGRVBU3G759qOIa_A966Wmm-kxxw1GbXkXQiJj0A3b_XNFewFhT8GSro4i9F8b_7q1RSnKzfq327XYno-Qw4NGxm0ordSl0gJ0YTjhwY8TwSMy2b2whD5ZhHvaYkEaC1J-GcBhkF7o4F2-W8'
-        #the redirect uri needs to be connected
+        # the redirect uri needs to be connected
         try:
             user_token = FacebookAuthorization.convert_code(
                 code, redirect_uri='http://local.mellowmorning.com:8080')

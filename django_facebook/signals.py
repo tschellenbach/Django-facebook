@@ -18,7 +18,7 @@ facebook_post_store_friends = Signal(
 facebook_post_store_likes = Signal(
     providing_args=['user', 'likes', 'current_likes', 'inserted_likes'])
 
-#Some signals for compatibility with Django Registration
+# Some signals for compatibility with Django Registration
 # A new user has registered.
 user_registered = Signal(providing_args=['user', 'request'])
 

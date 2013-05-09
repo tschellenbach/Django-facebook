@@ -31,6 +31,7 @@ __doctests__ = ['django_facebook.api']
 
 
 class BaseDecoratorTest(FacebookTest):
+
     def setUp(self):
         FacebookTest.setUp(self)
         from django_facebook.decorators import facebook_required
@@ -61,6 +62,7 @@ class BaseDecoratorTest(FacebookTest):
 
 
 class DecoratorTest(BaseDecoratorTest):
+
     '''
     Verify that the lazy and facebook_required decorator work as expected
 
@@ -116,6 +118,7 @@ class DecoratorTest(BaseDecoratorTest):
 
 
 class ScopedDecoratorTest(DecoratorTest):
+
     '''
     Tests the more complicated but faster lazy decorator
     '''
@@ -143,6 +146,7 @@ class ScopedDecoratorTest(DecoratorTest):
 
 
 class LazyDecoratorTest(DecoratorTest):
+
     '''
     Tests the more complicated but faster lazy decorator
     '''
@@ -189,15 +193,18 @@ class ConnectViewTest(FacebookTest):
 
     def test_connect_redirect_authenticated(self):
         # Meanwhile at Facebook they redirect the request
-        # STEP 2 Authenticated, verify that the connect view redirects to the example
+        # STEP 2 Authenticated, verify that the connect view redirects to the
+        # example
         self.mock_authenticated()
-        accepted_url = self.url + '?attempt=1&client_id=215464901804004&next=bla&register_next=%s' % self.example_url
+        accepted_url = self.url + \
+            '?attempt=1&client_id=215464901804004&next=bla&register_next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
         self.assertEqual(redirect_url, self.absolute_example_url)
 
         # Verify that login_next works
-        accepted_url = self.url + '?attempt=1&client_id=215464901804004&next=bla&login_next=%s' % self.example_url
+        accepted_url = self.url + \
+            '?attempt=1&client_id=215464901804004&next=bla&login_next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
         self.assertEqual(redirect_url, self.absolute_example_url)
@@ -212,7 +219,8 @@ class ConnectViewTest(FacebookTest):
 
     def test_connect_redirect_not_authenticated(self):
         # Meanwhile at Facebook they redirect the request
-        # STEP 2 Not Authenticated, verify that the connect view redirects to the example
+        # STEP 2 Not Authenticated, verify that the connect view redirects to
+        # the example
         accepted_url = self.url + \
             '?attempt=1&client_id=215464901804004&next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
@@ -221,7 +229,8 @@ class ConnectViewTest(FacebookTest):
         self.assertEqual(redirect_url, error_url)
 
         # Verify that error next also works
-        accepted_url = self.url + '?attempt=1&client_id=215464901804004&next=bla&error_next=%s' % self.example_url
+        accepted_url = self.url + \
+            '?attempt=1&client_id=215464901804004&next=bla&error_next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
         error_url = self.absolute_example_url + '?fb_error_or_cancel=1'
@@ -328,6 +337,7 @@ class ConnectViewTest(FacebookTest):
 
 
 class TestUserTest(LiveFacebookTest):
+
     def test_create_test_user(self):
         # Also, somehow unittest.skip doesnt work with travis ci?
         return 'Skipping since you might have created test users manually, lets not delete them :)'
@@ -346,6 +356,7 @@ class TestUserTest(LiveFacebookTest):
 
 
 class ExtendTokenTest(LiveFacebookTest):
+
     def test_extend_token(self):
         return 'this doesnt work in travis, but locally its fine... weird'
         app_access_token = FacebookAuthorization.get_cached_app_access_token()
@@ -409,6 +420,7 @@ class OpenGraphShareTest(FacebookTest):
 
 
 class UserConnectTest(FacebookTest):
+
     '''
     Tests the connect user functionality
     '''
@@ -487,7 +499,8 @@ class UserConnectTest(FacebookTest):
 
             patched.side_effect = side
             with patch('django_facebook.connect._register_user') as patched_register:
-                patched_register.side_effect = facebook_exceptions.AlreadyRegistered('testing parallel registers')
+                patched_register.side_effect = facebook_exceptions.AlreadyRegistered(
+                    'testing parallel registers')
                 action, user = connect_user(self.request, facebook_graph=graph)
                 self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
 
@@ -572,6 +585,7 @@ class UserConnectTest(FacebookTest):
 
 
 class SimpleRegisterViewTest(FacebookTest):
+
     '''
     Even the most simple views will break eventually if they are not tested
     '''
@@ -591,6 +605,7 @@ class SimpleRegisterViewTest(FacebookTest):
 
 
 class AuthBackend(FacebookTest):
+
     def test_auth_backend(self):
         # the auth backend
         backend = FacebookBackend()
@@ -617,6 +632,7 @@ class AuthBackend(FacebookTest):
 
 
 class ErrorMappingTest(FacebookTest):
+
     def test_mapping(self):
         from open_facebook import exceptions as open_facebook_exceptions
         raise_something = partial(FacebookConnection.raise_error, 0,
@@ -627,6 +643,7 @@ class ErrorMappingTest(FacebookTest):
 
 
 class OAuthUrlTest(FacebookTest):
+
     def _test_equal(self, url, output):
         converted = cleanup_oauth_url(url)
         self.assertEqual(converted, output)
@@ -646,6 +663,7 @@ class OAuthUrlTest(FacebookTest):
 
 
 class SignalTest(FacebookTest):
+
     '''
     Tests that signals fire properly
     '''
@@ -708,7 +726,8 @@ class FacebookCanvasMiddlewareTest(FacebookTest):
         self.assertIsInstance(response, ScriptRedirect)
 
     def test_user_denied(self):
-        request = self.factory.get('/?error_reason=user_denied&error=access_denied&error_description=The+user+denied+your+request.')
+        request = self.factory.get(
+            '/?error_reason=user_denied&error=access_denied&error_description=The+user+denied+your+request.')
         request.META['HTTP_REFERER'] = 'https://apps.facebook.com/canvas/'
         response = self.middleware.process_request(request)
         self.assertIsInstance(response, ScriptRedirect)
@@ -716,7 +735,8 @@ class FacebookCanvasMiddlewareTest(FacebookTest):
     @patch.object(FacebookAuthorization, 'parse_signed_data')
     def test_non_auth_user(self, mocked_method=FacebookAuthorization.parse_signed_data):
         mocked_method.return_value = {}
-        data = {'signed_request': 'dXairHLF8dfUKaL7ZFXaKmTsAglg0EkyHesTLnPcPAE.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImlzc3VlZF9hdCI6MTM1ODA2MTU1MSwidXNlciI6eyJjb3VudHJ5IjoiYnIiLCJsb2NhbGUiOiJlbl9VUyIsImFnZSI6eyJtaW4iOjIxfX19'}
+        data = {'signed_request':
+                'dXairHLF8dfUKaL7ZFXaKmTsAglg0EkyHesTLnPcPAE.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImlzc3VlZF9hdCI6MTM1ODA2MTU1MSwidXNlciI6eyJjb3VudHJ5IjoiYnIiLCJsb2NhbGUiOiJlbl9VUyIsImFnZSI6eyJtaW4iOjIxfX19'}
         request = self.get_canvas_url(data=data)
         response = self.middleware.process_request(request)
         self.assertTrue(mocked_method.called)
@@ -728,7 +748,8 @@ class FacebookCanvasMiddlewareTest(FacebookTest):
     def test_auth_user(
         self, mocked_method_1=FacebookAuthorization.parse_signed_data,
             mocked_method_2=OpenFacebook.permissions):
-        data = {'signed_request': 'd7JQQIfxHgEzLIqJMeU9J5IlLg7shzPJ8DFRF55L52w.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImV4cGlyZXMiOjEzNTgwNzQ4MDAsImlzc3VlZF9hdCI6MTM1ODA2ODU1MCwib2F1dGhfdG9rZW4iOiJBQUFGdk02MWpkT0FCQVBhWkNzR1pDM0dEVFZtdDJCWkFQVlpDc0F0aGNmdXBYUnhMN1cwUHBaQm53OEUwTzBBRVNYNjVaQ0JHdjZpOFRBWGhnMEpzbER5UmtmZUlnYnNHUmV2eHQxblFGZ0hNcFNpeTNWRTB3ZCIsInVzZXIiOnsiY291bnRyeSI6ImJyIiwibG9jYWxlIjoiZW5fVVMiLCJhZ2UiOnsibWluIjoyMX19LCJ1c2VyX2lkIjoiMTAwMDA1MDEyNDY2Nzg1In0'}
+        data = {'signed_request':
+                'd7JQQIfxHgEzLIqJMeU9J5IlLg7shzPJ8DFRF55L52w.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImV4cGlyZXMiOjEzNTgwNzQ4MDAsImlzc3VlZF9hdCI6MTM1ODA2ODU1MCwib2F1dGhfdG9rZW4iOiJBQUFGdk02MWpkT0FCQVBhWkNzR1pDM0dEVFZtdDJCWkFQVlpDc0F0aGNmdXBYUnhMN1cwUHBaQm53OEUwTzBBRVNYNjVaQ0JHdjZpOFRBWGhnMEpzbER5UmtmZUlnYnNHUmV2eHQxblFGZ0hNcFNpeTNWRTB3ZCIsInVzZXIiOnsiY291bnRyeSI6ImJyIiwibG9jYWxlIjoiZW5fVVMiLCJhZ2UiOnsibWluIjoyMX19LCJ1c2VyX2lkIjoiMTAwMDA1MDEyNDY2Nzg1In0'}
         request = self.get_canvas_url(data=data)
         request.user = AnonymousUser()
         mocked_method_1.return_value = {'user_id': '123456',

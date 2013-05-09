@@ -1,8 +1,8 @@
 from django.utils.decorators import available_attrs
 from functools import wraps
 try:
-    #using compatible_datetime instead of datetime only
-    #not to override the original datetime package
+    # using compatible_datetime instead of datetime only
+    # not to override the original datetime package
     from django.utils import timezone as compatible_datetime
 except ImportError:
     from datetime import datetime as compatible_datetime
@@ -238,6 +238,7 @@ def get_oauth_url(scope, redirect_uri, extra_params=None):
 
 
 class ScriptRedirect(HttpResponse):
+
     '''
     Redirect for Facebook Canvas pages
     '''
@@ -323,7 +324,7 @@ def mass_get_or_create(model_class, base_queryset, id_field, default_dict,
     current_ids = set(
         [unicode(getattr(c, id_field)) for c in current_instances])
     given_ids = map(unicode, default_dict.keys())
-    #both ends of the comparison are in unicode ensuring the not in works
+    # both ends of the comparison are in unicode ensuring the not in works
     new_ids = [g for g in given_ids if g not in current_ids]
     inserted_model_instances = []
     for new_id in new_ids:
@@ -374,7 +375,7 @@ def get_registration_backend():
     if registration_backend_string:
         backend_class = get_class_from_string(registration_backend_string)
 
-    #instantiate
+    # instantiate
     if backend_class:
         backend = backend_class()
 

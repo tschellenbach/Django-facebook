@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class FacebookUserManager(models.Manager):
+
     def find_users(self, queries, base_queryset=None):
         '''
         Queries, a list of search queries
@@ -64,6 +65,7 @@ class FacebookUserManager(models.Manager):
 
 
 class OpenGraphShareManager(models.Manager):
+
     def failed(self):
         qs = self.filter(completed_at__isnull=True)
         return qs
@@ -104,5 +106,6 @@ class OpenGraphShareManager(models.Manager):
                 share.remove()
             except (OAuthException, UnsupportedDeleteRequest), e:
                 # oauth exceptions happen when tokens are removed
-                # unsupported delete requests when the resource is already removed
+                # unsupported delete requests when the resource is already
+                # removed
                 logger.info('removing share failed, got error %s', e)

@@ -12,6 +12,7 @@ VERBOSITY_LOG_MAP = {
 
 
 class CustomBaseCommand(BaseCommand):
+
     '''
     Management command with a convenient self.log.info shortcut allowing for
     easy logging

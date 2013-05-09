@@ -4,6 +4,7 @@ from django_facebook.utils import get_user_model
 
 
 class FacebookTest(TestCase):
+
     '''
     Normal Facebook tests run against a fake API
     '''
@@ -74,6 +75,7 @@ class FacebookTest(TestCase):
 
 
 class LiveFacebookTest(TestCase):
+
     '''
     Live Facebook Tests run against the actual Facebook API
     '''

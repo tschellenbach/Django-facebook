@@ -8,6 +8,7 @@ import operator
 
 
 class FacebookBackend(backends.ModelBackend):
+
     def authenticate(self, *args, **kwargs):
         '''
         Route to either the user or profile table depending on which type of user
@@ -49,7 +50,8 @@ class FacebookBackend(backends.ModelBackend):
 
             # error checking
             if len(id_matches) > 1:
-                raise ValueError('found multiple facebook id matches. this shouldnt be allowed, check your unique constraints. users found %s' % users)
+                raise ValueError(
+                    'found multiple facebook id matches. this shouldnt be allowed, check your unique constraints. users found %s' % users)
 
             # give the right user
             user = None
@@ -74,8 +76,8 @@ class FacebookBackend(backends.ModelBackend):
             profile_query = profile_query.select_related('user')
             profile = None
 
-            #filter on email or facebook id, two queries for better
-            #queryplan with large data sets
+            # filter on email or facebook id, two queries for better
+            # queryplan with large data sets
             if facebook_id:
                 profiles = profile_query.filter(facebook_id=facebook_id)[:1]
                 profile = profiles[0] if profiles else None

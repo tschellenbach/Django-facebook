@@ -1,6 +1,0 @@
-django>=1.5
-django_facebook
-south
-PIL
-mock
-python-memcached

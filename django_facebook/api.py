@@ -46,7 +46,8 @@ def get_persistent_graph(request, *args, **kwargs):
               'Request is required if you want to use persistent tokens')
 
     graph = None
-    # some situations like an expired access token require us to refresh our graph
+    # some situations like an expired access token require us to refresh our
+    # graph
     require_refresh = False
     code = request.REQUEST.get('code')
     if code:
@@ -236,6 +237,7 @@ def _add_current_user_id(graph, user):
 
 
 class FacebookUserConverter(object):
+
     '''
     This conversion class helps you to convert Facebook users to Django users
 

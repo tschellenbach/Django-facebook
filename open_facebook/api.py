@@ -54,6 +54,7 @@ REQUEST_ATTEMPTS = 3
 
 
 class FacebookConnection(object):
+
     '''
     Shared class for sending requests to facebook and parsing
     the api response
@@ -134,13 +135,15 @@ class FacebookConnection(object):
                             'Facebook is down %s' % response)
                 break
             except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError), e:
-                # These are often temporary errors, so we will retry before failing
+                # These are often temporary errors, so we will retry before
+                # failing
                 error_format = 'Facebook encountered a timeout (%ss) or error %s'
                 logger.warn(error_format, extended_timeout, unicode(e))
                 attempts -= 1
                 if not attempts:
                     # if we have no more attempts actually raise the error
-                    error_instance = facebook_exceptions.convert_unreachable_exception(e)
+                    error_instance = facebook_exceptions.convert_unreachable_exception(
+                        e)
                     error_msg = 'Facebook request failed after several retries, raising error %s'
                     logger.warn(error_msg, error_instance)
                     raise error_instance
@@ -302,6 +305,7 @@ class FacebookConnection(object):
 
 
 class FacebookAuthorization(FacebookConnection):
+
     '''
     Methods for getting us an access token
     There are several flows we must support
@@ -530,6 +534,7 @@ class FacebookAuthorization(FacebookConnection):
 
 
 class OpenFacebook(FacebookConnection):
+
     '''
     ========================================
     Getting your authentication started
@@ -733,6 +738,7 @@ class OpenFacebook(FacebookConnection):
 
 
 class TestUser(object):
+
     '''
     Simple wrapper around test users
     '''
