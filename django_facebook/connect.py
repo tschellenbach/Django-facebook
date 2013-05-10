@@ -324,6 +324,9 @@ def _update_user(user, facebook, overwrite=True):
                     repr(current_facebook_id))
         attributes_dict['facebook_id'] = facebook_data['facebook_id']
         facebook_id_overwritten = True
+        
+    if facebook_id_overwritten:
+        _remove_old_connections(facebook_data['facebook_id'], user.id)
 
     # update all fields on both user and profile
     for f in facebook_fields:
@@ -351,9 +354,6 @@ def _update_user(user, facebook, overwrite=True):
         user.save()
     if getattr(profile, '_fb_is_dirty', False):
         profile.save()
-
-    if facebook_id_overwritten:
-        _remove_old_connections(facebook_data['facebook_id'], user.id)
 
     signals.facebook_post_update.send(sender=get_user_model(),
                                       user=user, profile=profile, facebook_data=facebook_data)
