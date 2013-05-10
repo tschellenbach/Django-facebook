@@ -324,7 +324,7 @@ def _update_user(user, facebook, overwrite=True):
                     repr(current_facebook_id))
         attributes_dict['facebook_id'] = facebook_data['facebook_id']
         facebook_id_overwritten = True
-        
+
     if facebook_id_overwritten:
         _remove_old_connections(facebook_data['facebook_id'], user.id)
 

@@ -3,6 +3,7 @@ import os
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 manage_py = os.path.join('facebook_example', 'manage.py')
 
+
 def publish(test='yes'):
     '''
     Easy publishing of my nice open source project
