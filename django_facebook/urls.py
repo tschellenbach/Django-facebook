@@ -1,4 +1,7 @@
-from django.conf.urls.defaults import patterns, url
+try:
+    from django.conf.urls import patterns, url
+except ImportError:
+    from django.conf.urls.defaults import patterns, url
 from django.conf import settings
 
 urlpatterns = patterns('django_facebook.views',
@@ -38,7 +41,7 @@ if settings.DEBUG or True:
     # only enable example views while developing
     urlpatterns += dev_patterns
 
-#help autodiscovery a bit
+# help autodiscovery a bit
 from django_facebook import admin
 
 # putting this here instead of models.py reduces issues with import ordering
@@ -52,7 +55,7 @@ if getattr(settings, 'AUTH_PROFILE_MODULE', None) == 'django_facebook.FacebookPr
     from django_facebook.models import FacebookProfile
     from django_facebook.utils import get_user_model
 
-    #Make sure we create a FacebookProfile when creating a User
+    # Make sure we create a FacebookProfile when creating a User
     def create_facebook_profile(sender, instance, created, **kwargs):
         if created:
             FacebookProfile.objects.create(user=instance)

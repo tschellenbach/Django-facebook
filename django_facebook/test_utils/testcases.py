@@ -1,13 +1,18 @@
 from django.test import TestCase
 from django.test.client import Client
+from django_facebook.utils import get_user_model
 
 
 class FacebookTest(TestCase):
+
     '''
     Normal Facebook tests run against a fake API
     '''
     def setUp(self):
         from django_facebook.test_utils.mocks import MockFacebookAPI, MockFacebookAuthorization, RequestMock
+        import sys
+        import StringIO
+        self.prints = sys.stdout = StringIO.StringIO()
 
         from open_facebook import api
         import open_facebook
@@ -22,11 +27,25 @@ class FacebookTest(TestCase):
         self.request = rf.get('/')
         self.client = Client()
 
+        # time to setup the test user
+        user_model = get_user_model()
+        user_dict = dict(
+            username='tschellenbach',
+            is_staff=False,
+            is_active=True,
+            email="fake@mellowmorning.com",
+        )
+        user_model.objects.create(**user_dict)
+
     def tearDown(self):
         from open_facebook import api
         import open_facebook
         open_facebook.OpenFacebook = api.OpenFacebook = self.originalAPI
         open_facebook.FacebookAuthorization = api.FacebookAuthorization = self.originalAuthorization
+
+        content = self.prints.read()
+        if content:
+            raise ValueError('print statement found, output %s' % content)
 
     def create_patch(self, name, return_value=None):
         '''
@@ -56,6 +75,7 @@ class FacebookTest(TestCase):
 
 
 class LiveFacebookTest(TestCase):
+
     '''
     Live Facebook Tests run against the actual Facebook API
     '''

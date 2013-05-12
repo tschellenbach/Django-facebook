@@ -88,7 +88,7 @@ def page_tab(request, graph):
     '''
     Example of a simple page tab
     '''
-    #get signed_request
+    # get signed_request
     context = RequestContext(request)
     signed_request_string = request.POST['signed_request']
     signed_request = parse_signed_request(signed_request_string)

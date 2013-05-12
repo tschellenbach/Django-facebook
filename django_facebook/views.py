@@ -81,7 +81,7 @@ def _connect(request, graph):
         except facebook_exceptions.IncompleteProfileError, e:
             # show them a registration form to add additional data
             warning_format = u'Incomplete profile data encountered with error %s'
-            warn_message = warning_format % e.message
+            warn_message = warning_format % unicode(e)
             send_warning(warn_message, e=e,
                          facebook_data=facebook_data)
 
@@ -92,7 +92,7 @@ def _connect(request, graph):
                 context_instance=context,
             )
         except facebook_exceptions.AlreadyConnectedError, e:
-            user_ids = [u.user_id for u in e.users]
+            user_ids = [u.get_user_id() for u in e.users]
             ids_string = ','.join(map(str, user_ids))
             additional_params = dict(already_connected=ids_string)
             return backend.post_error(request, additional_params)

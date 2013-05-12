@@ -66,14 +66,15 @@ facebookClass.prototype = {
         this.connectLoading(gettext('A Facebook pop-up has opened, please follow the instructions to sign in.'));
         var scope = this;
         FB.login(function(response) {
-            if (response.status == 'unknown' || response.status == 'not_authorized') {
-                var errorMessage = gettext('Sorry, we couldn\'t log you in. Please try again.');
-                scope.connectLoading(errorMessage, true, true);
-            } else {
+            var authResponse = response.authResponse;
+            if (authResponse) {
                 //showloading
                 scope.connectLoading(gettext('Now loading your profile...'));
                 //submit the form
                 formElement.submit();
+            } else {
+                var errorMessage = gettext('Sorry, we couldn\'t log you in. Please try again.');
+                scope.connectLoading(errorMessage, true, true);                
             }
         },
         {scope: requiredPerms.join(',')}

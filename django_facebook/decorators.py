@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class FacebookRequired(object):
+
     """
     Decorator which makes the view require the given Facebook perms,
     redirecting to the log-in page if necessary.
@@ -149,6 +150,7 @@ facebook_required = simplify_class_decorator(FacebookRequired)
 
 
 class FacebookRequiredLazy(FacebookRequired):
+
     """
     Decorator which makes the view require the given Facebook perms,
     redirecting to the log-in page if necessary.
@@ -170,7 +172,8 @@ class FacebookRequiredLazy(FacebookRequired):
             graph = require_persistent_graph(
                 request, redirect_uri=redirect_uri)
             # Note we're not requiring a persistent graph here
-            # You should require a persistent graph in the view when you start using this
+            # You should require a persistent graph in the view when you start
+            # using this
             response = self.execute_view(
                 fn, request, graph=graph, *args, **kwargs)
         except open_facebook_exceptions.OpenFacebookException, e:

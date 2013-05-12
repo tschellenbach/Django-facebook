@@ -1,8 +1,8 @@
 from django.forms.util import ValidationError
-from django.utils import simplejson as json
+import json
 from django_facebook import settings as facebook_settings
 from django_facebook.utils import mass_get_or_create, cleanup_oauth_url, \
-    get_profile_class, parse_signed_request
+    get_profile_model, parse_signed_request, hash_key
 from open_facebook.exceptions import OpenFacebookException
 from django_facebook.exceptions import FacebookException
 try:
@@ -14,7 +14,7 @@ from django_facebook.utils import get_user_model
 import datetime
 import logging
 from open_facebook import exceptions as open_facebook_exceptions
-from open_facebook.utils import send_warning
+from open_facebook.utils import send_warning, validate_is_instance
 from django_facebook import signals
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,8 @@ def get_persistent_graph(request, *args, **kwargs):
               'Request is required if you want to use persistent tokens')
 
     graph = None
-    # some situations like an expired access token require us to refresh our graph
+    # some situations like an expired access token require us to refresh our
+    # graph
     require_refresh = False
     code = request.REQUEST.get('code')
     if code:
@@ -157,7 +158,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
 
         if not access_token:
             if code:
-                cache_key = 'convert_code_%s' % code
+                cache_key = hash_key('convert_code_%s' % code)
                 access_token = cache.get(cache_key)
                 if not access_token:
                     # exchange the code for an access token
@@ -236,6 +237,7 @@ def _add_current_user_id(graph, user):
 
 
 class FacebookUserConverter(object):
+
     '''
     This conversion class helps you to convert Facebook users to Django users
 
@@ -247,7 +249,7 @@ class FacebookUserConverter(object):
     def __init__(self, open_facebook):
         from open_facebook.api import OpenFacebook
         self.open_facebook = open_facebook
-        assert isinstance(open_facebook, OpenFacebook)
+        validate_is_instance(open_facebook, OpenFacebook)
         self._profile = None
 
     def is_authenticated(self):
@@ -338,6 +340,7 @@ class FacebookUserConverter(object):
     @classmethod
     def _extract_url(cls, text_url_field):
         '''
+        >>> from django_facebook.api import FacebookApi
         >>> url_text = 'http://www.google.com blabla'
         >>> FacebookAPI._extract_url(url_text)
         u'http://www.google.com/'
@@ -353,10 +356,6 @@ class FacebookUserConverter(object):
         >>> url_text = 'http://www.fahiolista.com/www.myspace.com/www.google.com'
         >>> FacebookAPI._extract_url(url_text)
         u'http://www.fahiolista.com/www.myspace.com/www.google.com'
-
-        >>> url_text = u"""http://fernandaferrervazquez.blogspot.com/\r\nhttp://twitter.com/fferrervazquez\r\nhttp://comunidad.redfashion.es/profile/fernandaferrervazquez\r\nhttp://www.facebook.com/group.php?gid3D40257259997&ref3Dts\r\nhttp://fernandaferrervazquez.spaces.live.com/blog/cns!EDCBAC31EE9D9A0C!326.trak\r\nhttp://www.linkedin.com/myprofile?trk3Dhb_pro\r\nhttp://www.youtube.com/account#profile\r\nhttp://www.flickr.com/\r\n Mi galer\xeda\r\nhttp://www.flickr.com/photos/wwwfernandaferrervazquez-showroomrecoletacom/ \r\n\r\nhttp://www.facebook.com/pages/Buenos-Aires-Argentina/Fernanda-F-Showroom-Recoleta/200218353804?ref3Dts\r\nhttp://fernandaferrervazquez.wordpress.com/wp-admin/"""
-        >>> FacebookAPI._extract_url(url_text)
-        u'http://fernandaferrervazquez.blogspot.com/a'
         '''
         import re
         text_url_field = text_url_field.encode('utf8')
@@ -550,7 +549,7 @@ class FacebookUserConverter(object):
 
         # fire an event, so u can do things like personalizing the users' account
         # based on the likes
-        signals.facebook_post_store_likes.send(sender=get_profile_class(),
+        signals.facebook_post_store_likes.send(sender=get_profile_model(),
                                                user=user, likes=likes, current_likes=current_likes,
                                                inserted_likes=inserted_likes,
                                                )
@@ -643,7 +642,7 @@ class FacebookUserConverter(object):
 
         # fire an event, so u can do things like personalizing suggested users
         # to follow
-        signals.facebook_post_store_friends.send(sender=get_profile_class(),
+        signals.facebook_post_store_friends.send(sender=get_profile_model(),
                                                  user=user, friends=friends, current_friends=current_friends,
                                                  inserted_friends=inserted_friends,
                                                  )
@@ -655,8 +654,7 @@ class FacebookUserConverter(object):
         Returns all profile models which are already registered on your site
         and a list of friends which are not on your site
         '''
-        from django_facebook.utils import get_profile_class
-        profile_class = get_profile_class()
+        profile_class = get_profile_model()
         friends = self.get_friends(limit=1000)
 
         if friends:

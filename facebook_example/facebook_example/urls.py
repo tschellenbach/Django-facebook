@@ -1,18 +1,16 @@
-from django.conf.urls.defaults import *
+try:
+    from django.conf.urls import include, patterns, url
+except ImportError:
+    from django.conf.urls.defaults import include, patterns, url
 from django.conf import settings
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
 
 urlpatterns = patterns('',
-                       #
+                       # facebook and registration urls
                        (r'^facebook/', include('django_facebook.urls')),
-
-                       #what to do with these?
                        (r'^accounts/', include('django_facebook.auth_urls')),
-
-                       # Example:
-                       # (r'^django_facebook_test/', include('django_facebook_test.foo.urls')),
 
                        # Uncomment the admin/doc line below to enable admin documentation:
                        # (r'^admin/doc/', include('django.contrib.admindocs.urls')),

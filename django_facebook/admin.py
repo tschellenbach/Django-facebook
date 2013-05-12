@@ -57,7 +57,8 @@ def facebook_profile(open_graph_share):
     profile = user.get_profile()
     facebook_id = profile.facebook_id
     facebook_url = 'http://www.facebook.com/%s/' % facebook_id
-    link = '<p><a href="%s"><img src="http://graph.facebook.com/%s/picture/?type=large" width="100px" style="float:left"/>%s</a><br/></p>' % (facebook_url, facebook_id, facebook_id)
+    link = '<p><a href="%s"><img src="http://graph.facebook.com/%s/picture/?type=large" width="100px" style="float:left"/>%s</a><br/></p>' % (
+        facebook_url, facebook_id, facebook_id)
     return link
 
 facebook_profile.allow_tags = True

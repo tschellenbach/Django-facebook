@@ -31,27 +31,29 @@ class FacebookCanvasMiddleWare(object):
         a) if user is authenticated: check if it's the same
         b) user is not authenticated: connect
         """
-        #check referer to see if this is the first access
-        #or it's part of navigation in app
-        #facebook always sends a POST reuqest
+        # check referer to see if this is the first access
+        # or it's part of navigation in app
+        # facebook always sends a POST reuqest
         referer = request.META.get('HTTP_REFERER', None)
         if referer:
             urlparsed = urlparse(referer)
             if not urlparsed.netloc.endswith('facebook.com'):
                 return
-            #when there is an error, we attempt to allow user to reauthenticate
+            # when there is an error, we attempt to allow user to
+            # reauthenticate
             if 'error' in request.GET:
                 return redirect_login_oauth
         else:
             return
 
-        #get signed_request
+        # get signed_request
         signed_request = request.POST.get('signed_request', None)
-        #not sure if this can happen, but better check anyway
+        # not sure if this can happen, but better check anyway
         if not signed_request:
             return redirect_login_oauth
 
-        #get signed_request and redirect to authorization dialog if app not authorized by user
+        # get signed_request and redirect to authorization dialog if app not
+        # authorized by user
         parsed_signed_request = FacebookAuthorization.parse_signed_data(
             signed_request)
         if 'user_id' not in parsed_signed_request or 'oauth_token' not in parsed_signed_request:
@@ -59,13 +61,13 @@ class FacebookCanvasMiddleWare(object):
 
         access_token = parsed_signed_request['oauth_token']
         facebook_id = long(parsed_signed_request['user_id'])
-        #check for permissions
+        # check for permissions
         graph = OpenFacebook(access_token)
         permissions = set(graph.permissions())
         scope_list = set(settings.FACEBOOK_DEFAULT_SCOPE)
         if scope_list - permissions:
             return redirect_login_oauth
-        #check if user authenticated and if it's the same
+        # check if user authenticated and if it's the same
         if request.user.is_authenticated():
             try:
                 current_user = request.user.get_profile()
@@ -75,19 +77,20 @@ class FacebookCanvasMiddleWare(object):
                 current_facebook_id = current_user.facebook_id
             if not current_facebook_id or current_facebook_id != facebook_id:
                 logout(request)
-                #clear possible caches
+                # clear possible caches
                 if hasattr(request, 'facebook'):
                     del request.facebook
                 if request.session.get('graph', None):
                     del request.session['graph']
             else:
-                #save last access_token to make sure we always have the most recent one
+                # save last access_token to make sure we always have the most
+                # recent one
                 current_user.access_token = access_token
                 current_user.save()
         request.facebook = graph
         if not request.user.is_authenticated():
             _action, _user = connect_user(request, access_token, graph)
-        #override http method, since this actually is a GET
+        # override http method, since this actually is a GET
         if request.method == 'POST':
             request.method = 'GET'
         return

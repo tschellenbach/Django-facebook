@@ -14,8 +14,9 @@ from django_facebook.connect import _register_user, connect_user, \
 from django_facebook.middleware import FacebookCanvasMiddleWare
 from django_facebook.test_utils.mocks import RequestMock
 from django_facebook.test_utils.testcases import FacebookTest, LiveFacebookTest
-from django_facebook.utils import cleanup_oauth_url, get_profile_class, \
-    ScriptRedirect, get_user_model
+from django_facebook.utils import cleanup_oauth_url, get_profile_model, \
+    ScriptRedirect, get_user_model, get_user_attribute, try_get_profile,\
+    get_instance_for_attribute
 from functools import partial
 from mock import Mock, patch
 from open_facebook.api import FacebookConnection, FacebookAuthorization, \
@@ -23,53 +24,14 @@ from open_facebook.api import FacebookConnection, FacebookAuthorization, \
 from open_facebook.exceptions import FacebookSSLError, FacebookURLError
 import logging
 import mock
-
+from django.utils import unittest
 
 logger = logging.getLogger(__name__)
 __doctests__ = ['django_facebook.api']
 
 
-'''
-TODO
-
-Done - Decorator Testing
-Done - Example views
-Done - Refactor test permissions
-Done - Class based decorator
-Done - Clean up connect view
-Done - Allow customization of the FacebookUserConverter class
-Done - Cleanup Test Utils directory
-Done - Python setup.py test support
-Done - Update connect tests with new decorator logic
-Done - Better detection when Facebook is down
-Done - fix for http://sentry.goteam.be/default/group/54495/
-Done - Cleanup post registration flow
-Done - Move the example to /example/
-Done - Unit Test post registration flow
-Done - ReAdd compatibility for Django Registration redirects
-Done - Setup.py import order errors
-Done - Fix firstname not found error http://sentry.goteam.be/default/group/54457/
-Done - Docs on using the provided registration backend not userena
-Done - Docs clearly pointing to the Fashiolista Demo
-Done - Docs on celery vs no celery usage
-Done - Docs, replace /connect/ with /example/
-Done - Docs on the new decorator usage
-Done - Include vagrant development setup
-Done - Rename CanvasRedirect to scriptredirect and support page tabs
-Done - Canvas support
-Done - Page Tab support
-Done - Endless loop bug in the redirect based oauth flow
-Postponed - Fix extra url issue, http://sentry.goteam.be/default/group/54725/
-
-Unittest canvas support
-Document customization of the FacebookUserConverter class
-
-Bug with userdata getting overwritten even if it exists
-
-'''
-
-
 class BaseDecoratorTest(FacebookTest):
+
     def setUp(self):
         FacebookTest.setUp(self)
         from django_facebook.decorators import facebook_required
@@ -100,6 +62,7 @@ class BaseDecoratorTest(FacebookTest):
 
 
 class DecoratorTest(BaseDecoratorTest):
+
     '''
     Verify that the lazy and facebook_required decorator work as expected
 
@@ -155,6 +118,7 @@ class DecoratorTest(BaseDecoratorTest):
 
 
 class ScopedDecoratorTest(DecoratorTest):
+
     '''
     Tests the more complicated but faster lazy decorator
     '''
@@ -182,6 +146,7 @@ class ScopedDecoratorTest(DecoratorTest):
 
 
 class LazyDecoratorTest(DecoratorTest):
+
     '''
     Tests the more complicated but faster lazy decorator
     '''
@@ -199,7 +164,6 @@ class LazyDecoratorTest(DecoratorTest):
 
 
 class ConnectViewTest(FacebookTest):
-    fixtures = ['users.json']
 
     def setUp(self):
         FacebookTest.setUp(self)
@@ -229,15 +193,18 @@ class ConnectViewTest(FacebookTest):
 
     def test_connect_redirect_authenticated(self):
         # Meanwhile at Facebook they redirect the request
-        # STEP 2 Authenticated, verify that the connect view redirects to the example
+        # STEP 2 Authenticated, verify that the connect view redirects to the
+        # example
         self.mock_authenticated()
-        accepted_url = self.url + '?attempt=1&client_id=215464901804004&next=bla&register_next=%s' % self.example_url
+        accepted_url = self.url + \
+            '?attempt=1&client_id=215464901804004&next=bla&register_next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
         self.assertEqual(redirect_url, self.absolute_example_url)
 
         # Verify that login_next works
-        accepted_url = self.url + '?attempt=1&client_id=215464901804004&next=bla&login_next=%s' % self.example_url
+        accepted_url = self.url + \
+            '?attempt=1&client_id=215464901804004&next=bla&login_next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
         self.assertEqual(redirect_url, self.absolute_example_url)
@@ -252,7 +219,8 @@ class ConnectViewTest(FacebookTest):
 
     def test_connect_redirect_not_authenticated(self):
         # Meanwhile at Facebook they redirect the request
-        # STEP 2 Not Authenticated, verify that the connect view redirects to the example
+        # STEP 2 Not Authenticated, verify that the connect view redirects to
+        # the example
         accepted_url = self.url + \
             '?attempt=1&client_id=215464901804004&next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
@@ -261,7 +229,8 @@ class ConnectViewTest(FacebookTest):
         self.assertEqual(redirect_url, error_url)
 
         # Verify that error next also works
-        accepted_url = self.url + '?attempt=1&client_id=215464901804004&next=bla&error_next=%s' % self.example_url
+        accepted_url = self.url + \
+            '?attempt=1&client_id=215464901804004&next=bla&error_next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
         error_url = self.absolute_example_url + '?fb_error_or_cancel=1'
@@ -368,6 +337,7 @@ class ConnectViewTest(FacebookTest):
 
 
 class TestUserTest(LiveFacebookTest):
+
     def test_create_test_user(self):
         # Also, somehow unittest.skip doesnt work with travis ci?
         return 'Skipping since you might have created test users manually, lets not delete them :)'
@@ -386,6 +356,7 @@ class TestUserTest(LiveFacebookTest):
 
 
 class ExtendTokenTest(LiveFacebookTest):
+
     def test_extend_token(self):
         return 'this doesnt work in travis, but locally its fine... weird'
         app_access_token = FacebookAuthorization.get_cached_app_access_token()
@@ -398,7 +369,6 @@ class ExtendTokenTest(LiveFacebookTest):
 
 
 class OpenGraphShareTest(FacebookTest):
-    fixtures = ['users.json']
 
     def test_follow_og_share(self):
         from django_facebook.models import OpenGraphShare
@@ -406,13 +376,12 @@ class OpenGraphShareTest(FacebookTest):
         kwargs = dict(item=user_url)
         user = get_user_model().objects.all()[:1][0]
         from django.contrib.contenttypes.models import ContentType
-        love_content_type = ContentType.objects.get(
-            app_label='auth', model='user')
+        some_content_type = ContentType.objects.all()[:1][0]
         share = OpenGraphShare.objects.create(
             user_id=user.id,
             facebook_user_id=13123123,
             action_domain='fashiolista:follow',
-            content_type=love_content_type,
+            content_type=some_content_type,
             object_id=user.id,
         )
         share.set_share_dict(kwargs)
@@ -424,18 +393,19 @@ class OpenGraphShareTest(FacebookTest):
         user_url = 'http://www.fashiolista.com/style/neni/'
         kwargs = dict(item=user_url)
         user = get_user_model().objects.all()[:1][0]
-        profile = user.get_profile()
-        profile.facebook_open_graph = True
-        profile.save()
+        profile = try_get_profile(user)
+        user_or_profile = get_instance_for_attribute(
+            user, profile, 'facebook_open_graph')
+        user_or_profile.facebook_open_graph = True
+        user_or_profile.save()
 
         from django.contrib.contenttypes.models import ContentType
-        love_content_type = ContentType.objects.get(
-            app_label='auth', model='user')
+        some_content_type = ContentType.objects.all()[:1][0]
         share = OpenGraphShare.objects.create(
             user_id=user.id,
             facebook_user_id=13123123,
             action_domain='fashiolista:follow',
-            content_type=love_content_type,
+            content_type=some_content_type,
             object_id=user.id,
         )
         share.set_share_dict(kwargs)
@@ -450,10 +420,10 @@ class OpenGraphShareTest(FacebookTest):
 
 
 class UserConnectTest(FacebookTest):
+
     '''
     Tests the connect user functionality
     '''
-    fixtures = ['users.json']
 
     def test_persistent_graph(self):
         request = RequestMock().get('/')
@@ -476,7 +446,9 @@ class UserConnectTest(FacebookTest):
         data = converter.facebook_registration_data()
         self.assertEqual(data['gender'], 'm')
         action, user = connect_user(self.request, facebook_graph=graph)
-        self.assertEqual(user.get_profile().gender, 'm')
+        profile = try_get_profile(user)
+        gender = get_user_attribute(user, profile, 'gender')
+        self.assertEqual(gender, 'm')
 
     def test_long_username(self):
         request = RequestMock().get('/')
@@ -527,7 +499,8 @@ class UserConnectTest(FacebookTest):
 
             patched.side_effect = side
             with patch('django_facebook.connect._register_user') as patched_register:
-                patched_register.side_effect = facebook_exceptions.AlreadyRegistered('testing parallel registers')
+                patched_register.side_effect = facebook_exceptions.AlreadyRegistered(
+                    'testing parallel registers')
                 action, user = connect_user(self.request, facebook_graph=graph)
                 self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
 
@@ -551,22 +524,23 @@ class UserConnectTest(FacebookTest):
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
 
     def test_fb_update_required(self):
-        def pre_update(sender, profile, facebook_data, **kwargs):
-            profile.pre_update_signal = True
+        def pre_update(sender, user, profile, facebook_data, **kwargs):
+            user.pre_update_signal = True
 
-        Profile = get_profile_class()
-        signals.facebook_pre_update.connect(pre_update, sender=Profile)
+        Profile = get_profile_model()
+        user_model = get_user_model()
+        signals.facebook_pre_update.connect(pre_update, sender=user_model)
         facebook = get_facebook_graph(access_token='tschellenbach')
 
         facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = True
         action, user = connect_user(self.request, facebook_graph=facebook)
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
-        self.assertTrue(hasattr(user.get_profile(), 'pre_update_signal'))
+        self.assertTrue(hasattr(user, 'pre_update_signal'))
 
         facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = False
         action, user = connect_user(self.request, facebook_graph=facebook)
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
-        self.assertFalse(hasattr(user.get_profile(), 'pre_update_signal'))
+        self.assertFalse(hasattr(user, 'pre_update_signal'))
 
     def test_new_user(self):
         facebook = get_facebook_graph(access_token='new_user')
@@ -611,6 +585,7 @@ class UserConnectTest(FacebookTest):
 
 
 class SimpleRegisterViewTest(FacebookTest):
+
     '''
     Even the most simple views will break eventually if they are not tested
     '''
@@ -630,13 +605,19 @@ class SimpleRegisterViewTest(FacebookTest):
 
 
 class AuthBackend(FacebookTest):
+
     def test_auth_backend(self):
+        # the auth backend
         backend = FacebookBackend()
         facebook = get_facebook_graph(access_token='new_user')
         action, user = connect_user(self.request, facebook_graph=facebook)
         facebook_email = user.email
-        facebook_id = user.get_profile().facebook_id
+        profile = try_get_profile(user)
+        user_or_profile = get_instance_for_attribute(
+            user, profile, 'facebook_id')
+        facebook_id = user_or_profile.facebook_id
         auth_user = backend.authenticate(facebook_email=facebook_email)
+        logger.info('%s %s %s', auth_user.email, user.email, facebook_email)
         self.assertEqual(auth_user, user)
 
         auth_user = backend.authenticate(facebook_id=facebook_id)
@@ -651,6 +632,7 @@ class AuthBackend(FacebookTest):
 
 
 class ErrorMappingTest(FacebookTest):
+
     def test_mapping(self):
         from open_facebook import exceptions as open_facebook_exceptions
         raise_something = partial(FacebookConnection.raise_error, 0,
@@ -661,6 +643,7 @@ class ErrorMappingTest(FacebookTest):
 
 
 class OAuthUrlTest(FacebookTest):
+
     def _test_equal(self, url, output):
         converted = cleanup_oauth_url(url)
         self.assertEqual(converted, output)
@@ -680,6 +663,7 @@ class OAuthUrlTest(FacebookTest):
 
 
 class SignalTest(FacebookTest):
+
     '''
     Tests that signals fire properly
     '''
@@ -690,26 +674,25 @@ class SignalTest(FacebookTest):
         def user_registered(sender, user, facebook_data, **kwargs):
             user.registered_signal = True
 
-        def pre_update(sender, profile, facebook_data, **kwargs):
-            profile.pre_update_signal = True
+        def pre_update(sender, user, profile, facebook_data, **kwargs):
+            user.pre_update_signal = True
 
-        def post_update(sender, profile, facebook_data, **kwargs):
-            profile.post_update_signal = True
+        def post_update(sender, user, profile, facebook_data, **kwargs):
+            user.post_update_signal = True
 
-        Profile = get_profile_class()
+        Profile = get_profile_model()
+        user_model = get_user_model()
         signals.facebook_user_registered.connect(
-            user_registered, sender=get_user_model())
-        signals.facebook_pre_update.connect(pre_update, sender=Profile)
-        signals.facebook_post_update.connect(post_update, sender=Profile)
+            user_registered, sender=user_model)
+        signals.facebook_pre_update.connect(pre_update, sender=user_model)
+        signals.facebook_post_update.connect(post_update, sender=user_model)
 
         graph = get_facebook_graph(access_token='short_username')
         facebook = FacebookUserConverter(graph)
         user = _register_user(self.request, facebook)
         self.assertEqual(hasattr(user, 'registered_signal'), True)
-        self.assertEqual(hasattr(user.get_profile(),
-                                 'pre_update_signal'), True)
-        self.assertEqual(hasattr(user.get_profile(),
-                                 'post_update_signal'), True)
+        self.assertEqual(hasattr(user, 'pre_update_signal'), True)
+        self.assertEqual(hasattr(user, 'post_update_signal'), True)
 
 
 def fake_connect(request, access_tokon, graph):
@@ -743,7 +726,8 @@ class FacebookCanvasMiddlewareTest(FacebookTest):
         self.assertIsInstance(response, ScriptRedirect)
 
     def test_user_denied(self):
-        request = self.factory.get('/?error_reason=user_denied&error=access_denied&error_description=The+user+denied+your+request.')
+        request = self.factory.get(
+            '/?error_reason=user_denied&error=access_denied&error_description=The+user+denied+your+request.')
         request.META['HTTP_REFERER'] = 'https://apps.facebook.com/canvas/'
         response = self.middleware.process_request(request)
         self.assertIsInstance(response, ScriptRedirect)
@@ -751,7 +735,8 @@ class FacebookCanvasMiddlewareTest(FacebookTest):
     @patch.object(FacebookAuthorization, 'parse_signed_data')
     def test_non_auth_user(self, mocked_method=FacebookAuthorization.parse_signed_data):
         mocked_method.return_value = {}
-        data = {'signed_request': 'dXairHLF8dfUKaL7ZFXaKmTsAglg0EkyHesTLnPcPAE.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImlzc3VlZF9hdCI6MTM1ODA2MTU1MSwidXNlciI6eyJjb3VudHJ5IjoiYnIiLCJsb2NhbGUiOiJlbl9VUyIsImFnZSI6eyJtaW4iOjIxfX19'}
+        data = {'signed_request':
+                'dXairHLF8dfUKaL7ZFXaKmTsAglg0EkyHesTLnPcPAE.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImlzc3VlZF9hdCI6MTM1ODA2MTU1MSwidXNlciI6eyJjb3VudHJ5IjoiYnIiLCJsb2NhbGUiOiJlbl9VUyIsImFnZSI6eyJtaW4iOjIxfX19'}
         request = self.get_canvas_url(data=data)
         response = self.middleware.process_request(request)
         self.assertTrue(mocked_method.called)
@@ -763,7 +748,8 @@ class FacebookCanvasMiddlewareTest(FacebookTest):
     def test_auth_user(
         self, mocked_method_1=FacebookAuthorization.parse_signed_data,
             mocked_method_2=OpenFacebook.permissions):
-        data = {'signed_request': 'd7JQQIfxHgEzLIqJMeU9J5IlLg7shzPJ8DFRF55L52w.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImV4cGlyZXMiOjEzNTgwNzQ4MDAsImlzc3VlZF9hdCI6MTM1ODA2ODU1MCwib2F1dGhfdG9rZW4iOiJBQUFGdk02MWpkT0FCQVBhWkNzR1pDM0dEVFZtdDJCWkFQVlpDc0F0aGNmdXBYUnhMN1cwUHBaQm53OEUwTzBBRVNYNjVaQ0JHdjZpOFRBWGhnMEpzbER5UmtmZUlnYnNHUmV2eHQxblFGZ0hNcFNpeTNWRTB3ZCIsInVzZXIiOnsiY291bnRyeSI6ImJyIiwibG9jYWxlIjoiZW5fVVMiLCJhZ2UiOnsibWluIjoyMX19LCJ1c2VyX2lkIjoiMTAwMDA1MDEyNDY2Nzg1In0'}
+        data = {'signed_request':
+                'd7JQQIfxHgEzLIqJMeU9J5IlLg7shzPJ8DFRF55L52w.eyJhbGdvcml0aG0iOiJITUFDLVNIQTI1NiIsImV4cGlyZXMiOjEzNTgwNzQ4MDAsImlzc3VlZF9hdCI6MTM1ODA2ODU1MCwib2F1dGhfdG9rZW4iOiJBQUFGdk02MWpkT0FCQVBhWkNzR1pDM0dEVFZtdDJCWkFQVlpDc0F0aGNmdXBYUnhMN1cwUHBaQm53OEUwTzBBRVNYNjVaQ0JHdjZpOFRBWGhnMEpzbER5UmtmZUlnYnNHUmV2eHQxblFGZ0hNcFNpeTNWRTB3ZCIsInVzZXIiOnsiY291bnRyeSI6ImJyIiwibG9jYWxlIjoiZW5fVVMiLCJhZ2UiOnsibWluIjoyMX19LCJ1c2VyX2lkIjoiMTAwMDA1MDEyNDY2Nzg1In0'}
         request = self.get_canvas_url(data=data)
         request.user = AnonymousUser()
         mocked_method_1.return_value = {'user_id': '123456',

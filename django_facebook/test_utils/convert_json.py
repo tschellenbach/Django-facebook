@@ -1,4 +1,4 @@
-from django.utils import simplejson
+import json
 
 
 def json_to_python(json_string):
@@ -7,7 +7,7 @@ def json_to_python(json_string):
     easy usable python dicts and pprint them
     '''
 
-    python_dict = simplejson.loads(json_string)
+    python_dict = json.loads(json_string)
     return python_dict
 
 if __name__ == '__main__':
