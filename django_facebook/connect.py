@@ -8,10 +8,11 @@ import json
 from django_facebook import exceptions as facebook_exceptions, \
     settings as facebook_settings, signals
 from django_facebook.api import get_facebook_graph
-from django_facebook.utils import get_registration_backend, get_form_class, \
-    get_profile_model, to_bool, get_user_model, get_instance_for,\
-    get_user_attribute, try_get_profile, get_model_for_attribute,\
-    get_instance_for_attribute, update_user_attributes
+from django_facebook.utils import *
+#get_registration_backend, get_form_class,
+#    get_profile_model, to_bool, get_user_model, get_instance_for,\
+#    get_user_attribute, try_get_profile, get_model_for_attribute,\
+#    get_instance_for_attribute, update_user_attributes
 from random import randint
 import logging
 import sys
