@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.test.client import Client
-from django_facebook.utils import get_user_model
+from django_facebook.utils import get_user_model, is_user_attribute
 
 
 class FacebookTest(TestCase):
@@ -35,6 +35,11 @@ class FacebookTest(TestCase):
             is_active=True,
             email="fake@mellowmorning.com",
         )
+        test_ip = '127.0.0.1'
+        # hack to make fashiolista tests run ok
+        if is_user_attribute('registration_ip'):
+            user_dict['registration_ip'] = test_ip
+            user_dict['last_login_ip'] = test_ip
         user_model.objects.create(**user_dict)
 
     def tearDown(self):

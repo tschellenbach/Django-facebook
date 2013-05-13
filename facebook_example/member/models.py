@@ -1,8 +1,12 @@
-from django.db import models
-from django_facebook.models import FacebookModel
-from django_facebook.models import get_user_model
 from django.conf import settings
-from django_facebook.utils import try_get_profile, get_profile_model
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django_facebook.models import FacebookModel, get_user_model
+from django_facebook.utils import get_profile_model
+import logging
+logger = logging.getLogger(__name__)
+
 
 try:
     from django.contrib.auth.models import AbstractUser, UserManager
@@ -12,9 +16,8 @@ try:
         '''
         objects = UserManager()
 except ImportError, e:
+    logger.info('Couldnt setup FacebookUser, got error %s', e)
     pass
-
-
 
 
 # Create your models here.
@@ -23,10 +26,6 @@ class UserProfile(FacebookModel):
     Inherit the properties from django facebook
     '''
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
-
-
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
 
 @receiver(post_save)
