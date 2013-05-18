@@ -22,7 +22,7 @@ class NooptRegistrationBackend(object):
         template = facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE
         return template
 
-    def register(self, request, form, **kwargs):
+    def register(self, request, form=None, **kwargs):
         pass
 
     def activate(self, **kwargs):
@@ -68,7 +68,7 @@ class FacebookRegistrationBackend(NooptRegistrationBackend):
     It is extremly simple and doesn't handle things like redirects etc
     (These are already handled by Django Facebook)
     """
-    def register(self, request, form, **kwargs):
+    def register(self, request, form=None, **kwargs):
         """
         Create and immediately log in a new user.
 

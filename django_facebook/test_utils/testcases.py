@@ -41,6 +41,11 @@ class FacebookTest(TestCase):
             user_dict['registration_ip'] = test_ip
             user_dict['last_login_ip'] = test_ip
         user_model.objects.create(**user_dict)
+        
+        from django.conf import settings
+        if settings.MODE == 'userena':
+            from django.core.management import call_command
+            call_command('check_permissions')
 
     def tearDown(self):
         from open_facebook import api
