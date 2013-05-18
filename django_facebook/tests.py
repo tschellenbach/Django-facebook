@@ -164,12 +164,14 @@ class LazyDecoratorTest(DecoratorTest):
 
 
 class GraphAccessTest(FacebookTest):
+
     def test_get_persistent(self):
         graph = get_persistent_graph(self.request)
         # fake that we are authenticated and have a facebook graph
         with patch.object(self.request, 'facebook'):
             self.request.user = get_user_model().objects.all()[:1][0]
             graph = get_persistent_graph(self.request)
+
 
 class ConnectViewTest(FacebookTest):
 

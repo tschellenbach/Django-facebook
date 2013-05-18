@@ -187,6 +187,7 @@ class Test500Detection(OpenFacebookTest):
 
 
 class TestPublishing(OpenFacebookTest):
+
     def test_permissions(self):
         graph = self.thi.graph()
         permission_responses = [
@@ -202,7 +203,7 @@ class TestPublishing(OpenFacebookTest):
             with mock.patch('open_facebook.api.OpenFacebook.get') as g:
                 g.return_value = response
                 permissions = graph.permissions()
-                self.assertEqual(permissions, correct_permissions) 
+                self.assertEqual(permissions, correct_permissions)
 
     def test_wallpost(self):
         graph = self.thi.graph()
