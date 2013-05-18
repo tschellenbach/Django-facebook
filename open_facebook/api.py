@@ -1,35 +1,31 @@
 # -*- coding: utf-8 -*-
 '''
-=============================================
-Open Facebook - A generic Facebook API
-=============================================
 
-This API is actively maintained, just fork on github if you wan
-to improve things.
-Follow the author: Thierry Schellenbach (@tschellenbach)
-blog: http://www.mellowmorning.com/
-my company: http://www.fashiolista.com/
+Open Facebook - Pythonic access to the open graph
+=================================================
 
-Features:
-- <em>Supported and maintained</em>
-- Tested so people can contribute smoothly
-- Facebook exceptions are mapped
-- Logging
+Open Facebook allows you to use Facebook's open graph API with simple python code
 
-TODO
-- django querydict replacement (urlencode breaks on utf8)
+**Basic examples**::
 
-Syntax
->>> facebook.get('me')
->>> facebook.set('1789/comments', message='check out fashiolista')
->>> facebook.set('me/feed', message='check out fashiolista', url='http://www.fashiolista.com')
->>> facebook.set('cocacola/likes')
+    facebook = OpenFacebook(access_token)
 
-Maybe when the facebook api get's more stable we will move to a chaining syntax
-Which validates input
-facebook('me').loves()
-facebook('myalbum').comment('Fashiolista is awesome ♥')
-Currently that would be a bad idea though because of maintenance
+    facebook.get('me')
+    facebook.set('1789/comments', message='check out fashiolista')
+    facebook.set('me/feed', message='check out fashiolista', url='http://www.fashiolista.com')
+    facebook.set('cocacola/likes')
+    facebook.fql('SELECT name FROM user WHERE uid = me()')
+    facebook.batch_fql([
+        'SELECT uid, name, pic_square FROM user WHERE uid = me()',
+        'SELECT uid, rsvp_status FROM event_member WHERE eid=12345678',
+    ])
+
+**Features**:
+
+* Supported and maintained
+* Tested so people can contribute
+* Facebook exceptions are mapped
+* Logging
 
 '''
 from django.http import QueryDict
@@ -534,14 +530,18 @@ class FacebookAuthorization(FacebookConnection):
 
 
 class OpenFacebook(FacebookConnection):
-
     '''
-    ========================================
-    Getting your authentication started
-    ========================================
+    :param access_token:
+        The facebook Access token
+
+        
+    Getting started
+    ===============
+    
     OpenFacebook gives you access to the facebook api.
     For most user related actions you need an access_token.
-    There are 3 ways of getting a facebook access_token
+    There are 3 ways of getting a facebook access_token.
+    
     1.) code is passed as request parameter and traded for an
         access_token using the api
     2.) code is passed through a signed cookie and traded for an access_token
@@ -560,9 +560,9 @@ class OpenFacebook(FacebookConnection):
     facebook = get_facebook_graph(request)
     print facebook.me()
 
-    ========================================
-    Actually using the facebook API
-    ========================================
+    Usage
+    =====
+    
     After retrieving an access token API calls are relatively straigh forward
 
     Getting info about me
@@ -593,9 +593,8 @@ class OpenFacebook(FacebookConnection):
         print facebook.set('me/feed', message='Check out Fashiolista',
                            picture=photo, url='http://www.fashiolista.com')
 
-    ========================================
     Contributing
-    ========================================
+    ============
 
     This API is actively maintained, just fork on github if you want to
     improve things.

@@ -1,9 +1,9 @@
-Exceptions
+Forms
 ==========
 
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: open_facebook.exceptions
+.. automodule:: django_facebook.forms
     :members:
 

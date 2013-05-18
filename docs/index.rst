@@ -8,10 +8,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   django_facebook/api
-   django_facebook/auth_backends
-   open_facebook/api
-   open_facebook/exceptions
+   django_facebook/index
+   open_facebook/index
    
 .. include :: ../README.rest
 

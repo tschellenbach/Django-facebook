@@ -34,3 +34,7 @@ def clean():
     local('bash -c "autopep8 -i open_facebook/*.py"')
     local('bash -c "autopep8 -i django_facebook/management/commands/*.py"')
     local('bash -c "autopep8 -i django_facebook/test_utils/*.py"')
+
+
+def docs():
+    local('sphinx-build -Eav docs html')

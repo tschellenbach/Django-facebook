@@ -4,6 +4,6 @@ Exceptions
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: open_facebook.exceptions
+.. automodule:: django_facebook.exceptions
     :members:
 
