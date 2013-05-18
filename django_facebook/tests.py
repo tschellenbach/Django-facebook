@@ -596,7 +596,7 @@ class UserConnectTest(FacebookTest):
             action, user = connect_user(self.request, facebook_graph=facebook)
             # The test form always sets username to test form
             self.assertEqual(user.username, 'Test form')
-            raise Exception, 'expected value error'
+            raise Exception('expected value error')
         except ValueError, e:
             pass
         finally:
