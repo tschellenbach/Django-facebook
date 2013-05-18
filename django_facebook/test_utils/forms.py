@@ -13,3 +13,6 @@ class SignupForm(forms.Form):
         data['username'] = 'Test form'
         data['password1'] = 'password'
         return data
+
+    def save(self):
+        pass

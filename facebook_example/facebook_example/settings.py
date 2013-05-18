@@ -5,7 +5,8 @@ django_version = django.VERSION
 # some complications related to our travis testing setup
 DJANGO = os.environ.get('DJANGO', '1.5.1')
 MODE = os.environ.get('MODE', 'standalone')
-CUSTOM_USER_MODEL = bool(os.environ.get('CUSTOM_USER_MODEL', '1'))
+CUSTOM_USER_MODEL = bool(int(os.environ.get('CUSTOM_USER_MODEL', '1')))
+
 if DJANGO != '1.5.1':
     CUSTOM_USER_MODEL = False
 

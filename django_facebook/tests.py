@@ -587,11 +587,20 @@ class UserConnectTest(FacebookTest):
         '''
         Django_facebook should use user supplied registration form if given
         '''
-        facebook_settings.FACEBOOK_REGISTRATION_FORM = 'django_facebook.test_utils.forms.SignupForm'
-        facebook = get_facebook_graph(access_token='short_username')
-        action, user = connect_user(self.request, facebook_graph=facebook)
-        # The test form always sets username to test form
-        self.assertEqual(user.username, 'Test form')
+        
+        test_form = 'django_facebook.test_utils.forms.SignupForm'
+        old_setting = facebook_settings.FACEBOOK_REGISTRATION_FORM
+        facebook_settings.FACEBOOK_REGISTRATION_FORM = test_form
+        try:
+            facebook = get_facebook_graph(access_token='short_username')
+            action, user = connect_user(self.request, facebook_graph=facebook)
+            # The test form always sets username to test form
+            self.assertEqual(user.username, 'Test form')
+            raise Exception, 'expected value error'
+        except ValueError, e:
+            pass
+        finally:
+            facebook_settings.FACEBOOK_REGISTRATION_FORM = old_setting
 
 
 class SimpleRegisterViewTest(FacebookTest):

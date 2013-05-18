@@ -230,16 +230,11 @@ def _register_user(request, facebook, profile_callback=None,
         # for new registration systems use the backends methods of saving
         new_user = None
         if backend:
-            new_user = backend.register(request, **form.cleaned_data)
+            new_user = backend.register(request, form=form, **form.cleaned_data)
         # fall back to the form approach
         if new_user is None:
-            # For backward compatibility, if django-registration form is used
             raise ValueError(
                 'new_user is None, note that backward compatability for the older versions of django registration has been dropped.')
-            # try:
-                # new_user = form.save(profile_callback=profile_callback)
-            # except TypeError:
-                # new_user = form.save()
     except IntegrityError, e:
         # this happens when users click multiple times, the first request registers
         # the second one raises an error
