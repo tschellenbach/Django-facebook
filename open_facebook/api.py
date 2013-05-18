@@ -694,8 +694,11 @@ class OpenFacebook(FacebookConnection):
         Shortcut for self.get('me/permissions')
         '''
         try:
+            permissions = {}
             permissions_response = self.get('me/permissions')
-            permissions = permissions_response['data'][0]
+            print permissions_response
+            if permissions_response.get('data'):
+                permissions = permissions_response['data'][0]
         except facebook_exceptions.OAuthException:
             permissions = {}
         permissions_dict = dict([(k, bool(int(v)))
