@@ -52,8 +52,8 @@ REQUEST_ATTEMPTS = 3
 class FacebookConnection(object):
 
     '''
-    Shared class for sending requests to facebook and parsing
-    the api response
+    Shared utility class implementing the parsing
+    of Facebook API responses
     '''
     api_url = 'https://graph.facebook.com/'
     # this older url is still used for fql requests
@@ -63,6 +63,18 @@ class FacebookConnection(object):
     def request(cls, path='', post_data=None, old_api=False, **params):
         '''
         Main function for sending the request to facebook
+
+        **Example**::
+            FacebookConnection.request('me')
+
+        :param path:
+            The path to request, examples: /me/friends/, /me/likes/
+
+        :param post_data:
+            A dictionary of data to post
+
+        :param parms:
+            The get params to include
         '''
         api_base_url = cls.old_api_url if old_api else cls.api_url
         if getattr(cls, 'access_token', None):
@@ -530,18 +542,19 @@ class FacebookAuthorization(FacebookConnection):
 
 
 class OpenFacebook(FacebookConnection):
+
     '''
     :param access_token:
         The facebook Access token
 
-        
+
     Getting started
     ===============
-    
+
     OpenFacebook gives you access to the facebook api.
     For most user related actions you need an access_token.
     There are 3 ways of getting a facebook access_token.
-    
+
     1.) code is passed as request parameter and traded for an
         access_token using the api
     2.) code is passed through a signed cookie and traded for an access_token
@@ -562,7 +575,7 @@ class OpenFacebook(FacebookConnection):
 
     Usage
     =====
-    
+
     After retrieving an access token API calls are relatively straigh forward
 
     Getting info about me

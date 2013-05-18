@@ -15,11 +15,11 @@ class FacebookBackend(backends.ModelBackend):
     This backend hides the difference between authenticating with
     - a django 1.5 custom user model
     - profile models, which were used prior to 1.5
-    
+
     **Example usage**
-    
+
     >>> FacebookBackend().authenticate(facebook_id=myid)
-    
+
     '''
 
     def authenticate(self, *args, **kwargs):
