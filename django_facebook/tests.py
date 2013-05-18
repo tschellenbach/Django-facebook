@@ -587,7 +587,7 @@ class UserConnectTest(FacebookTest):
         '''
         Django_facebook should use user supplied registration form if given
         '''
-        
+
         test_form = 'django_facebook.test_utils.forms.SignupForm'
         old_setting = facebook_settings.FACEBOOK_REGISTRATION_FORM
         facebook_settings.FACEBOOK_REGISTRATION_FORM = test_form

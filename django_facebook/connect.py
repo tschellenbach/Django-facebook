@@ -230,7 +230,8 @@ def _register_user(request, facebook, profile_callback=None,
         # for new registration systems use the backends methods of saving
         new_user = None
         if backend:
-            new_user = backend.register(request, form=form, **form.cleaned_data)
+            new_user = backend.register(request,
+                                        form=form, **form.cleaned_data)
         # fall back to the form approach
         if new_user is None:
             raise ValueError(
