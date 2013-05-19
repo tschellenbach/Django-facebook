@@ -62,10 +62,12 @@ Once you get your access token, Open Facebook gives you access to the Facebook A
 There are 3 ways of getting a facebook access_token and these are currently
 implemented by Django Facebook.
 
-1.) code is passed as request parameter and traded for an
+1. code is passed as request parameter and traded for an
     access_token using the api
-2.) code is passed through a signed cookie and traded for an access_token
-3.) access_token is passed directly (retrieved through javascript, which
+
+2. code is passed through a signed cookie and traded for an access_token
+
+3. access_token is passed directly (retrieved through javascript, which
     would be bad security, or through one of the mobile flows.)
 
 If you are looking to develop your own flow for a different framework have a look at
@@ -77,6 +79,7 @@ understand the required functionality
 
 
 **Api docs**:
+
 
 '''
 from django.http import QueryDict
