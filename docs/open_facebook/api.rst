@@ -5,5 +5,5 @@ Open Facebook API
    :maxdepth: 2
 
 .. automodule:: open_facebook.api
-    :members:
+    :members: OpenFacebook, FacebookAuthorization, FacebookConnection
 

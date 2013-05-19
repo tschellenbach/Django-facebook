@@ -6,26 +6,77 @@ Open Facebook - Pythonic access to the open graph
 
 Open Facebook allows you to use Facebook's open graph API with simple python code
 
-**Basic examples**::
-
-    facebook = OpenFacebook(access_token)
-
-    facebook.get('me')
-    facebook.set('1789/comments', message='check out fashiolista')
-    facebook.set('me/feed', message='check out fashiolista', url='http://www.fashiolista.com')
-    facebook.set('cocacola/likes')
-    facebook.fql('SELECT name FROM user WHERE uid = me()')
-    facebook.batch_fql([
-        'SELECT uid, name, pic_square FROM user WHERE uid = me()',
-        'SELECT uid, rsvp_status FROM event_member WHERE eid=12345678',
-    ])
-
 **Features**:
 
 * Supported and maintained
 * Tested so people can contribute
 * Facebook exceptions are mapped
 * Logging
+
+
+**Basic examples**::
+
+    facebook = OpenFacebook(access_token)
+
+    # Getting info about me
+    facebook.get('me')
+
+    # Learning some more about fashiolista
+    facebook.get('fashiolista')
+
+    # Writing your first comment
+    facebook.set('fashiolista/comments', message='I love Fashiolista!')
+
+
+    # Posting to a users wall
+    facebook.set('me/feed', message='check out fashiolista', url='http://www.fashiolista.com')
+
+    # Liking a page
+    facebook.set('fashiolista/likes')
+
+    # Getting who likes cocacola
+    facebook.set('cocacola/likes')
+
+    # Use fql to retrieve your name
+    facebook.fql('SELECT name FROM user WHERE uid = me()')
+
+    # Executing fql in batch
+    facebook.batch_fql([
+        'SELECT uid, name, pic_square FROM user WHERE uid = me()',
+        'SELECT uid, rsvp_status FROM event_member WHERE eid=12345678',
+    ])
+
+    # Uploading pictures
+    photo_urls = [
+        'http://e.fashiocdn.com/images/entities/0/7/B/I/9/0.365x365.jpg',
+        'http://e.fashiocdn.com/images/entities/0/5/e/e/r/0.365x365.jpg',
+    ]
+    for photo in photo_urls:
+        print facebook.set('me/feed', message='Check out Fashiolista',
+                           picture=photo, url='http://www.fashiolista.com')
+
+
+**Getting an access token**
+
+Once you get your access token, Open Facebook gives you access to the Facebook API
+There are 3 ways of getting a facebook access_token and these are currently
+implemented by Django Facebook.
+
+1.) code is passed as request parameter and traded for an
+    access_token using the api
+2.) code is passed through a signed cookie and traded for an access_token
+3.) access_token is passed directly (retrieved through javascript, which
+    would be bad security, or through one of the mobile flows.)
+
+If you are looking to develop your own flow for a different framework have a look at
+Facebook's documentation:
+http://developers.facebook.com/docs/authentication/
+
+Also have a look at the :class:`.FacebookRequired` decorator and :func:`get_persistent_graph` function to
+understand the required functionality
+
+
+**Api docs**:
 
 '''
 from django.http import QueryDict
@@ -332,6 +383,19 @@ class FacebookAuthorization(FacebookConnection):
                      redirect_uri='http://local.mellowmorning.com:8000/facebook/connect/'):
         '''
         Turns a code into an access token
+
+        **Example**::
+
+            FacebookAuthorization.convert_code(code)
+
+        :param code:
+            The code to convert
+
+        :param redirect_uri:
+            The redirect uri with which the code was requested
+
+        :returns: dict
+
         '''
         kwargs = cls._client_info()
         kwargs['code'] = code
@@ -346,6 +410,15 @@ class FacebookAuthorization(FacebookConnection):
         We can extend the token only once per day
         Normal short lived tokens last 1-2 hours
         Long lived tokens (given by extending) last 60 days
+
+        **Example**::
+
+            FacebookAuthorization.extend_access_token(access_token)
+
+        :param access_token:
+            The access_token to extend
+
+        :returns: dict
         '''
         kwargs = cls._client_info()
         kwargs['grant_type'] = 'fb_exchange_token'
@@ -544,80 +617,20 @@ class FacebookAuthorization(FacebookConnection):
 class OpenFacebook(FacebookConnection):
 
     '''
-    :param access_token:
-        The facebook Access token
+    The main api class, initialize using
 
+    **Example**::
 
-    Getting started
-    ===============
-
-    OpenFacebook gives you access to the facebook api.
-    For most user related actions you need an access_token.
-    There are 3 ways of getting a facebook access_token.
-
-    1.) code is passed as request parameter and traded for an
-        access_token using the api
-    2.) code is passed through a signed cookie and traded for an access_token
-    3.) access_token is passed directly (retrieved through javascript, which
-        would be bad security, or through one of the mobile flows.)
-    Requesting a code for flow 1 and 2 is quite easy. Facebook doc's are here:
-    http://developers.facebook.com/docs/authentication/
-    Client side code request
-    For the client side flow simply use the FB.login functionality
-    and on the landing page call
-    facebook = get_facebook_graph(request)
-    print facebook.me()
-
-    Server side code request
-
-    facebook = get_facebook_graph(request)
-    print facebook.me()
-
-    Usage
-    =====
-
-    After retrieving an access token API calls are relatively straigh forward
-
-    Getting info about me
-    facebook.get('me')
-
-    Learning some more about fashiolista
-    facebook.get('fashiolista')
-
-    Writing your first comment
-    facebook.set('fashiolista/comments', message='I love Fashiolista!')
-
-    Posting to a users wall
-    facebook.set('me/feed', message='check out fashiolista',
-                 url='http://www.fashiolista.com')
-
-    Liking a page
-    facebook.set('fashiolista/likes')
-
-    Executing some fql
-    facebook.fql('SELECT name FROM user WHERE uid = me()')
-
-    Uploading pictures
-    photo_urls = [
-        'http://e.fashiocdn.com/images/entities/0/7/B/I/9/0.365x365.jpg',
-        'http://e.fashiocdn.com/images/entities/0/5/e/e/r/0.365x365.jpg',
-    ]
-    for photo in photo_urls:
-        print facebook.set('me/feed', message='Check out Fashiolista',
-                           picture=photo, url='http://www.fashiolista.com')
-
-    Contributing
-    ============
-
-    This API is actively maintained, just fork on github if you want to
-    improve things.
-    Follow the author: Thierry Schellenbach (@tschellenbach)
-    blog: http://www.mellowmorning.com/
-    my company: http://www.fashiolista.com/
+        graph = OpenFacebook(access_token)
+        print graph.get('me')
 
     '''
     def __init__(self, access_token=None, prefetched_data=None,
                  expires=None, current_user_id=None):
+        '''
+            :param access_token:
+                The facebook Access token
+        '''
         self.access_token = access_token
         # extra data coming from signed cookies
         self.prefetched_data = prefetched_data
@@ -632,6 +645,8 @@ class OpenFacebook(FacebookConnection):
     def is_authenticated(self):
         '''
         Ask facebook if we have access to the users data
+
+        :returns:  bool
         '''
         try:
             me = self.me()
@@ -643,14 +658,59 @@ class OpenFacebook(FacebookConnection):
         return authenticated
 
     def get(self, path, **kwargs):
+        '''
+        Make a Facebook API call
+
+        **Example**::
+
+            open_facebook.get('me')
+            open_facebook.get('me', fields='id,name')
+
+        :param path:
+            The path to use for making the API call
+
+        :returns:  dict
+        '''
         response = self.request(path, **kwargs)
         return response
 
     def get_many(self, *ids, **kwargs):
+        '''
+        Make a batched Facebook API call
+        For multiple ids
+
+        **Example**::
+
+            open_facebook.get('me', 'starbucks')
+            open_facebook.get('me', 'starbucks', fields='id,name')
+
+        :param path:
+            The path to use for making the API call
+
+        :returns:  dict
+        '''
         kwargs['ids'] = ','.join(ids)
         return self.request(**kwargs)
 
     def set(self, path, params=None, **post_data):
+        '''
+        Write data to facebook
+
+        **Example**::
+
+            open_facebook.set('me/feed', message='testing open facebook')
+
+        :param path:
+            The path to use for making the API call
+
+        :param params:
+            A dictionary of get params
+
+        :param post_data:
+            The kwargs for posting to facebook
+
+        :returns:  dict
+        '''
         assert self.access_token, 'Write operations require an access token'
         if not params:
             params = {}
@@ -659,13 +719,37 @@ class OpenFacebook(FacebookConnection):
         response = self.request(path, post_data=post_data, **params)
         return response
 
-    def delete(self, *args, **kwargs):
+    def delete(self, path, *args, **kwargs):
+        '''
+        Delete the given bit of data
+
+        **Example**::
+
+            graph.delete(12345)
+
+        :param path:
+            the id of the element to remove
+
+        '''
+
         kwargs['method'] = 'delete'
-        self.request(*args, **kwargs)
+        self.request(path, *args, **kwargs)
 
     def fql(self, query, **kwargs):
         '''
         Runs the specified query against the Facebook FQL API.
+
+        **Example**::
+
+            open_facebook.fql('SELECT name FROM user WHERE uid = me()')
+
+        :param query:
+            The query to execute
+
+        :param kwargs:
+            Extra options to send to facebook
+
+        :returns:  dict
         '''
         kwargs['q'] = query
         path = 'fql'
@@ -680,9 +764,21 @@ class OpenFacebook(FacebookConnection):
         queries_dict a dict with the required queries
         returns the query results in:
 
-        response['fql_results']['query1']
-        response['fql_results']['query2']
-        etc
+        **Example**::
+
+            response = facebook.batch_fql({
+                name: 'SELECT uid, name, pic_square FROM user WHERE uid = me()',
+                rsvp: 'SELECT uid, rsvp_status FROM event_member WHERE eid=12345678',
+            })
+
+            # accessing the results
+            response['fql_results']['name']
+            response['fql_results']['rsvp']
+
+        :param queries_dict:
+            A dictiontary of queries to execute
+
+        :returns: dict
         '''
         query = json.dumps(queries_dict)
         query_results = self.fql(query)
@@ -703,7 +799,10 @@ class OpenFacebook(FacebookConnection):
 
     def permissions(self):
         '''
-        Shortcut for self.get('me/permissions')
+        Shortcut for self.get('me/permissions') with some extra parsing
+        to turn it into a dictionary of booleans
+
+        :returns: dict
         '''
         try:
             permissions = {}
@@ -719,6 +818,19 @@ class OpenFacebook(FacebookConnection):
         return permissions_dict
 
     def has_permissions(self, required_permissions):
+        '''
+        Validate if all the required_permissions are currently given
+        by the user
+
+        **Example**::
+
+            open_facebook.has_permissions(['publish_actions','read_stream'])
+
+        :param required_permissions:
+            A list of required permissions
+
+        :returns: bool
+        '''
         permissions_dict = self.permissions()
         # see if we have all permissions
         has_permissions = True
@@ -730,6 +842,12 @@ class OpenFacebook(FacebookConnection):
     def my_image_url(self, size=None):
         '''
         Returns the image url from your profile
+        Shortcut for me/picture
+
+        :param size:
+            the type of the image to request, see facebook for available formats
+
+        :returns: string
         '''
         query_dict = QueryDict('', True)
         if size:
@@ -740,9 +858,6 @@ class OpenFacebook(FacebookConnection):
         return url
 
     def request(self, path='', post_data=None, old_api=False, **params):
-        '''
-        Main function for sending the request to facebook
-        '''
         api_base_url = self.old_api_url if old_api else self.api_url
         if getattr(self, 'access_token', None):
             params['access_token'] = self.access_token
