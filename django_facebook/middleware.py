@@ -1,9 +1,5 @@
 # -*- coding: UTF-8 -*-
-'''
-Created on Jan 9, 2013
 
-@author: dudu
-'''
 from urlparse import urlparse
 from open_facebook.api import FacebookAuthorization, OpenFacebook
 from django_facebook.canvas import generate_oauth_url
@@ -11,25 +7,38 @@ from django_facebook.utils import ScriptRedirect
 from django_facebook.connect import connect_user
 from django.contrib.auth import logout
 from django_facebook import settings
+from django_facebook.exceptions import MissingPermissionsError
 
 redirect_login_oauth = ScriptRedirect(redirect_to=generate_oauth_url(),
                                       show_body=False)
-
 
 class FacebookCanvasMiddleWare(object):
 
     def process_request(self, request):
         """
-        check if referer is facebook. If yes, this is the canvas page:
-        if not return.
-        if yes:
-        1) look for error. if error=permission denied -> redirect to permission. if other error: check what it can be
-        2) get signed_request and parse it.
-        3) if user_id and access_token not it parsed data -> redirect to permission page
-        4) check permissions
-        5) user:
-        a) if user is authenticated: check if it's the same
-        b) user is not authenticated: connect
+        This middleware authenticates the facebook user when
+        he/she is accessing the app from facebook (not an internal page)
+        The flow is show below:
+        
+        if referer is facebook:
+            it's a canvas app and the first hit on the app
+            If error:
+                attempt to reauthenticate using authorization dialog
+            if signed_request not sent or does not have the user_id and the access_token:
+                user has not authorized app
+                redirect to authorization dialog
+            else:
+                check permissions
+                if user is authenticated (in django):
+                    check if current facebook user is the same that is authenticated
+                    if not: logout authenticated user
+                if user is not authenticated:
+                    connect_user (django_facebook.connect module)
+                changed method to GET. Facebook always sends a POST first.
+        else:
+            It's an internal page.
+            No signed_request is sent.
+            Return 
         """
         # check referer to see if this is the first access
         # or it's part of navigation in app
@@ -48,45 +57,24 @@ class FacebookCanvasMiddleWare(object):
 
         # get signed_request
         signed_request = request.POST.get('signed_request', None)
-        # not sure if this can happen, but better check anyway
-        if not signed_request:
-            return redirect_login_oauth
-
-        # get signed_request and redirect to authorization dialog if app not
-        # authorized by user
-        parsed_signed_request = FacebookAuthorization.parse_signed_data(
-            signed_request)
-        if 'user_id' not in parsed_signed_request or 'oauth_token' not in parsed_signed_request:
-            return redirect_login_oauth
-
-        access_token = parsed_signed_request['oauth_token']
-        facebook_id = long(parsed_signed_request['user_id'])
+        try:
+            # get signed_request
+            parsed_signed_request = FacebookAuthorization.parse_signed_data(
+                                                            signed_request)
+            access_token = parsed_signed_request['oauth_token']
+            facebook_id = long(parsed_signed_request['user_id'])
+        except:
+            #redirect to authorization dialog
+            #if app not authorized by user
+            return redirect_login_oauth    
         # check for permissions
-        graph = OpenFacebook(access_token)
-        permissions = set(graph.permissions())
-        scope_list = set(settings.FACEBOOK_DEFAULT_SCOPE)
-        if scope_list - permissions:
+        try:
+            graph = self.check_permissions(access_token)
+        except MissingPermissionsError: 
             return redirect_login_oauth
         # check if user authenticated and if it's the same
         if request.user.is_authenticated():
-            try:
-                current_user = request.user.get_profile()
-            except:
-                current_facebook_id = None
-            else:
-                current_facebook_id = current_user.facebook_id
-            if not current_facebook_id or current_facebook_id != facebook_id:
-                logout(request)
-                # clear possible caches
-                if hasattr(request, 'facebook'):
-                    del request.facebook
-                if request.session.get('graph', None):
-                    del request.session['graph']
-            else:
-                # save last access_token to make sure we always have the most
-                # recent one
-                current_user.access_token = access_token
-                current_user.save()
+            self.check_django_facebook_user(request, facebook_id, access_token)
         request.facebook = graph
         if not request.user.is_authenticated():
             _action, _user = connect_user(request, access_token, graph)
@@ -94,3 +82,33 @@ class FacebookCanvasMiddleWare(object):
         if request.method == 'POST':
             request.method = 'GET'
         return
+
+    def check_permissions(self, access_token):
+        graph = OpenFacebook(access_token)
+        permissions = set(graph.permissions())
+        scope_list = set(settings.FACEBOOK_DEFAULT_SCOPE)
+        missing_perms = scope_list-permissions 
+        if missing_perms:
+            raise MissingPermissionsError('Permissions Missing: %s' %
+                                          ', '.join(missing_perms))
+        return graph
+
+    def check_django_facebook_user(self, request, facebook_id, access_token):
+        try:
+            current_user = request.user.get_profile()
+        except:
+            current_facebook_id = None
+        else:
+            current_facebook_id = current_user.facebook_id
+        if not current_facebook_id or current_facebook_id != facebook_id:
+            logout(request)
+            # clear possible caches
+            if hasattr(request, 'facebook'):
+                del request.facebook
+            if request.session.get('graph', None):
+                del request.session['graph']
+        else:
+            # save last access_token to make sure we always have the most
+            # recent one
+            current_user.access_token = access_token
+            current_user.save()
