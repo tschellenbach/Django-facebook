@@ -15,5 +15,6 @@ class AlreadyConnectedError(FacebookException):
 class AlreadyRegistered(FacebookException):
     pass
 
+
 class MissingPermissionsError(FacebookException):
     pass

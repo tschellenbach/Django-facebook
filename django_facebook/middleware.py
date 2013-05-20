@@ -12,6 +12,7 @@ from django_facebook.exceptions import MissingPermissionsError
 redirect_login_oauth = ScriptRedirect(redirect_to=generate_oauth_url(),
                                       show_body=False)
 
+
 class FacebookCanvasMiddleWare(object):
 
     def process_request(self, request):
@@ -19,7 +20,7 @@ class FacebookCanvasMiddleWare(object):
         This middleware authenticates the facebook user when
         he/she is accessing the app from facebook (not an internal page)
         The flow is show below:
-        
+
         if referer is facebook:
             it's a canvas app and the first hit on the app
             If error:
@@ -38,7 +39,7 @@ class FacebookCanvasMiddleWare(object):
         else:
             It's an internal page.
             No signed_request is sent.
-            Return 
+            Return
         """
         # check referer to see if this is the first access
         # or it's part of navigation in app
@@ -60,17 +61,17 @@ class FacebookCanvasMiddleWare(object):
         try:
             # get signed_request
             parsed_signed_request = FacebookAuthorization.parse_signed_data(
-                                                            signed_request)
+                signed_request)
             access_token = parsed_signed_request['oauth_token']
             facebook_id = long(parsed_signed_request['user_id'])
         except:
-            #redirect to authorization dialog
-            #if app not authorized by user
-            return redirect_login_oauth    
+            # redirect to authorization dialog
+            # if app not authorized by user
+            return redirect_login_oauth
         # check for permissions
         try:
             graph = self.check_permissions(access_token)
-        except MissingPermissionsError: 
+        except MissingPermissionsError:
             return redirect_login_oauth
         # check if user authenticated and if it's the same
         if request.user.is_authenticated():
@@ -87,7 +88,7 @@ class FacebookCanvasMiddleWare(object):
         graph = OpenFacebook(access_token)
         permissions = set(graph.permissions())
         scope_list = set(settings.FACEBOOK_DEFAULT_SCOPE)
-        missing_perms = scope_list-permissions 
+        missing_perms = scope_list-permissions
         if missing_perms:
             raise MissingPermissionsError('Permissions Missing: %s' %
                                           ', '.join(missing_perms))
