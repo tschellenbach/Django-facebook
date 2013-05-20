@@ -140,10 +140,6 @@ class FacebookConnection(object):
     @classmethod
     def _request(cls, url, post_data=None, timeout=REQUEST_TIMEOUT,
                  attempts=REQUEST_ATTEMPTS):
-        '''
-        request the given url and parse it as json
-        urllib2 raises errors on different status codes so use a try except
-        '''
         # change fb__explicitly_shared to fb:explicitly_shared
         if post_data:
             post_data = dict(
@@ -275,6 +271,16 @@ class FacebookConnection(object):
     def raise_error(cls, error_type, message):
         '''
         Lookup the best error class for the error and raise it
+        
+        **Example**::
+        
+            FacebookConnection.raise_error(10, 'OAuthException')
+
+        :param error_type:
+            the error type from the facebook api call
+            
+        :param message:
+            the error message from the facebook api call
         '''
         default_error_class = facebook_exceptions.OpenFacebookException
         error_class = None
@@ -370,16 +376,17 @@ class FacebookAuthorization(FacebookConnection):
 
     '''
     Methods for getting us an access token
+    
     There are several flows we must support
-    - js authentication flow (signed cookie)
-    - facebook app authentication flow (signed cookie)
-    - facebook oauth redirect (code param in url)
+    * js authentication flow (signed cookie)
+    * facebook app authentication flow (signed cookie)
+    * facebook oauth redirect (code param in url)
     These 3 options need to be converted to an access token
 
     Also handles several testing scenarios
-    - get app access token
-    - create test user
-    - get_or_create_test_user
+    * get app access token
+    * create test user
+    * get_or_create_test_user
     '''
     @classmethod
     def convert_code(cls, code,
@@ -503,12 +510,16 @@ class FacebookAuthorization(FacebookConnection):
     @classmethod
     def create_test_user(cls, app_access_token, permissions=None, name=None):
         '''
-        My test user
-        {u'access_token': u'215464901804004|2.AQBHGHuWRllFbN4E.3600.1311465600.0-100002619711402|EtaLBkqHGsTa0cpMlFA4bmL4aAc', u'password': u'564490991', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002619711402&n=3c5fAe1nNVk0HaJ', u'id': u'100002619711402', u'email': u'hello_luncrwh_world@tfbnw.net'}
-        #with write permissions
-        {u'access_token': u'215464901804004|2.AQAwYr7AYNkKS9Rn.3600.1311469200.0-100002646981608|NtiF-ioL-98NF5juQtN2UXc0wKU', u'password': u'1291131687', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002646981608&n=yU5ZvTTv4UjJJOt', u'id': u'100002646981608', u'email': u'hello_klsdgrf_world@tfbnw.net'}
-        offline permissions
-        {u'access_token': u'215464901804004|b8d73771906a072829857c2f.0-100002661892257|DALPDLEZl4B0BNm0RYXnAsuri-I', u'password': u'1932271520', u'login_url': u'https://www.facebook.com/platform/test_account_login.php?user_id=100002661892257&n=Zdu5jdD4tjNsfma', u'id': u'100002661892257', u'email': u'hello_nrthuig_world@tfbnw.net'}
+        Creates a test user with the given permissions and name
+        
+        :param app_access_token:
+            The application's access token
+            
+        :param permissions:
+            The list of permissions to request for the test user
+        
+        :param name:
+            Optionally specify the name
         '''
         if not permissions:
             permissions = ['read_stream', 'publish_stream',
