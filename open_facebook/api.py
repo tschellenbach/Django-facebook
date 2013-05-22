@@ -29,7 +29,8 @@ Open Facebook allows you to use Facebook's open graph API with simple python cod
 
 
     # Posting to a users wall
-    facebook.set('me/feed', message='check out fashiolista', url='http://www.fashiolista.com')
+    facebook.set('me/feed', message='check out fashiolista',
+                 url='http://www.fashiolista.com')
 
     # Liking a page
     facebook.set('fashiolista/likes')
@@ -271,14 +272,14 @@ class FacebookConnection(object):
     def raise_error(cls, error_type, message):
         '''
         Lookup the best error class for the error and raise it
-        
+
         **Example**::
-        
+
             FacebookConnection.raise_error(10, 'OAuthException')
 
         :param error_type:
             the error type from the facebook api call
-            
+
         :param message:
             the error message from the facebook api call
         '''
@@ -376,7 +377,7 @@ class FacebookAuthorization(FacebookConnection):
 
     '''
     Methods for getting us an access token
-    
+
     There are several flows we must support
     * js authentication flow (signed cookie)
     * facebook app authentication flow (signed cookie)
@@ -511,13 +512,13 @@ class FacebookAuthorization(FacebookConnection):
     def create_test_user(cls, app_access_token, permissions=None, name=None):
         '''
         Creates a test user with the given permissions and name
-        
+
         :param app_access_token:
             The application's access token
-            
+
         :param permissions:
             The list of permissions to request for the test user
-        
+
         :param name:
             Optionally specify the name
         '''

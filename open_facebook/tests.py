@@ -191,10 +191,12 @@ class TestPublishing(OpenFacebookTest):
     def test_permissions(self):
         graph = self.thi.graph()
         permission_responses = [
-            ({u'paging': {u'next': u'https://graph.facebook.com/100005270323705/permissions?access_token=CAADD9tTuZCZBQBALXBfM0xDzsn68jAS8HgUSnbhRkZAp5L1FFpY7iLu3aAytCv8jGN4ZCXZAbZCehSvnK7e8d9P22FZCeHarRnFbFne8MluM0S7UNhoCwKWBNrazrs2tjZCIelQAdzesschwzUr3kRCR0oL9bW4Tp6syWmjm0FOUjwZDZD&limit=5000&offset=5000'}, u'data': [{u'user_photos': 1, u'publish_actions': 1, u'read_stream': 1, u'video_upload': 1, u'installed': 1, u'offline_access': 1, u'create_note': 1, u'publish_stream': 1, u'photo_upload': 1, u'share_item': 1, u'status_update': 1}]},
-             {u'user_photos': True, u'publish_actions': True, u'read_stream': True, u'video_upload': True, u'installed': True, u'offline_access': True, u'create_note': True, u'publish_stream': True, u'photo_upload': True, u'share_item': True, u'status_update': True}),
-            ({u'paging': {u'next': u'https://graph.facebook.com/100005270323705/permissions?access_token=CAADD9tTuZCZBQBALXBfM0xDzsn68jAS8HgUSnbhRkZAp5L1FFpY7iLu3aAytCv8jGN4ZCXZAbZCehSvnK7e8d9P22FZCeHarRnFbFne8MluM0S7UNhoCwKWBNrazrs2tjZCIelQAdzesschwzUr3kRCR0oL9bW4Tp6syWmjm0FOUjwZDZD&limit=5000&offset=5000'}, u'data': []},
-             {}),
+            (
+                {u'paging': {u'next': u'https://graph.facebook.com/100005270323705/permissions?access_token=CAADD9tTuZCZBQBALXBfM0xDzsn68jAS8HgUSnbhRkZAp5L1FFpY7iLu3aAytCv8jGN4ZCXZAbZCehSvnK7e8d9P22FZCeHarRnFbFne8MluM0S7UNhoCwKWBNrazrs2tjZCIelQAdzesschwzUr3kRCR0oL9bW4Tp6syWmjm0FOUjwZDZD&limit=5000&offset=5000'}, u'data': [{u'user_photos': 1, u'publish_actions': 1, u'read_stream': 1, u'video_upload': 1, u'installed': 1, u'offline_access': 1, u'create_note': 1, u'publish_stream': 1, u'photo_upload': 1, u'share_item': 1, u'status_update': 1}]},
+                {u'user_photos': True, u'publish_actions': True, u'read_stream': True, u'video_upload': True, u'installed': True, u'offline_access': True, u'create_note': True, u'publish_stream': True, u'photo_upload': True, u'share_item': True, u'status_update': True}),
+            (
+                {u'paging': {u'next': u'https://graph.facebook.com/100005270323705/permissions?access_token=CAADD9tTuZCZBQBALXBfM0xDzsn68jAS8HgUSnbhRkZAp5L1FFpY7iLu3aAytCv8jGN4ZCXZAbZCehSvnK7e8d9P22FZCeHarRnFbFne8MluM0S7UNhoCwKWBNrazrs2tjZCIelQAdzesschwzUr3kRCR0oL9bW4Tp6syWmjm0FOUjwZDZD&limit=5000&offset=5000'}, u'data': []},
+                {}),
         ]
         # test the full flow, just check no errors are raised
         live_permissions = graph.permissions()

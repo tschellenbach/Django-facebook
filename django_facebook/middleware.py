@@ -88,10 +88,12 @@ class FacebookCanvasMiddleWare(object):
         graph = OpenFacebook(access_token)
         permissions = set(graph.permissions())
         scope_list = set(settings.FACEBOOK_DEFAULT_SCOPE)
-        missing_perms = scope_list-permissions
+        missing_perms = scope_list - permissions
         if missing_perms:
-            raise MissingPermissionsError('Permissions Missing: %s' %
-                                          ', '.join(missing_perms))
+            permissions_string = ', '.join(missing_perms)
+            error_format = 'Permissions Missing: %s'
+            raise MissingPermissionsError(error_format % permissions_string)
+
         return graph
 
     def check_django_facebook_user(self, request, facebook_id, access_token):
