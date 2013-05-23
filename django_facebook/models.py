@@ -159,7 +159,7 @@ class BaseFacebookModel(models.Model):
 
         from django_facebook.signals import facebook_token_extend_finished
         facebook_token_extend_finished.send(
-            sender=get_user_model(), user=self.get_user(), profile=self,
+            sender=settings.AUTH_USER_MODEL, user=self.get_user(), profile=self,
             token_changed=token_changed, old_token=old_token
         )
 
@@ -209,7 +209,6 @@ FacebookProfileModel = FacebookModel
 
 
 class FacebookUser(models.Model):
-
     '''
     Model for storing a users friends
     '''
@@ -254,23 +253,21 @@ class FacebookProfile(FacebookProfileModel):
     Use this by setting
     AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile'
     '''
-    user = models.OneToOneField(get_user_model())
+    user = models.OneToOneField(settings.AUTH_USER_MODEL)
 
 
 try:
     from django.contrib.auth.models import AbstractUser, UserManager
 
-    class FacebookUser(AbstractUser, FacebookModel):
-
+    class FacebookCustomUser(AbstractUser, FacebookModel):
         '''
         The django 1.5 approach to adding the facebook related fields
         '''
         objects = UserManager()
         # add any customizations you like
-        state = models.CharField(max_lenght=255, blank=True, null=True)
+        state = models.CharField(max_length=255, blank=True, null=True)
 except ImportError, e:
     logger.info('Couldnt setup FacebookUser, got error %s', e)
-    pass
 
 
 class BaseModelMetaclass(ModelBase):
@@ -400,7 +397,7 @@ class OpenGraphShare(BaseModel):
     '''
     objects = model_managers.OpenGraphShareManager()
 
-    user = models.ForeignKey(get_user_model())
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
 
     # domain stores
     action_domain = models.CharField(max_length=255)
@@ -544,7 +541,7 @@ class OpenGraphShare(BaseModel):
 
 
 class FacebookInvite(CreatedAtAbstractBase):
-    user = models.ForeignKey(get_user_model())
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     user_invited = models.CharField(max_length=255)
     message = models.TextField(blank=True, null=True)
     type = models.CharField(blank=True, null=True, max_length=255)
