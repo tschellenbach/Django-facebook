@@ -28,6 +28,15 @@ def validate():
         local('python %s test open_facebook django_facebook' % manage_py)
 
 
+def full_validate():
+    with cd(PROJECT_ROOT):
+        local(
+            'pep8 --exclude=migrations --ignore=E501,E225 django_facebook open_facebook')
+        local('CUSTOM_USER_MODEL=0 python %s test open_facebook django_facebook' % manage_py)
+        local('CUSTOM_USER_MODEL=1 python %s test open_facebook django_facebook' % manage_py)
+        local('CUSTOM_USER_MODEL=0 MODE=userena python %s test open_facebook django_facebook' % manage_py)
+
+
 def clean():
     local('bash -c "autopep8 -i *.py"')
     local('bash -c "autopep8 -i django_facebook/*.py"')
