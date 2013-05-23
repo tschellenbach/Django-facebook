@@ -16,7 +16,7 @@ try:
         '''
         objects = UserManager()
         # add any customizations you like
-        state = models.CharField(max_lenght=255, blank=True, null=True)
+        state = models.CharField(max_length=255, blank=True, null=True)
 except ImportError, e:
     logger.info('Couldnt setup FacebookUser, got error %s', e)
     pass
