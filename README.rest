@@ -132,7 +132,7 @@ Whereas Django 1.5 and up can use a custom user model.
 
 If you don't already have a custom user model, simply uses the provided model by setting your AUTH_USER_MODEL to FacebookUser::
 
-AUTH_USER_MODEL = 'member.FacebookUser'
+AUTH_USER_MODEL = 'django_facebook.FacebookUser'
 
 Alternatively use the abstract model provided in django_facebook.models.FacebookProfileModel
 

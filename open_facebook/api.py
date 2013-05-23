@@ -822,7 +822,6 @@ class OpenFacebook(FacebookConnection):
         try:
             permissions = {}
             permissions_response = self.get('me/permissions')
-            print permissions_response
             if permissions_response.get('data'):
                 permissions = permissions_response['data'][0]
         except facebook_exceptions.OAuthException:

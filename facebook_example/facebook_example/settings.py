@@ -32,7 +32,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 if CUSTOM_USER_MODEL:
-    AUTH_USER_MODEL = 'member.FacebookUser'
+    AUTH_USER_MODEL = 'django_facebook.FacebookUser'
 else:
     AUTH_USER_MODEL = 'auth.User'
     AUTH_PROFILE_MODULE = 'member.UserProfile'

@@ -54,6 +54,18 @@ class OpenFacebookTest(unittest.TestCase):
         for user_slug, user_object in TEST_USER_OBJECTS.items():
             setattr(self, user_slug, user_object)
 
+        # capture print statements
+        import sys
+        import StringIO
+        self.prints = sys.stdout = StringIO.StringIO()
+
+    def tearDown(self):
+        # complain about print statements
+        self.prints.seek(0)
+        content = self.prints.read()
+        if content:
+            raise ValueError('print statement found, output %s' % content)
+
 
 class TestErrorMapping(OpenFacebookTest):
 

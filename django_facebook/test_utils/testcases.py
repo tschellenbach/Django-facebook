@@ -43,9 +43,9 @@ class FacebookTest(TestCase):
         user_model.objects.create(**user_dict)
 
         from django.conf import settings
-        if getattr(settings, 'MODE') == 'userena':
+        if getattr(settings, 'MODE', None) == 'userena':
             from django.core.management import call_command
-            call_command('check_permissions')
+            call_command('check_permissions', output=False)
 
     def tearDown(self):
         from open_facebook import api
@@ -53,6 +53,7 @@ class FacebookTest(TestCase):
         open_facebook.OpenFacebook = api.OpenFacebook = self.originalAPI
         open_facebook.FacebookAuthorization = api.FacebookAuthorization = self.originalAuthorization
 
+        self.prints.seek(0)
         content = self.prints.read()
         if content:
             raise ValueError('print statement found, output %s' % content)
