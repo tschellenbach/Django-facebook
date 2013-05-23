@@ -12,6 +12,14 @@ from django_facebook.utils import compatible_datetime as datetime,\
     try_get_profile
 from django_facebook.utils import get_user_model
 
+
+def get_user_model_setting():
+    from django.conf import settings
+    default = 'django.contrib.auth.User'
+    user_model_setting = getattr(settings, 'AUTH_USER_MODEL', default)
+    return user_model_setting
+
+
 import logging
 import os
 logger = logging.getLogger(__name__)
@@ -159,7 +167,7 @@ class BaseFacebookModel(models.Model):
 
         from django_facebook.signals import facebook_token_extend_finished
         facebook_token_extend_finished.send(
-            sender=settings.AUTH_USER_MODEL, user=self.get_user(), profile=self,
+            sender=get_user_model(), user=self.get_user(), profile=self,
             token_changed=token_changed, old_token=old_token
         )
 
@@ -253,7 +261,7 @@ class FacebookProfile(FacebookProfileModel):
     Use this by setting
     AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile'
     '''
-    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    user = models.OneToOneField(get_user_model_setting())
 
 
 try:
@@ -397,7 +405,7 @@ class OpenGraphShare(BaseModel):
     '''
     objects = model_managers.OpenGraphShareManager()
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(get_user_model_setting())
 
     # domain stores
     action_domain = models.CharField(max_length=255)
@@ -541,7 +549,7 @@ class OpenGraphShare(BaseModel):
 
 
 class FacebookInvite(CreatedAtAbstractBase):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(get_user_model_setting())
     user_invited = models.CharField(max_length=255)
     message = models.TextField(blank=True, null=True)
     type = models.CharField(blank=True, null=True, max_length=255)
