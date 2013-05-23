@@ -261,6 +261,7 @@ try:
     from django.contrib.auth.models import AbstractUser, UserManager
 
     class FacebookUser(AbstractUser, FacebookModel):
+
         '''
         The django 1.5 approach to adding the facebook related fields
         '''
