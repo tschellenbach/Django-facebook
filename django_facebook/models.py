@@ -15,7 +15,7 @@ from django_facebook.utils import get_user_model
 
 def get_user_model_setting():
     from django.conf import settings
-    default = 'django.contrib.auth.User'
+    default = 'auth.User'
     user_model_setting = getattr(settings, 'AUTH_USER_MODEL', default)
     return user_model_setting
 
