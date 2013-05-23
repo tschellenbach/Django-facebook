@@ -43,7 +43,7 @@ class FacebookTest(TestCase):
         user_model.objects.create(**user_dict)
 
         from django.conf import settings
-        if settings.MODE == 'userena':
+        if getattr(settings, 'MODE') == 'userena':
             from django.core.management import call_command
             call_command('check_permissions')
 
