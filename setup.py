@@ -148,4 +148,5 @@ setup(
         'pytest-django',
     ],
     test_suite='runtests.runtests',
+    zip_safe=False,  # South can't run migrations on zipped eggs.
 )
