@@ -9,8 +9,9 @@ from open_facebook.utils import json, camel_to_underscore
 from datetime import timedelta
 from django_facebook.utils import compatible_datetime as datetime, \
     get_model_for_attribute, get_user_attribute, get_instance_for_attribute, \
-    try_get_profile
+    try_get_profile, update_user_attributes
 from django_facebook.utils import get_user_model
+from open_facebook.exceptions import OAuthException
 
 
 def get_user_model_setting():
@@ -103,6 +104,12 @@ class BaseFacebookModel(models.Model):
 
     class Meta:
         abstract = True
+
+    def refresh(self):
+        '''
+        Get the latest version of this object from the db
+        '''
+        return self.__class__.objects.get(id=self.id)
 
     def get_user(self):
         '''
@@ -513,6 +520,18 @@ class OpenGraphShare(BaseModel):
                     'Open graph share failed, writing message %s' % e.message)
                 self.error_message = unicode(e)
                 self.save()
+                # maybe we need a new access token
+                new_token_required = self.exception_requires_new_token(e)
+                # verify that the token didnt change in the mean time
+                user_or_profile = user_or_profile.__class__.objects.get(
+                    id=user_or_profile.id)
+                token_changed = graph.access_token != user_or_profile.access_token
+                if new_token_required and not token_changed:
+                    logger.info('a new token is required, setting the flag on the user or profile')
+                    # time to ask the user for a new token
+                    update_user_attributes(self.user, profile, dict(
+                        new_token_required=True), save=True)
+
         elif not graph:
             self.error_message = 'no graph available'
             self.save()
@@ -521,6 +540,21 @@ class OpenGraphShare(BaseModel):
             self.save()
 
         return result
+
+    def exception_requires_new_token(self, e):
+        '''
+        Determines if the exceptions is something which requires us to
+        ask for a new token. Examples are:
+
+        Error validating access token: Session has expired at unix time
+        1350669826. The current unix time is 1369657666.
+
+        (#200) Requires extended permission: publish_actions (error code 200)
+        '''
+        new_token = False
+        if isinstance(e, OAuthException):
+            new_token = True
+        return new_token
 
     def update(self, data, graph=None):
         '''

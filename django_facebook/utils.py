@@ -111,7 +111,7 @@ def get_user_attribute(user, profile, attribute, default=NOTHING):
     return value
 
 
-def update_user_attributes(user, profile, attributes_dict):
+def update_user_attributes(user, profile, attributes_dict, save=False):
     '''
     Write the attributes either to the user or profile instance
     '''
@@ -132,6 +132,12 @@ def update_user_attributes(user, profile, attributes_dict):
             user._fb_is_dirty = True
         else:
             logger.info('skipping update of field %s', f)
+
+    if save:
+        if user._fb_is_dirty:
+            user.save()
+        elif profile and profile._fb_is_dirty:
+            profile.save()
 
 
 def try_get_profile(user):

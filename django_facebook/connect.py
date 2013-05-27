@@ -171,7 +171,8 @@ def _update_access_token(user, graph):
         # update if not equal to the current token
         new_token = graph.access_token != model_or_profile.access_token
         token_message = 'a new' if new_token else 'the same'
-        logger.info('found %s token', token_message)
+        logger.info(
+            'found %s token %s', token_message, graph.access_token[:10])
         if new_token:
             logger.info('access token changed, updating now')
             model_or_profile.update_access_token(graph.access_token)
