@@ -174,7 +174,7 @@ def _update_access_token(user, graph):
         logger.info('found %s token', token_message)
         if new_token:
             logger.info('access token changed, updating now')
-            model_or_profile.access_token = graph.access_token
+            model_or_profile.update_access_token(graph.access_token)
             model_or_profile.save()
             # see if we can extend the access token
             # this runs in a task, after extending the token we fire an event

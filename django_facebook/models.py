@@ -7,8 +7,8 @@ from django.db.models.base import ModelBase
 from django_facebook import model_managers, settings as facebook_settings
 from open_facebook.utils import json, camel_to_underscore
 from datetime import timedelta
-from django_facebook.utils import compatible_datetime as datetime,\
-    get_model_for_attribute, get_user_attribute, get_instance_for_attribute,\
+from django_facebook.utils import compatible_datetime as datetime, \
+    get_model_for_attribute, get_user_attribute, get_instance_for_attribute, \
     try_get_profile
 from django_facebook.utils import get_user_model
 
@@ -77,8 +77,26 @@ class BaseFacebookModel(models.Model):
     gender = models.CharField(max_length=1, choices=(
         ('m', 'Male'), ('f', 'Female')), blank=True, null=True)
     raw_data = models.TextField(blank=True, null=True)
-    facebook_open_graph = models.BooleanField(
-        default=True, help_text='Determines if this user want to share via open graph')
+
+    # the field which controls if we are sharing to facebook
+    facebook_open_graph = models.NullBooleanField(
+        help_text='Determines if this user want to share via open graph')
+
+    # set to true if we require a new access token
+    new_token_required = models.BooleanField(default=False,
+                                             help_text='Set to true if the access token is outdated or lacks permissions')
+
+    @property
+    def open_graph_new_token_required(self):
+        '''
+        Shows if we need to (re)authenticate the user for open graph sharing
+        '''
+        reauthentication = False
+        if self.facebook_open_graph and self.new_token_required:
+            reauthentication = True
+        elif self.facebook_open_graph is None:
+            reauthentication = True
+        return reauthentication
 
     def __unicode__(self):
         return self.user.__unicode__()
@@ -126,11 +144,28 @@ class BaseFacebookModel(models.Model):
 
     def disconnect_facebook(self):
         self.access_token = None
+        self.new_token_required = False
         self.facebook_id = None
 
     def clear_access_token(self):
         self.access_token = None
+        self.new_token_required = False
         self.save()
+
+    def update_access_token(self, new_value):
+        '''
+        Updates the access token
+
+        **Example**::
+
+            # updates to 123 and sets new_token_required to False
+            profile.update_access_token(123)
+
+        :param new_value:
+            The new value for access_token
+        '''
+        self.access_token = new_value
+        self.new_token_required = False
 
     def extend_access_token(self):
         '''
@@ -162,7 +197,7 @@ class BaseFacebookModel(models.Model):
         logger.info(log_format, message, expires_delta)
         if token_changed:
             logger.info('Saving the new access token')
-            self.access_token = access_token
+            self.update_access_token(access_token)
             self.save()
 
         from django_facebook.signals import facebook_token_extend_finished
