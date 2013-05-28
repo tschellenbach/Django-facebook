@@ -28,5 +28,5 @@ before_script:
 script:
   - pip install -e .
   - cd facebook_example
-  - coverage run manage.py test $TESTS --settings=$SETTINGS
+  - coverage run manage.py test $TESTS --settings=$SETTINGS -v2
   - coverage report
