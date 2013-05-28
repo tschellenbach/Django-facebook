@@ -136,7 +136,7 @@ def update_user_attributes(user, profile, attributes_dict, save=False):
     if save:
         if user._fb_is_dirty:
             user.save()
-        elif profile and profile._fb_is_dirty:
+        if profile and profile._fb_is_dirty:
             profile.save()
 
 

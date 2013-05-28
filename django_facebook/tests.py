@@ -501,6 +501,7 @@ class UserConnectTest(FacebookTest):
             user, profile, dict(new_token_required=True), save=True)
         if profile:
             profile = get_profile_model().objects.get(id=profile.id)
+        user = get_user_model().objects.get(id=user.id)
         new_token_required = get_user_attribute(
             user, profile, 'new_token_required')
         self.assertEqual(new_token_required, True)
@@ -514,6 +515,7 @@ class UserConnectTest(FacebookTest):
         self.assertEqual(user.id, first_user_id)
         if profile:
             profile = get_profile_model().objects.get(id=profile.id)
+        user = get_user_model().objects.get(id=user.id)
         new_token_required = get_user_attribute(
             user, profile, 'new_token_required')
         self.assertEqual(new_token_required, False)
