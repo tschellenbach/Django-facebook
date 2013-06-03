@@ -134,9 +134,9 @@ def update_user_attributes(user, profile, attributes_dict, save=False):
             logger.info('skipping update of field %s', f)
 
     if save:
-        if user._fb_is_dirty:
+        if getattr(user, '_fb_is_dirty', False):
             user.save()
-        if profile and profile._fb_is_dirty:
+        if profile and getattr(profile, '_fb_is_dirty', False):
             profile.save()
 
 
