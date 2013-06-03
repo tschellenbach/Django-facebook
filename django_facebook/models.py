@@ -527,7 +527,8 @@ class OpenGraphShare(BaseModel):
                     id=user_or_profile.id)
                 token_changed = graph.access_token != user_or_profile.access_token
                 if new_token_required and not token_changed:
-                    logger.info('a new token is required, setting the flag on the user or profile')
+                    logger.info(
+                        'a new token is required, setting the flag on the user or profile')
                     # time to ask the user for a new token
                     update_user_attributes(self.user, profile, dict(
                         new_token_required=True), save=True)
