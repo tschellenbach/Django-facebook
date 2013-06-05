@@ -539,14 +539,17 @@ class UserConnectTest(FacebookTest):
         FacebookUserConverter(graph)
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(action, CONNECT_ACTIONS.REGISTER)
+        # and now we do a login, not a connect
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
         self.request.GET._mutable = True
         self.request.GET['connect_facebook'] = 1
-        action, user = connect_user(self.request, facebook_graph=graph)
+        action, user = connect_user(
+            self.request, facebook_graph=graph, connect_facebook=True)
         self.assertEqual(action, CONNECT_ACTIONS.CONNECT)
         self.request.user = AnonymousUser()
-        action, user = connect_user(self.request, facebook_graph=graph)
+        action, user = connect_user(
+            self.request, facebook_graph=graph, connect_facebook=True)
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
 
     def test_parallel_register(self):
