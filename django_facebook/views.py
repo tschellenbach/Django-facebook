@@ -62,6 +62,7 @@ def _connect(request, graph):
     '''
     backend = get_registration_backend()
     context = RequestContext(request)
+    connect_facebook = to_bool(request.REQUEST.get('connect_facebook'))
 
     logger.info('trying to connect using Facebook')
     if graph:
@@ -76,7 +77,8 @@ def _connect(request, graph):
         facebook_data = converter.facebook_profile_data()
         # either, login register or connect the user
         try:
-            action, user = connect_user(request)
+            action, user = connect_user(
+                request, connect_facebook=connect_facebook)
             logger.info('Django facebook performed action: %s', action)
         except facebook_exceptions.IncompleteProfileError, e:
             # show them a registration form to add additional data
