@@ -306,7 +306,7 @@ class TestOpenFacebook(OpenFacebookTest):
                 code, redirect_uri='http://local.mellowmorning.com:8080')
             facebook = OpenFacebook(user_token['access_token'])
             facebook.me()
-        except open_facebook_exceptions.OAuthException, e:
+        except open_facebook_exceptions.ParameterException, e:
             pass
 
     def test_fql(self):

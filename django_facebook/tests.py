@@ -425,7 +425,8 @@ class OpenGraphShareTest(FacebookTest):
             instance = mocked.return_value
             instance.set = Mock(side_effect=FacebookUnreachable('broken'))
             share.send(graph=instance)
-            self.assertEqual(share.error_message, 'broken')
+            self.assertEqual(
+                share.error_message, 'FacebookUnreachable(\'broken\',)')
             self.assertFalse(share.completed_at)
             user = get_user_model().objects.get(id=user.id)
             if profile:
