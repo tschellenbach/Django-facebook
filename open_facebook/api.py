@@ -228,7 +228,8 @@ class FacebookConnection(object):
             # of course we have two different syntaxes
             if parsed_response.get('error'):
                 cls.raise_error(parsed_response['error']['type'],
-                                parsed_response['error']['message'])
+                                parsed_response['error']['message'],
+                                parsed_response['error'].get('code'))
             elif parsed_response.get('error_code'):
                 cls.raise_error(parsed_response['error_code'],
                                 parsed_response['error_msg'])
@@ -269,7 +270,7 @@ class FacebookConnection(object):
         return server_error
 
     @classmethod
-    def raise_error(cls, error_type, message):
+    def raise_error(cls, error_type, message, error_code=None):
         '''
         Lookup the best error class for the error and raise it
 
@@ -282,12 +283,14 @@ class FacebookConnection(object):
 
         :param message:
             the error message from the facebook api call
+
+        :param error_code:
+            optionally the error code which facebook send
         '''
         default_error_class = facebook_exceptions.OpenFacebookException
-        error_class = None
 
         # get the error code
-        error_code = cls.get_code_from_message(message)
+        error_code = error_code or cls.get_code_from_message(message)
         # also see http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
         logger.info('Trying to match error code %s to error class', error_code)
 

@@ -86,6 +86,14 @@ class FeedActionLimit(UserPermissionException):
     codes = 341
 
 
+class OpenGraphException(OpenFacebookException):
+    '''
+    Raised when we get error 3502, representing a problem with facebook
+    open graph data on the page
+    '''
+    codes = 3502
+
+
 class DuplicateStatusMessage(OpenFacebookException):
     codes = 506
 

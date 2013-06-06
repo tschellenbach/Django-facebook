@@ -5,6 +5,7 @@ import unittest
 import logging
 import mock
 import datetime
+from open_facebook.exceptions import OpenGraphException
 logger = logging.getLogger()
 from open_facebook.utils import json
 
@@ -129,6 +130,24 @@ class TestErrorMapping(OpenFacebookTest):
             except open_facebook_exceptions.OAuthException, e:
                 oauth = True
             assert oauth, 'response %s didnt raise oauth error' % response
+
+    def test_non_oauth_errors(self):
+        object_open_graph_error = '''
+        {"error":
+            {"message": "(#3502) Object at URL http://www.fashiolista.com/my_style/list/441276/?og=active&utm_campaign=facebook_action_comment&utm_medium=facebook&utm_source=facebook has og:type of 'website'. The property 'list' requires an object of og:type 'fashiolista:list'. ",
+            "code": 3502, "type": "OAuthException"
+            }
+        }
+        '''
+        response = json.loads(object_open_graph_error)
+
+        def test():
+            FacebookConnection.raise_error(
+                response['error']['type'],
+                response['error']['message'],
+                response['error'].get('code')
+            )
+        self.assertRaises(OpenGraphException, test)
 
 
 class Test500Detection(OpenFacebookTest):
