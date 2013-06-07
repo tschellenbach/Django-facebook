@@ -426,19 +426,21 @@ class OpenGraphShareTest(FacebookTest):
     def test_follow_og_share_error(self):
         '''
         A normal OpenFacebook exception, shouldnt reset the new token required
-        
+
         However an OAuthException should set new_token_required to True,
         But only if we are indeed failing has_permissions(['publish_actions'])
         '''
         # utility function for testing purposes
         def test_send(error, expected_error_message, expected_new_token, has_permissions=False):
             user, profile, share = self.share_details
-            update_user_attributes(user, profile, dict(new_token_required=False), save=True)
+            update_user_attributes(
+                user, profile, dict(new_token_required=False), save=True)
             with mock.patch('open_facebook.api.OpenFacebook') as mocked:
                 instance = mocked.return_value
                 instance.set = Mock(side_effect=error)
                 instance.has_permissions = Mock(return_value=has_permissions)
-                instance.access_token = get_user_attribute(user, profile, 'access_token')
+                instance.access_token = get_user_attribute(
+                    user, profile, 'access_token')
                 share.send(graph=instance)
                 self.assertEqual(share.error_message, expected_error_message)
                 self.assertFalse(share.completed_at)
