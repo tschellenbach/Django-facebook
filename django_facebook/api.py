@@ -187,7 +187,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                         # would use cookies instead, but django's cookie setting
                         # is a bit of a mess
                         cache.set(cache_key, access_token, 60 * 60 * 2)
-                    except open_facebook_exceptions.OAuthException, e:
+                    except (open_facebook_exceptions.OAuthException, open_facebook_exceptions.ParameterException), e:
                         # this sometimes fails, but it shouldnt raise because
                         # it happens when users remove your
                         # permissions and then try to reauthenticate
