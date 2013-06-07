@@ -27,6 +27,7 @@ import mock
 from django.utils import unittest
 from django_facebook.models import OpenGraphShare
 from django.contrib.contenttypes.models import ContentType
+from open_facebook.exceptions import FacebookUnreachable, OAuthException
 
 logger = logging.getLogger(__name__)
 __doctests__ = ['django_facebook.api']
@@ -381,25 +382,8 @@ class ExtendTokenTest(LiveFacebookTest):
 
 
 class OpenGraphShareTest(FacebookTest):
-
-    def test_follow_og_share(self):
-        user_url = 'http://www.fashiolista.com/style/neni/'
-        kwargs = dict(item=user_url)
-        user = get_user_model().objects.all()[:1][0]
-        from django.contrib.contenttypes.models import ContentType
-        some_content_type = ContentType.objects.all()[:1][0]
-        share = OpenGraphShare.objects.create(
-            user_id=user.id,
-            facebook_user_id=13123123,
-            action_domain='fashiolista:follow',
-            content_type=some_content_type,
-            object_id=user.id,
-        )
-        share.set_share_dict(kwargs)
-        share.save()
-        share.send()
-
-    def test_follow_og_share_error(self):
+    def setUp(self):
+        FacebookTest.setUp(self)
         user_url = 'http://www.fashiolista.com/style/neni/'
         kwargs = dict(item=user_url)
         user = get_user_model().objects.all()[:1][0]
@@ -419,37 +403,75 @@ class OpenGraphShareTest(FacebookTest):
         )
         share.set_share_dict(kwargs)
         share.save()
-        update_user_attributes(user, profile, dict(new_token_required=False))
-        from open_facebook.exceptions import FacebookUnreachable, OAuthException
-        with mock.patch('open_facebook.api.OpenFacebook') as mocked:
-            instance = mocked.return_value
-            instance.set = Mock(side_effect=FacebookUnreachable('broken'))
-            share.send(graph=instance)
-            self.assertEqual(
-                share.error_message, 'FacebookUnreachable(\'broken\',)')
-            self.assertFalse(share.completed_at)
-            user = get_user_model().objects.get(id=user.id)
-            if profile:
-                profile = get_profile_model().objects.get(id=profile.id)
-            new_token_required = get_user_attribute(
-                user, profile, 'new_token_required')
-            self.assertEqual(new_token_required, False)
+        self.share = share
+        self.share_details = user, profile, share
 
-        # now try with an oauth exception
-        return
-        # Can't figure out how to test this
-        with mock.patch('open_facebook.api.OpenFacebook') as mocked:
-            instance = mocked.return_value
-            instance.set = Mock(side_effect=OAuthException('permissions'))
-            share.send(graph=instance)
-            self.assertEqual(share.error_message, 'permissions')
-            self.assertFalse(share.completed_at)
-            user = get_user_model().objects.get(id=user.id)
-            if profile:
-                profile = get_profile_model().objects.get(id=profile.id)
-            new_token_required = get_user_attribute(
-                user, profile, 'new_token_required')
-            self.assertEqual(new_token_required, True)
+    def test_follow_og_share(self):
+        user_url = 'http://www.fashiolista.com/style/neni/'
+        kwargs = dict(item=user_url)
+        user = get_user_model().objects.all()[:1][0]
+        from django.contrib.contenttypes.models import ContentType
+        some_content_type = ContentType.objects.all()[:1][0]
+        share = OpenGraphShare.objects.create(
+            user_id=user.id,
+            facebook_user_id=13123123,
+            action_domain='fashiolista:follow',
+            content_type=some_content_type,
+            object_id=user.id,
+        )
+        share.set_share_dict(kwargs)
+        share.save()
+        share.send()
+
+    def test_follow_og_share_error(self):
+        '''
+        A normal OpenFacebook exception, shouldnt reset the new token required
+        
+        However an OAuthException should set new_token_required to True,
+        But only if we are indeed failing has_permissions(['publish_actions'])
+        '''
+        # utility function for testing purposes
+        def test_send(error, expected_error_message, expected_new_token, has_permissions=False):
+            user, profile, share = self.share_details
+            update_user_attributes(user, profile, dict(new_token_required=False), save=True)
+            with mock.patch('open_facebook.api.OpenFacebook') as mocked:
+                instance = mocked.return_value
+                instance.set = Mock(side_effect=error)
+                instance.has_permissions = Mock(return_value=has_permissions)
+                instance.access_token = get_user_attribute(user, profile, 'access_token')
+                share.send(graph=instance)
+                self.assertEqual(share.error_message, expected_error_message)
+                self.assertFalse(share.completed_at)
+                user = get_user_model().objects.get(id=user.id)
+                if profile:
+                    profile = get_profile_model().objects.get(id=profile.id)
+                new_token_required = get_user_attribute(
+                    user, profile, 'new_token_required')
+                self.assertEqual(new_token_required, expected_new_token)
+
+        # test with a basic exception, this should reset the new_token_required
+        test_send(
+            error=FacebookUnreachable('broken'),
+            expected_error_message='FacebookUnreachable(\'broken\',)',
+            expected_new_token=False,
+            has_permissions=False,
+        )
+        # now try with an oAuthException and no permissions
+        # this should set new_token_required to true
+        test_send(
+            error=OAuthException('permissions'),
+            expected_error_message="OAuthException('permissions',)",
+            expected_new_token=True,
+            has_permissions=False,
+        )
+        # now an oAuthException, but we already have the permissions
+        # this means we shouldnt set new_token_required to True
+        test_send(
+            error=OAuthException('permissions'),
+            expected_error_message="OAuthException('permissions',)",
+            expected_new_token=False,
+            has_permissions=True,
+        )
 
 
 class UserConnectTest(FacebookTest):

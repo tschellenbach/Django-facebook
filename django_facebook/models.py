@@ -521,11 +521,12 @@ class OpenGraphShare(BaseModel):
                 self.error_message = repr(e)
                 self.save()
                 # maybe we need a new access token
-                new_token_required = self.exception_requires_new_token(e)
+                new_token_required = self.exception_requires_new_token(e, graph)
                 # verify that the token didnt change in the mean time
                 user_or_profile = user_or_profile.__class__.objects.get(
                     id=user_or_profile.id)
                 token_changed = graph.access_token != user_or_profile.access_token
+                logger.info('new token required is %s and token_changed is %s', new_token_required, token_changed)
                 if new_token_required and not token_changed:
                     logger.info(
                         'a new token is required, setting the flag on the user or profile')
@@ -542,7 +543,7 @@ class OpenGraphShare(BaseModel):
 
         return result
 
-    def exception_requires_new_token(self, e):
+    def exception_requires_new_token(self, e, graph):
         '''
         Determines if the exceptions is something which requires us to
         ask for a new token. Examples are:
@@ -555,6 +556,14 @@ class OpenGraphShare(BaseModel):
         new_token = False
         if isinstance(e, OAuthException):
             new_token = True
+            
+        # if we have publish actions than our token is ok
+        # we get in this flow if Facebook mistakenly marks exceptions
+        # as oAuthExceptions
+        publish_actions = graph.has_permissions(['publish_actions'])
+        if publish_actions:
+            new_token = False
+            
         return new_token
 
     def update(self, data, graph=None):
