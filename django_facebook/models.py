@@ -305,19 +305,19 @@ class FacebookProfile(FacebookProfileModel):
     '''
     user = models.OneToOneField(get_user_model_setting())
 
+if getattr(settings, 'AUTH_USER_MODEL', None) == 'django_facebook.FacebookCustomUser':
+    try:
+        from django.contrib.auth.models import AbstractUser, UserManager
 
-try:
-    from django.contrib.auth.models import AbstractUser, UserManager
-
-    class FacebookCustomUser(AbstractUser, FacebookModel):
-        '''
-        The django 1.5 approach to adding the facebook related fields
-        '''
-        objects = UserManager()
-        # add any customizations you like
-        state = models.CharField(max_length=255, blank=True, null=True)
-except ImportError, e:
-    logger.info('Couldnt setup FacebookUser, got error %s', e)
+        class FacebookCustomUser(AbstractUser, FacebookModel):
+            '''
+            The django 1.5 approach to adding the facebook related fields
+            '''
+            objects = UserManager()
+            # add any customizations you like
+            state = models.CharField(max_length=255, blank=True, null=True)
+    except ImportError, e:
+        logger.info('Couldnt setup FacebookUser, got error %s', e)
 
 
 class BaseModelMetaclass(ModelBase):
