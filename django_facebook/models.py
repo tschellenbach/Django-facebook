@@ -313,9 +313,11 @@ try:
         '''
         The django 1.5 approach to adding the facebook related fields
         '''
-        objects = UserManager()
+        # objects = UserManager() - need to add to the concrete model
         # add any customizations you like
         state = models.CharField(max_length=255, blank=True, null=True)
+        class Meta:
+            abstract = True
 except ImportError, e:
     logger.info('Couldnt setup FacebookUser, got error %s', e)
 
