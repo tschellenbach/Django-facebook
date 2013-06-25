@@ -37,7 +37,7 @@ dev_patterns = patterns('django_facebook.example_views',
                         )
 
 # when developing enable the example views
-if settings.DEBUG or True:
+if settings.DEBUG:
     # only enable example views while developing
     urlpatterns += dev_patterns
 
