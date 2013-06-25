@@ -638,6 +638,8 @@ def get_class_for(purpose):
     '''
     mapping = get_class_mapping()
     class_ = mapping[purpose]
+    if isinstance(class_, basestring):
+        class_ = get_class_from_string(class_)
     return class_
 
 
