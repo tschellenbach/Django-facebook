@@ -9,9 +9,6 @@ from django.contrib.auth import logout
 from django_facebook import settings
 from django_facebook.exceptions import MissingPermissionsError
 
-redirect_login_oauth = ScriptRedirect(redirect_to=generate_oauth_url(),
-                                      show_body=False)
-
 
 class FacebookCanvasMiddleWare(object):
 
@@ -41,6 +38,11 @@ class FacebookCanvasMiddleWare(object):
             No signed_request is sent.
             Return
         """
+        
+        # This call cannot be global'ized or Django will return an empty response
+        # after the first one
+        redirect_login_oauth = ScriptRedirect(redirect_to=generate_oauth_url(),
+                                      show_body=False)
         # check referer to see if this is the first access
         # or it's part of navigation in app
         # facebook always sends a POST reuqest
