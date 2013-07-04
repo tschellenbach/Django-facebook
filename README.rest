@@ -13,9 +13,9 @@ Now with support for django custom user models
 Demo & About
 ------------
 
-Django Facebook enables your users to easily register using the Facebook API. 
+Django Facebook enables your users to easily register using the Facebook API.
 It converts the Facebook user data and creates regular User and Profile objects.
-This makes it easy to integrate with your existing Django application. 
+This makes it easy to integrate with your existing Django application.
 
 I've built it for my startup Fashiolista.com and it's currently used in production with thousands of signups per day.
 For a demo of the signup flow have a look at Fashiolista's landing page (`fashiolista.com <http://www.fashiolista.com/intro_wide_minimal/>`_)
@@ -59,7 +59,7 @@ Clone the source code or use ``pip install django_facebook``.
 
 You need a facebook app to use the open graph API and make the login process work.
 If you don't have a facebook app, now is the time to create one.
-You can create a facebook app at `this url <http://www.facebook.com/developers/createapp.php>`_. 
+You can create a facebook app at `this url <http://www.facebook.com/developers/createapp.php>`_.
 
 Facebook authentication only works if the domain you are working on matches your app domain.
 Be sure to configure the right app domain in your facebook application settings.
@@ -141,7 +141,7 @@ Alternatively use the abstract model provided in django_facebook.models.Facebook
 If you don't already have a custom Profile model, simply uses the provided model by setting your AUTH_PROFILE_MODULE to FacebookProfile::
 
     AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile'
-    
+
 Be sure to run manage.py syncdb after setting this up.
 
 Otherwise Django Facebook provides an abstract model which you can inherit like this::
@@ -152,17 +152,17 @@ Otherwise Django Facebook provides an abstract model which you can inherit like 
     class MyCustomProfile(FacebookProfileModel):
         user = models.OneToOneField('auth.User')
         ....
-    
+
     from django.contrib.auth.models import User
     from django.db.models.signals import post_save
-    
+
     #Make sure we create a MyCustomProfile when creating a User
     def create_facebook_profile(sender, instance, created, **kwargs):
         if created:
             MyCustomProfile.objects.create(user=instance)
-    
+
     post_save.connect(create_facebook_profile, sender=User)
-    
+
 Don't forget to update your database using syncdb or south after this step.
 
 Note: You need a profile model attached to every user model. For new accounts this will get created automatically, but you will need to migrate older accounts.
@@ -189,8 +189,8 @@ Secondly load the javascript:
 ::
 
     {% include 'django_facebook/_facebook_js.html' %}
-    
-If you encounter issues here you probably don't have django static files setup correctly. 
+
+If you encounter issues here you probably don't have django static files setup correctly.
 Alternatively you might be missing the context processor.
 
 
@@ -199,13 +199,13 @@ Note that you can control which page to go to after connect using the next input
 
 ::
 
-<form action="{% url facebook_connect %}?facebook_login=1" method="post">
-<a href="javascript:void(0);" style="font-size: 20px;" onclick="F.connect(this.parentNode);">Register, login or connect with facebook</a>
-<input type="hidden" value="{{ request.path }}" name="next" />
-<input type="hidden" value="{{ request.path }}" name="register_next" />
-<input type="hidden" value="{{ request.path }}" name="error_next" />
-{% csrf_token %}
-</form>
+    <form action="{% url facebook_connect %}?facebook_login=1" method="post">
+    <a href="javascript:void(0);" style="font-size: 20px;" onclick="F.connect(this.parentNode);">Register, login or connect with facebook</a>
+    <input type="hidden" value="{{ request.path }}" name="next" />
+    <input type="hidden" value="{{ request.path }}" name="register_next" />
+    <input type="hidden" value="{{ request.path }}" name="error_next" />
+    {% csrf_token %}
+    </form>
 
 
 Redirects
@@ -223,7 +223,7 @@ Flows
 
 The default redirect is specified by the FACEBOOK_LOGIN_DEFAULT_REDIRECT setting.
 
-If the default customizability isn't adequate for your needs you can also subclass the default registration backend. 
+If the default customizability isn't adequate for your needs you can also subclass the default registration backend.
 
 ::
 
@@ -332,51 +332,51 @@ Django-facebook ships with a few signals that you can use to easily accommodate 
 ``facebook_pre_update`` signal is sent just before Django-facebook updates the profile model with Facebook data. If you want to manipulate Facebook or profile information before it gets saved, this is where you should do it. For example:
 
 ::
-    
+
     from django_facebook import signals
     from django_facebook.utils import get_user_model
 
     def pre_facebook_update(sender, user, profile, facebook_data, \*\*kwargs):
         profile.facebook_information_updated = datetime.datetime.now()
         # Manipulate facebook_data here
-    
+
     signals.facebook_pre_update.connect(pre_facebook_update, sender=get_user_model())
 
 
-``facebook_post_update`` signal is sent after Django-facebook finishes updating the profile model with Facebook data. You can perform other Facebook connect or registration related processing here. 
+``facebook_post_update`` signal is sent after Django-facebook finishes updating the profile model with Facebook data. You can perform other Facebook connect or registration related processing here.
 
 ::
-    
+
     from django_facebook import signals
     from django_facebook.utils import get_user_model
 
     def post_facebook_update(sender, user, profile, facebook_data, \*\*kwargs):
         # Do other stuff
-    
+
     signals.facebook_post_update.connect(post_facebook_update, sender=get_user_model())
 
-``facebook_post_store_friends`` signal is sent after Django-facebook finishes storing the user's friends.   
+``facebook_post_store_friends`` signal is sent after Django-facebook finishes storing the user's friends.
 
 ::
-    
+
     from django_facebook import signals
     from django_facebook.utils import get_user_model
 
     def post_friends(sender, user, friends, current_friends, inserted_friends, \*\*kwargs):
         # Do other stuff
-    
+
     facebook_post_store_friends.connect(post_friends, sender=get_user_model())
 
-``facebook_post_store_likes`` signal is sent after Django-facebook finishes storing the user's likes. This is usefull if you want to customize what topics etc to follow.   
+``facebook_post_store_likes`` signal is sent after Django-facebook finishes storing the user's likes. This is usefull if you want to customize what topics etc to follow.
 
 ::
-    
+
     from django_facebook import signals
     from django_facebook.utils import get_user_model
 
     def post_likes(sender, user, likes, current_likes, inserted_likes, \*\*kwargs):
         # Do other stuff
-    
+
     facebook_post_store_likes.connect(post_likes, sender=get_user_model())
 
 
@@ -386,8 +386,8 @@ Celery, Performance and Optimization
 Facebook APIs can take quite some time to respond. It's very common that you will wait
 between 1-3 seconds for a single API call. If you need multiple calls, pages can quickly become very sluggish.
 
-The recommended solution is to use Celery. Celery is a task queueing system which allows you to 
-run the API requests outside of the request, response cycle. 
+The recommended solution is to use Celery. Celery is a task queueing system which allows you to
+run the API requests outside of the request, response cycle.
 
 Step 1 - Install Celery
 
@@ -425,7 +425,7 @@ Assuming you have vagrant installed, simply type the following in your shell:
 
     # First get a fresh Django-Facebook checkout
     git clone git@github.com:tschellenbach/Django-facebook.git django-facebook
-    
+
     # Go to the directory:
     cd django-facebook
 
@@ -445,7 +445,7 @@ For the facebook login to work simply map that ip to vagrant.mellowmorning.com
 
 You can run the test suite by typing:
 
-:: 
+::
 
   python manage.py test django_facebook
 
