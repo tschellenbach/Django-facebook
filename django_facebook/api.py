@@ -426,9 +426,10 @@ class FacebookUserConverter(object):
         '''
         Check the database and add numbers to the username to ensure its unique
         '''
-        usernames = list(get_user_model().objects.filter(
-            username__istartswith=base_username).values_list(
-                'username', flat=True))
+        usernames = list(
+            get_user_model().objects.filter(
+                username__istartswith=base_username
+            ).values_list('username', flat=True))
         usernames_lower = [str(u).lower() for u in usernames]
         username = str(base_username)
         i = 1
