@@ -1,13 +1,16 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 from urlparse import urlparse
-from open_facebook.api import FacebookAuthorization, OpenFacebook
-from django_facebook.canvas import generate_oauth_url
-from django_facebook.utils import ScriptRedirect
-from django_facebook.connect import connect_user
+
 from django.contrib.auth import logout
+
+from open_facebook.api import FacebookAuthorization, OpenFacebook
+
 from django_facebook import settings
+from django_facebook.canvas import generate_oauth_url
+from django_facebook.connect import connect_user
 from django_facebook.exceptions import MissingPermissionsError
+from django_facebook.utils import ScriptRedirect
 
 
 class FacebookCanvasMiddleWare(object):
@@ -38,11 +41,11 @@ class FacebookCanvasMiddleWare(object):
             No signed_request is sent.
             Return
         """
-        
+
         # This call cannot be global'ized or Django will return an empty response
         # after the first one
         redirect_login_oauth = ScriptRedirect(redirect_to=generate_oauth_url(),
-                                      show_body=False)
+                                              show_body=False)
         # check referer to see if this is the first access
         # or it's part of navigation in app
         # facebook always sends a POST reuqest

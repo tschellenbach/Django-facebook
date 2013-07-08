@@ -152,10 +152,10 @@ def _update_likes_and_friends(request, user, facebook):
         logger.warn(u'Integrity error encountered during registration, '
                     'probably a double submission %s' % e,
                     exc_info=sys.exc_info(), extra={
-                    'request': request,
-                    'data': {
-                        'body': unicode(e),
-                    }
+                        'request': request,
+                        'data': {
+                            'body': unicode(e),
+                        }
                     })
         transaction.savepoint_rollback(sid)
 
