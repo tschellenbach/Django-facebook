@@ -476,7 +476,8 @@ class FacebookUserConverter(object):
         Slugify the username and replace - with _ to meet username requirements
         '''
         from django.template.defaultfilters import slugify
-        slugified_name = slugify(username).replace('-', '_')
+        from unidecode import unidecode
+        slugified_name = slugify(unidecode(username)).replace('-', '_')
 
         # consider the username min and max constraints
         slugified_name = slugified_name[:30]
