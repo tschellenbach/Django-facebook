@@ -4,6 +4,9 @@ Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmo
 
 .. image:: https://secure.travis-ci.org/tschellenbach/Django-facebook.png?branch=master
 
+.. image:: https://pypip.in/d/django_compressor/badge.png
+        :target: https://pypi.python.org/pypi/django_compressor
+
 Contributions are strongly appreciated. Seriously, give github a try, fork and get started :)
 
 News
