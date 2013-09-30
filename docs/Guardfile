@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+from livereload.task import Task
+from livereload.compiler import shell
+# You may have a different path, e.g. _source/
+
+
+def rebuild_docs():
+	print 'rebuilding docs'
+	from fabric.api import local, cd
+	local('fab docs')
+		
+Task.add('/vagrant', rebuild_docs)

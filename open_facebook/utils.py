@@ -3,14 +3,30 @@ import re
 import sys
 import functools
 
-try:
-    import django_statsd
-except ImportError:
-    django_statsd = None
-
 logger = logging.getLogger(__name__)
 URL_PARAM_RE = re.compile('(?P<k>[^(=|&)]+)=(?P<v>[^&]+)(&|$)')
 URL_PARAM_NO_VALUE_RE = re.compile('(?P<k>[^(&|?)]+)(&|$)')
+
+
+def import_statsd():
+    '''
+    Import only the statd by wolph not the mozilla statsd
+    TODO: Move to mozilla statds which is more widely used
+    '''
+    try:
+        # check to see if the django_statsd we found
+        # supports start (stop) timing.
+        import django_statsd
+        is_wolphs_statsd = hasattr(
+            django_statsd, 'start') and hasattr(django_statsd, 'stop')
+        if not is_wolphs_statsd:
+            django_statsd = None
+    except ImportError:
+        django_statsd = None
+
+    return django_statsd
+
+django_statsd = import_statsd()
 
 
 def start_statsd(path):
@@ -79,13 +95,9 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
         return s
 
 
-try:
-    from django.utils import simplejson as json
-except ImportError:
-    try:
-        import simplejson as json
-    except ImportError:
-        import json
+# we are no longer supporting python 2.5
+# so we can simply assume import json works
+import json
 
 
 def send_warning(message, request=None, e=None, **extra_data):
@@ -107,8 +119,8 @@ def send_warning(message, request=None, e=None, **extra_data):
     data.update(extra_data)
     logger.warn(message,
                 exc_info=sys.exc_info(), extra={
-                'request': request,
-                'data': data
+                    'request': request,
+                    'data': data
                 })
 
 
@@ -172,6 +184,7 @@ def merge_urls(generated_url, human_url):
 
 
 class memoized(object):
+
     '''Decorator. Caches a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned
     (not reevaluated).
@@ -209,6 +222,20 @@ def camel_to_underscore(name):
     for c in string.ascii_uppercase:
         name = name.replace(c, '_%c' % c)
     return name.strip('_').lower()
+
+
+def validate_is_instance(instance, classes):
+    '''
+    Usage
+    validate_is_instance(10, int)
+    validate_is_instance('a', (str, unicode))
+    '''
+    if not isinstance(classes, tuple):
+        classes = (classes,)
+    correct_instance = isinstance(instance, classes)
+    if not correct_instance:
+        raise ValueError(
+            'Expected instance type %s found %s' % (classes, type(instance)))
 
 
 def is_json(content):

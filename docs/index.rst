@@ -1,14 +1,16 @@
+
+
 .. include :: ../README.rest
 
-
-	
-
-Contents:
+########
+API Docs
+########
 
 .. toctree::
    :maxdepth: 2
 
-   api
+   django_facebook/index
+   open_facebook/index
 
 Indices and tables
 ==================
@@ -16,4 +18,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

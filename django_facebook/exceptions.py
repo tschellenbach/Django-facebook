@@ -7,9 +7,14 @@ class IncompleteProfileError(FacebookException):
 
 
 class AlreadyConnectedError(FacebookException):
+
     def __init__(self, users):
         self.users = users
 
 
 class AlreadyRegistered(FacebookException):
+    pass
+
+
+class MissingPermissionsError(FacebookException):
     pass

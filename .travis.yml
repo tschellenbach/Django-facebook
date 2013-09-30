@@ -3,15 +3,15 @@ python:
   - 2.6
   - 2.7
 env:
-  - REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook DJANGO=1.3.7
-  - REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook DJANGO=1.4.5
-  - REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook DJANGO=1.5
-  # currently userena doesnt play nice with django's unittesting setup
-  #- REQUIREMENTS=userena SETTINGS=facebook_example.userena_settings TESTS=django_facebook
-  - REQUIREMENTS=django_registration SETTINGS=facebook_example.django_registration_settings TESTS=django_facebook open_facebook DJANGO=1.3.7
-  - REQUIREMENTS=django_registration SETTINGS=facebook_example.django_registration_settings TESTS=django_facebook open_facebook DJANGO=1.4.5
-  # django registration doesn't support django 1.5 
-  # - REQUIREMENTS=django_registration SETTINGS=facebook_example.django_registration_settings TESTS=django_facebook open_facebook DJANGO=1.5
+  # test the standalone functionality
+  - DJANGO=1.3.7 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=1.4.5 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=1.5.1 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=1.5.1 CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  # test django registration integration
+  - DJANGO=1.4.5 CUSTOM_USER_MODEL=0 MODE=django_registration REQUIREMENTS=django_registration SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  # userena currently doesn't support testing :(
+  - DJANGO=1.5.1 CUSTOM_USER_MODEL=0 MODE=userena REQUIREMENTS=userena SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
 postgres:
   adapter: sqlite3
   database: django_fb_test
@@ -28,5 +28,5 @@ before_script:
 script:
   - pip install -e .
   - cd facebook_example
-  - coverage run manage.py test $TESTS --settings=$SETTINGS
+  - coverage run manage.py test $TESTS --settings=$SETTINGS -v2
   - coverage report

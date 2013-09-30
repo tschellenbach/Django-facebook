@@ -1,6 +1,10 @@
-django>=1.3
+django>=1.5
 django_facebook
+fabric
 south
 PIL
 mock
 python-memcached
+pep8
+git+http://github.com/dcramer/pyflakes.git#egg=pyflakes
+autopep8

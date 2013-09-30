@@ -1,8 +1,8 @@
 from django.utils.decorators import available_attrs
 from functools import wraps
 try:
-    #using compatible_datetime instead of datetime only
-    #not to override the original datetime package
+    # using compatible_datetime instead of datetime only
+    # not to override the original datetime package
     from django.utils import timezone as compatible_datetime
 except ImportError:
     from datetime import datetime as compatible_datetime
@@ -20,6 +20,138 @@ import gc
 
 
 logger = logging.getLogger(__name__)
+
+
+class NOTHING:
+    pass
+
+'''
+TODO, write an abstraction class for reading and writing users/profile models
+'''
+
+
+def get_profile_model():
+    '''
+    Get the profile model if present otherwise return None
+    '''
+    model = None
+    profile_string = getattr(settings, 'AUTH_PROFILE_MODULE', None)
+    if profile_string:
+        app_label, model_label = profile_string.split('.')
+        model = models.get_model(app_label, model_label)
+    return model
+
+
+def get_user_model():
+    '''
+    For Django < 1.5 backward compatibility
+    '''
+    if hasattr(django.contrib.auth, 'get_user_model'):
+        return django.contrib.auth.get_user_model()
+    else:
+        return django.contrib.auth.models.User
+
+
+def get_model_for_attribute(attribute):
+    if is_profile_attribute(attribute):
+        model = get_profile_model()
+    else:
+        model = get_user_model()
+    return model
+
+
+def is_profile_attribute(attribute):
+    profile_model = get_profile_model()
+    profile_fields = []
+    if profile_model:
+        profile_fields = [f.name for f in profile_model._meta.fields]
+    return attribute in profile_fields
+
+
+def is_user_attribute(attribute):
+    user_model = get_user_model()
+    user_fields = [f.name for f in user_model._meta.fields]
+    return attribute in user_fields
+
+
+def get_instance_for_attribute(user, profile, attribute):
+    profile_fields = []
+    if profile:
+        profile_fields = [f.name for f in profile._meta.fields]
+    user_fields = [f.name for f in user._meta.fields]
+    is_profile_field = lambda f: f in profile_fields and hasattr(profile, f)
+    is_user_field = lambda f: f in user_fields and hasattr(user, f)
+
+    instance = None
+    if is_profile_field(attribute):
+        instance = profile
+    elif is_user_field(attribute):
+        instance = user
+    return instance
+
+
+def get_user_attribute(user, profile, attribute, default=NOTHING):
+    profile_fields = []
+    if profile:
+        profile_fields = [f.name for f in profile._meta.fields]
+    user_fields = [f.name for f in user._meta.fields]
+    is_profile_field = lambda f: f in profile_fields and hasattr(profile, f)
+    is_user_field = lambda f: f in user_fields and hasattr(user, f)
+
+    if is_profile_field(attribute):
+        value = getattr(profile, attribute)
+    elif is_user_field(attribute):
+        value = getattr(user, attribute)
+    elif default is not NOTHING:
+        value = default
+    else:
+        raise AttributeError(
+            'user or profile didnt have attribute %s' % attribute)
+
+    return value
+
+
+def update_user_attributes(user, profile, attributes_dict, save=False):
+    '''
+    Write the attributes either to the user or profile instance
+    '''
+    profile_fields = []
+    if profile:
+        profile_fields = [f.name for f in profile._meta.fields]
+    user_fields = [f.name for f in user._meta.fields]
+
+    is_profile_field = lambda f: f in profile_fields and hasattr(profile, f)
+    is_user_field = lambda f: f in user_fields and hasattr(user, f)
+
+    for f, value in attributes_dict.items():
+        if is_profile_field(f):
+            setattr(profile, f, value)
+            profile._fb_is_dirty = True
+        elif is_user_field(f):
+            setattr(user, f, value)
+            user._fb_is_dirty = True
+        else:
+            logger.info('skipping update of field %s', f)
+
+    if save:
+        if getattr(user, '_fb_is_dirty', False):
+            user.save()
+        if profile and getattr(profile, '_fb_is_dirty', False):
+            profile.save()
+
+
+def try_get_profile(user):
+    try:
+        p = user.get_profile()
+    except:
+        p = None
+    return p
+
+
+def hash_key(key):
+    import hashlib
+    hashed = hashlib.md5(key).hexdigest()
+    return hashed
 
 
 def parse_signed_request(signed_request_string):
@@ -112,6 +244,7 @@ def get_oauth_url(scope, redirect_uri, extra_params=None):
 
 
 class ScriptRedirect(HttpResponse):
+
     '''
     Redirect for Facebook Canvas pages
     '''
@@ -179,22 +312,6 @@ def next_redirect(request, default='/', additional_params=None,
     return HttpResponseRedirect(redirect_url)
 
 
-def get_profile_class():
-    profile_string = settings.AUTH_PROFILE_MODULE
-    app_label, model = profile_string.split('.')
-
-    return models.get_model(app_label, model)
-
-
-def get_user_model():
-    """For Django < 1.5 backward compatibility
-    """
-    if hasattr(django.contrib.auth, 'get_user_model'):
-        return django.contrib.auth.get_user_model()
-    else:
-        return django.contrib.auth.models.User
-
-
 @transaction.commit_on_success
 def mass_get_or_create(model_class, base_queryset, id_field, default_dict,
                        global_defaults):
@@ -213,7 +330,7 @@ def mass_get_or_create(model_class, base_queryset, id_field, default_dict,
     current_ids = set(
         [unicode(getattr(c, id_field)) for c in current_instances])
     given_ids = map(unicode, default_dict.keys())
-    #both ends of the comparison are in unicode ensuring the not in works
+    # both ends of the comparison are in unicode ensuring the not in works
     new_ids = [g for g in given_ids if g not in current_ids]
     inserted_model_instances = []
     for new_id in new_ids:
@@ -240,7 +357,11 @@ def get_form_class(backend, request):
     # try the setting
     form_class_string = facebook_settings.FACEBOOK_REGISTRATION_FORM
     if form_class_string:
-        form_class = get_class_from_string(form_class_string, None)
+        try:
+            form_class = get_class_from_string(form_class_string, None)
+        except ImportError:
+            # Shouldn't this fail -- if you set it, it must be correct?
+            pass
 
     if not form_class:
         backend = backend or get_registration_backend()
@@ -264,7 +385,7 @@ def get_registration_backend():
     if registration_backend_string:
         backend_class = get_class_from_string(registration_backend_string)
 
-    #instantiate
+    # instantiate
     if backend_class:
         backend = backend_class()
 
@@ -467,41 +588,28 @@ def replication_safe(f):
     return wrapper
 
 
-def get_class_from_string(path, default='raise'):
+def get_class_from_string(path, default=None):
     """
     Return the class specified by the string.
 
     IE: django.contrib.auth.models.User
-    Will return the user class
-
-    If no default is provided and the class cannot be located
-    (e.g., because no such module exists, or because the module does
-    not contain a class of the appropriate name),
-    ``django.core.exceptions.ImproperlyConfigured`` is raised.
+    Will return the user class or cause an ImportError
     """
-    from django.core.exceptions import ImproperlyConfigured
-    backend_class = None
     try:
         from importlib import import_module
     except ImportError:
         from django.utils.importlib import import_module
     i = path.rfind('.')
     module, attr = path[:i], path[i + 1:]
+    mod = import_module(module)
     try:
-        mod = import_module(module)
-    except ImportError, e:
-        raise ImproperlyConfigured(
-            'Error loading registration backend %s: "%s"' % (module, e))
-    try:
-        backend_class = getattr(mod, attr)
+        return getattr(mod, attr)
     except AttributeError:
-        if default == 'raise':
-            raise ImproperlyConfigured(
-                'Module "%s" does not define a registration '
-                'backend named "%s"' % (module, attr))
+        if default:
+            return default
         else:
-            backend_class = default
-    return backend_class
+            raise ImportError(
+                'Cannot import name {} (from {})'.format(attr, mod))
 
 
 def parse_like_datetime(dt):
@@ -530,6 +638,8 @@ def get_class_for(purpose):
     '''
     mapping = get_class_mapping()
     class_ = mapping[purpose]
+    if isinstance(class_, basestring):
+        class_ = get_class_from_string(class_)
     return class_
 
 

@@ -1,8 +1,9 @@
 from django.forms.util import ValidationError
-from django.utils import simplejson as json
+import json
 from django_facebook import settings as facebook_settings
 from django_facebook.utils import mass_get_or_create, cleanup_oauth_url, \
-    get_profile_class, parse_signed_request
+    get_profile_model, parse_signed_request, hash_key, try_get_profile, \
+    get_user_attribute
 from open_facebook.exceptions import OpenFacebookException
 from django_facebook.exceptions import FacebookException
 try:
@@ -14,7 +15,7 @@ from django_facebook.utils import get_user_model
 import datetime
 import logging
 from open_facebook import exceptions as open_facebook_exceptions
-from open_facebook.utils import send_warning
+from open_facebook.utils import send_warning, validate_is_instance
 from django_facebook import signals
 
 logger = logging.getLogger(__name__)
@@ -46,7 +47,8 @@ def get_persistent_graph(request, *args, **kwargs):
               'Request is required if you want to use persistent tokens')
 
     graph = None
-    # some situations like an expired access token require us to refresh our graph
+    # some situations like an expired access token require us to refresh our
+    # graph
     require_refresh = False
     code = request.REQUEST.get('code')
     if code:
@@ -157,7 +159,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
 
         if not access_token:
             if code:
-                cache_key = 'convert_code_%s' % code
+                cache_key = hash_key('convert_code_%s' % code)
                 access_token = cache.get(cache_key)
                 if not access_token:
                     # exchange the code for an access token
@@ -185,7 +187,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                         # would use cookies instead, but django's cookie setting
                         # is a bit of a mess
                         cache.set(cache_key, access_token, 60 * 60 * 2)
-                    except open_facebook_exceptions.OAuthException, e:
+                    except (open_facebook_exceptions.OAuthException, open_facebook_exceptions.ParameterException), e:
                         # this sometimes fails, but it shouldnt raise because
                         # it happens when users remove your
                         # permissions and then try to reauthenticate
@@ -197,8 +199,9 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                             return None
             elif request.user.is_authenticated():
                 # support for offline access tokens stored in the users profile
-                profile = request.user.get_profile()
-                access_token = getattr(profile, 'access_token', None)
+                profile = try_get_profile(request.user)
+                access_token = get_user_attribute(
+                    request.user, profile, 'access_token')
                 if not access_token:
                     if raise_:
                         message = 'Couldnt find an access token in the request or the users profile'
@@ -228,14 +231,15 @@ def _add_current_user_id(graph, user):
     if graph:
         graph.current_user_id = None
 
-    if user.is_authenticated() and graph:
-        profile = user.get_profile()
-        facebook_id = getattr(profile, 'facebook_id', None)
-        if facebook_id:
-            graph.current_user_id = facebook_id
+        if user.is_authenticated():
+            profile = try_get_profile(user)
+            facebook_id = get_user_attribute(user, profile, 'facebook_id')
+            if facebook_id:
+                graph.current_user_id = facebook_id
 
 
 class FacebookUserConverter(object):
+
     '''
     This conversion class helps you to convert Facebook users to Django users
 
@@ -247,7 +251,7 @@ class FacebookUserConverter(object):
     def __init__(self, open_facebook):
         from open_facebook.api import OpenFacebook
         self.open_facebook = open_facebook
-        assert isinstance(open_facebook, OpenFacebook)
+        validate_is_instance(open_facebook, OpenFacebook)
         self._profile = None
 
     def is_authenticated(self):
@@ -338,6 +342,7 @@ class FacebookUserConverter(object):
     @classmethod
     def _extract_url(cls, text_url_field):
         '''
+        >>> from django_facebook.api import FacebookApi
         >>> url_text = 'http://www.google.com blabla'
         >>> FacebookAPI._extract_url(url_text)
         u'http://www.google.com/'
@@ -353,10 +358,6 @@ class FacebookUserConverter(object):
         >>> url_text = 'http://www.fahiolista.com/www.myspace.com/www.google.com'
         >>> FacebookAPI._extract_url(url_text)
         u'http://www.fahiolista.com/www.myspace.com/www.google.com'
-
-        >>> url_text = u"""http://fernandaferrervazquez.blogspot.com/\r\nhttp://twitter.com/fferrervazquez\r\nhttp://comunidad.redfashion.es/profile/fernandaferrervazquez\r\nhttp://www.facebook.com/group.php?gid3D40257259997&ref3Dts\r\nhttp://fernandaferrervazquez.spaces.live.com/blog/cns!EDCBAC31EE9D9A0C!326.trak\r\nhttp://www.linkedin.com/myprofile?trk3Dhb_pro\r\nhttp://www.youtube.com/account#profile\r\nhttp://www.flickr.com/\r\n Mi galer\xeda\r\nhttp://www.flickr.com/photos/wwwfernandaferrervazquez-showroomrecoletacom/ \r\n\r\nhttp://www.facebook.com/pages/Buenos-Aires-Argentina/Fernanda-F-Showroom-Recoleta/200218353804?ref3Dts\r\nhttp://fernandaferrervazquez.wordpress.com/wp-admin/"""
-        >>> FacebookAPI._extract_url(url_text)
-        u'http://fernandaferrervazquez.blogspot.com/a'
         '''
         import re
         text_url_field = text_url_field.encode('utf8')
@@ -425,9 +426,10 @@ class FacebookUserConverter(object):
         '''
         Check the database and add numbers to the username to ensure its unique
         '''
-        usernames = list(get_user_model().objects.filter(
-            username__istartswith=base_username).values_list(
-                'username', flat=True))
+        usernames = list(
+            get_user_model().objects.filter(
+                username__istartswith=base_username
+            ).values_list('username', flat=True))
         usernames_lower = [str(u).lower() for u in usernames]
         username = str(base_username)
         i = 1
@@ -550,7 +552,7 @@ class FacebookUserConverter(object):
 
         # fire an event, so u can do things like personalizing the users' account
         # based on the likes
-        signals.facebook_post_store_likes.send(sender=get_profile_class(),
+        signals.facebook_post_store_likes.send(sender=get_profile_model(),
                                                user=user, likes=likes, current_likes=current_likes,
                                                inserted_likes=inserted_likes,
                                                )
@@ -643,7 +645,7 @@ class FacebookUserConverter(object):
 
         # fire an event, so u can do things like personalizing suggested users
         # to follow
-        signals.facebook_post_store_friends.send(sender=get_profile_class(),
+        signals.facebook_post_store_friends.send(sender=get_profile_model(),
                                                  user=user, friends=friends, current_friends=current_friends,
                                                  inserted_friends=inserted_friends,
                                                  )
@@ -655,8 +657,7 @@ class FacebookUserConverter(object):
         Returns all profile models which are already registered on your site
         and a list of friends which are not on your site
         '''
-        from django_facebook.utils import get_profile_class
-        profile_class = get_profile_class()
+        profile_class = get_profile_model()
         friends = self.get_friends(limit=1000)
 
         if friends:

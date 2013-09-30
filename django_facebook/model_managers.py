@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class FacebookUserManager(models.Manager):
+
     def find_users(self, queries, base_queryset=None):
         '''
         Queries, a list of search queries
@@ -39,10 +40,10 @@ class FacebookUserManager(models.Manager):
         assert gender in (
             None, 'M', 'F'), 'Gender %s wasnt recognized' % gender
 
-        from django_facebook.utils import get_profile_class
+        from django_facebook.utils import get_profile_model
         facebook_cache_key = 'facebook_users_%s' % user.id
         non_members = cache.get(facebook_cache_key)
-        profile_class = get_profile_class()
+        profile_class = get_profile_model()
         if not non_members:
             facebook_users = list(
                 self.filter(user_id=user.id, gender=gender)[:50])
@@ -64,6 +65,7 @@ class FacebookUserManager(models.Manager):
 
 
 class OpenGraphShareManager(models.Manager):
+
     def failed(self):
         qs = self.filter(completed_at__isnull=True)
         return qs
@@ -104,5 +106,6 @@ class OpenGraphShareManager(models.Manager):
                 share.remove()
             except (OAuthException, UnsupportedDeleteRequest), e:
                 # oauth exceptions happen when tokens are removed
-                # unsupported delete requests when the resource is already removed
+                # unsupported delete requests when the resource is already
+                # removed
                 logger.info('removing share failed, got error %s', e)

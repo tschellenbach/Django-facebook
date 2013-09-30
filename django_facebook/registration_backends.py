@@ -10,6 +10,7 @@ from django.contrib.auth import get_backends
 
 
 class NooptRegistrationBackend(object):
+
     '''
     Noopt backends forms the basis of support for backends
     which handle the actual registration in the registration form
@@ -21,7 +22,7 @@ class NooptRegistrationBackend(object):
         template = facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE
         return template
 
-    def register(self, request, **kwargs):
+    def register(self, request, form=None, **kwargs):
         pass
 
     def activate(self, **kwargs):
@@ -54,8 +55,6 @@ class NooptRegistrationBackend(object):
         elif action is CONNECT_ACTIONS.REGISTER:
             response = base_next_redirect(next_key=['register_next', 'next'])
 
-        print response, default_url
-
         return response
 
     def post_activation_redirect(self, request, user):
@@ -63,19 +62,20 @@ class NooptRegistrationBackend(object):
 
 
 class FacebookRegistrationBackend(NooptRegistrationBackend):
+
     """
     A backend compatible with Django Registration
     It is extremly simple and doesn't handle things like redirects etc
     (These are already handled by Django Facebook)
     """
-    def register(self, request, **kwargs):
+    def register(self, request, form=None, **kwargs):
         """
         Create and immediately log in a new user.
 
         """
         username, email, password = kwargs['username'], kwargs[
             'email'], kwargs['password1']
-        #Create user doesn't accept additional parameters,
+        # Create user doesn't accept additional parameters,
         new_user = get_user_model(
         ).objects.create_user(username, email, password)
 
@@ -101,6 +101,11 @@ class FacebookRegistrationBackend(NooptRegistrationBackend):
 
 
 class UserenaBackend(NooptRegistrationBackend):
+
+    def register(self, request, form, **kwargs):
+        new_user = form.save()
+        return new_user
+
     def get_form_class(self, request):
         from userena.forms import SignupForm
         return SignupForm
@@ -111,6 +116,7 @@ class UserenaBackend(NooptRegistrationBackend):
 
 
 class OldDjangoRegistrationBackend(NooptRegistrationBackend):
+
     def get_form_class(self, request):
         from registration.forms import RegistrationFormUniqueEmail
         return RegistrationFormUniqueEmail

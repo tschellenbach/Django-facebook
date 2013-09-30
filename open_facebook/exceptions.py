@@ -8,6 +8,7 @@ import urllib2
 
 
 class OpenFacebookException(Exception):
+
     '''
     BaseClass for all open facebook errors
     '''
@@ -38,7 +39,7 @@ class OpenFacebookException(Exception):
             else:
                 range += 1
 
-        #make sure none specific exceptions are last in the order
+        # make sure none specific exceptions are last in the order
         if not range:
             range = 1000
 
@@ -46,13 +47,16 @@ class OpenFacebookException(Exception):
 
 
 class ParameterException(OpenFacebookException):
+
     '''
-    100-200
+    100-189
+    190 and up are oauth errors
     '''
-    codes = (100, 199)
+    codes = (100, 189)
 
 
 class UnknownException(OpenFacebookException):
+
     '''
     Raised when facebook themselves don't know what went wrong
     '''
@@ -64,6 +68,7 @@ class OAuthException(OpenFacebookException):
 
 
 class PermissionException(OAuthException):
+
     '''
     200-300
     '''
@@ -75,10 +80,19 @@ class UserPermissionException(PermissionException):
 
 
 class FeedActionLimit(UserPermissionException):
+
     '''
     When you posted too many times from one user acount
     '''
     codes = 341
+
+
+class OpenGraphException(OpenFacebookException):
+    '''
+    Raised when we get error 3502, representing a problem with facebook
+    open graph data on the page
+    '''
+    codes = 3502
 
 
 class DuplicateStatusMessage(OpenFacebookException):
@@ -90,6 +104,7 @@ class MissingParameter(OpenFacebookException):
 
 
 class AliasException(OpenFacebookException):
+
     '''
     When you send a request to a non existant url facebook gives this error
     instead of a 404....
@@ -102,6 +117,7 @@ class UnsupportedDeleteRequest(OpenFacebookException):
 
 
 class ParseException(OpenFacebookException):
+
     '''
     Anything preventing us from parsing the Facebook response
     '''
@@ -109,6 +125,7 @@ class ParseException(OpenFacebookException):
 
 
 class FacebookUnreachable(OpenFacebookException):
+
     '''
     Timeouts, 500s, SSL errors etc
     '''

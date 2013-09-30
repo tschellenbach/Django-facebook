@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 class BaseFacebookInvite(object):
+
     '''
     An object wrapping some meta data about a facebook invite.
     Use subclasses of this object to splittest different invite messages and see which one works best.
@@ -48,7 +49,8 @@ class BaseFacebookInvite(object):
         type = self.get_type(invite_message)
         link = self.get_link(type, user)
 
-        wall_post_id = fb.set('%s/feed' % facebook_id, message=message, link=link, name=self.name, caption=self.caption, **kwargs)
+        wall_post_id = fb.set('%s/feed' % facebook_id, message=message,
+                              link=link, name=self.name, caption=self.caption, **kwargs)
 
         return wall_post_id
 
@@ -66,7 +68,8 @@ def post_on_profile(user, fb, facebook_id, invite_message, force_class=None, for
     wallpost_id = None
 
     try:
-        fb_invite, created = FacebookInvite.objects.get_or_create(user=user, user_invited=facebook_id, defaults=dict(message=invite_message))
+        fb_invite, created = FacebookInvite.objects.get_or_create(
+            user=user, user_invited=facebook_id, defaults=dict(message=invite_message))
         fb_invite.last_attempt = datetime.now()
         modulo = fb_invite.id % len(facebook_classes)
         message_class = facebook_classes[modulo]
@@ -74,7 +77,8 @@ def post_on_profile(user, fb, facebook_id, invite_message, force_class=None, for
             message_class = class_dict[force_class]
 
         if created or force_send:
-            #set a different type per style of the message and add custom if there is a custom invite message
+            # set a different type per style of the message and add custom if
+            # there is a custom invite message
             fb_invite.type = message_class.get_type(invite_message)
             fb_invite.save()
             message_instance = message_class()
@@ -87,7 +91,8 @@ def post_on_profile(user, fb, facebook_id, invite_message, force_class=None, for
             fb_invite.error_message = None
             fb_invite.save()
         else:
-            logger.info('we are not sending email at the moment cause the invite already existed')
+            logger.info(
+                'we are not sending email at the moment cause the invite already existed')
     except facebook_exceptions.OpenFacebookException, e:
         logger.warn(unicode(e), exc_info=sys.exc_info(), extra={
             'data': {
