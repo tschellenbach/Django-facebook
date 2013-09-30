@@ -68,7 +68,7 @@ facebookClass.prototype = {
                 //showloading
                 scope.connectLoading(gettext('Now loading your profile...'));
                 //submit the form
-                $(formElement).submit();
+                formElement.submit();
             } else {
                 var errorMessage = gettext('Sorry, we couldn\'t log you in. Please try again.');
                 scope.connectLoading(errorMessage, true, true);
