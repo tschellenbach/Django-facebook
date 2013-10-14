@@ -8,3 +8,4 @@ python-memcached
 pep8
 git+http://github.com/dcramer/pyflakes.git#egg=pyflakes
 autopep8
+unidecode
