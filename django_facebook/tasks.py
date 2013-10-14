@@ -127,11 +127,10 @@ def retry_open_graph_shares_for_user(user):
         retry_open_graph_share(share, reset_retries=True)
 
 
-def token_extended_connect(sender, profile, token_changed, old_token, **kwargs):
+def token_extended_connect(sender, user, profile, token_changed, old_token, **kwargs):
     from django_facebook import settings as facebook_settings
     if facebook_settings.FACEBOOK_CELERY_TOKEN_EXTEND:
         # This is only save to run if we are using Celery
-        user = profile.user
         # make sure we don't have troubles caused by replication lag
         retry_open_graph_shares_for_user.apply_async(args=[user], countdown=60)
 
