@@ -52,7 +52,11 @@ class FacebookCanvasMiddleWare(object):
         referer = request.META.get('HTTP_REFERER', None)
         if referer:
             urlparsed = urlparse(referer)
-            if not urlparsed.netloc.endswith('facebook.com'):
+            is_facebook = urlparsed.netloc.endswith('facebook.com')
+            # facebook redirect
+            if is_facebook and urlparsed.path.endswith('/l.php'):
+                return
+            if not is_facebook:
                 return
             # when there is an error, we attempt to allow user to
             # reauthenticate
