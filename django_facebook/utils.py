@@ -248,6 +248,7 @@ class ScriptRedirect(HttpResponse):
     '''
     Redirect for Facebook Canvas pages
     '''
+
     def __init__(self, redirect_to, show_body=True):
         self.redirect_to = redirect_to
         self.location = iri_to_uri(redirect_to)

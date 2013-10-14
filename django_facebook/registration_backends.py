@@ -15,6 +15,7 @@ class NooptRegistrationBackend(object):
     Noopt backends forms the basis of support for backends
     which handle the actual registration in the registration form
     '''
+
     def get_form_class(self, request):
         return FacebookRegistrationFormUniqueEmail
 
@@ -68,6 +69,7 @@ class FacebookRegistrationBackend(NooptRegistrationBackend):
     It is extremly simple and doesn't handle things like redirects etc
     (These are already handled by Django Facebook)
     """
+
     def register(self, request, form=None, **kwargs):
         """
         Create and immediately log in a new user.

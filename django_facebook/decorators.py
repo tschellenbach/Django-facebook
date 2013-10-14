@@ -21,6 +21,7 @@ class FacebookRequired(object):
     and upon a permission error redirect to login_url
     Querying the permissions would slow down things
     """
+
     def __init__(self, fn, scope=None, canvas=False, page_tab=False, extra_params=None):
         self.fn = fn
         scope = fb_settings.FACEBOOK_DEFAULT_SCOPE if scope is None else scope
@@ -160,6 +161,7 @@ class FacebookRequiredLazy(FacebookRequired):
 
     Use this in combination with require_persistent_graph
     """
+
     def authenticate(self, fn, request, *args, **kwargs):
         redirect_uri = self.get_redirect_uri(request)
         oauth_url = get_oauth_url(

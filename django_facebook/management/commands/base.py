@@ -19,6 +19,7 @@ class CustomBaseCommand(BaseCommand):
 
     Listens to the verbosity command given to the management command
     '''
+
     def __init__(self, session=None):
         self._session = session
         self.verbosity = DEFAULT_VERBOSITY

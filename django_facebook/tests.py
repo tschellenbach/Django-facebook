@@ -81,6 +81,7 @@ class DecoratorTest(BaseDecoratorTest):
             If you allow proceed
             If you click cancel ...
     '''
+
     def setUp(self):
         BaseDecoratorTest.setUp(self)
         self.url = reverse('facebook_decorator_example')
@@ -125,6 +126,7 @@ class ScopedDecoratorTest(DecoratorTest):
     '''
     Tests the more complicated but faster lazy decorator
     '''
+
     def setUp(self):
         DecoratorTest.setUp(self)
         self.url = reverse('facebook_decorator_example_scope')
@@ -153,6 +155,7 @@ class LazyDecoratorTest(DecoratorTest):
     '''
     Tests the more complicated but faster lazy decorator
     '''
+
     def setUp(self):
         DecoratorTest.setUp(self)
         self.url = reverse('facebook_lazy_decorator_example')
@@ -382,6 +385,7 @@ class ExtendTokenTest(LiveFacebookTest):
 
 
 class OpenGraphShareTest(FacebookTest):
+
     def setUp(self):
         FacebookTest.setUp(self)
         user_url = 'http://www.fashiolista.com/style/neni/'
@@ -696,6 +700,7 @@ class SimpleRegisterViewTest(FacebookTest):
     '''
     Even the most simple views will break eventually if they are not tested
     '''
+
     def test_registration(self):
         pw = 'tester1234'
         data = dict(username='testertester', email='tester@testertester.com',

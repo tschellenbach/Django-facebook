@@ -643,6 +643,7 @@ class OpenFacebook(FacebookConnection):
         print graph.get('me')
 
     '''
+
     def __init__(self, access_token=None, prefetched_data=None,
                  expires=None, current_user_id=None):
         '''
@@ -659,18 +660,18 @@ class OpenFacebook(FacebookConnection):
         # hook to store the current user id if representing the
         # facebook connection to a logged in user :)
         self.current_user_id = current_user_id
-        
+
     def __getstate__(self):
         state = dict(
             access_token=self.access_token,
             prefetched_data=self.prefetched_data
         )
         return state
-    
+
     def __setstate__(self, state):
         self.access_token = state['access_token']
         self.prefetched_data = state['prefetched_data']
-        
+
     def is_authenticated(self):
         '''
         Ask facebook if we have access to the users data
@@ -900,6 +901,7 @@ class TestUser(object):
     '''
     Simple wrapper around test users
     '''
+
     def __init__(self, data):
         self.name = data['name']
         self.id = data['id']

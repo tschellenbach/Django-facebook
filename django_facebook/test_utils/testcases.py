@@ -8,6 +8,7 @@ class FacebookTest(TestCase):
     '''
     Normal Facebook tests run against a fake API
     '''
+
     def setUp(self):
         from django_facebook.test_utils.mocks import MockFacebookAPI, MockFacebookAuthorization, RequestMock
         import sys

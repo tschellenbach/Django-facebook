@@ -10,6 +10,7 @@ class RequestMock(RequestFactory):
     and modded them into the requestfactory class
     http://www.mellowmorning.com/2011/04/18/mock-django-request-for-testing/
     '''
+
     def request(self, **request):
         "Construct a generic request object."
         request['REQUEST'] = dict()

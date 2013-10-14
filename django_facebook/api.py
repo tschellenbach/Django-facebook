@@ -250,6 +250,7 @@ class FacebookUserConverter(object):
     - invite flows
     - importing and storing likes
     '''
+
     def __init__(self, open_facebook):
         from open_facebook.api import OpenFacebook
         self.open_facebook = open_facebook

@@ -88,6 +88,7 @@ class FeedActionLimit(UserPermissionException):
 
 
 class OpenGraphException(OpenFacebookException):
+
     '''
     Raised when we get error 3502, representing a problem with facebook
     open graph data on the page
