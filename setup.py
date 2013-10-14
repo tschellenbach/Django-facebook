@@ -139,6 +139,7 @@ setup(
     description=DESCRIPTION,
     long_description=long_description,
     classifiers=CLASSIFIERS,
+    install_requires=['unidecode'],
     tests_require=[
         'django',
         'python-memcached',
