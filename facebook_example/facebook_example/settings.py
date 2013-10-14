@@ -1,6 +1,7 @@
 # Django settings for facebook_example project.
 import os
 import django
+import sys
 django_version = django.VERSION
 # some complications related to our travis testing setup
 DJANGO = os.environ.get('DJANGO', '1.5.1')
@@ -9,6 +10,8 @@ CUSTOM_USER_MODEL = bool(int(os.environ.get('CUSTOM_USER_MODEL', '1')))
 
 if DJANGO != '1.5.1':
     CUSTOM_USER_MODEL = False
+    
+TESTING = 'test' in sys.argv
 
 FACEBOOK_APP_ID = '215464901804004'
 FACEBOOK_APP_SECRET = '0aceba27823a9dfefa955f76949fa4b4'
@@ -30,6 +33,9 @@ AUTHENTICATION_BACKENDS = (
     'django_facebook.auth_backends.FacebookBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
+
+
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 
 if CUSTOM_USER_MODEL:
     AUTH_USER_MODEL = 'django_facebook.FacebookCustomUser'
