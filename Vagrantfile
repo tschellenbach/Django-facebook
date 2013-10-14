@@ -10,7 +10,7 @@ def configure_box(index, config)
   ip = "192.168.50.42"
   
   config.vm.define name do |slave_conf|
-    slave_conf.vm.box = "precise"
+    slave_conf.vm.box = "precise64"
     slave_conf.vm.box_url = "http://files.vagrantup.com/precise64.box"
     slave_conf.vm.network :hostonly, ip
 
