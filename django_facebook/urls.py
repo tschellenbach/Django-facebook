@@ -38,7 +38,7 @@ dev_patterns = patterns(
 )
 
 # when developing enable the example views
-if settings.DEBUG or settings.TESTING:
+if settings.DEBUG or getattr(settings, 'TESTING', False):
     # only enable example views while developing
     urlpatterns += dev_patterns
 
