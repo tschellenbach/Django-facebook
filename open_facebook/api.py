@@ -662,15 +662,23 @@ class OpenFacebook(FacebookConnection):
         self.current_user_id = current_user_id
 
     def __getstate__(self):
+        '''
+        Turns the object into something easy to serialize
+        '''
         state = dict(
             access_token=self.access_token,
-            prefetched_data=self.prefetched_data
+            prefetched_data=self.prefetched_data,
+            expires=self.expires,
         )
         return state
 
     def __setstate__(self, state):
+        '''
+        Restores the object from the state dict
+        '''
         self.access_token = state['access_token']
         self.prefetched_data = state['prefetched_data']
+        self.expires = state['expires']
 
     def is_authenticated(self):
         '''
