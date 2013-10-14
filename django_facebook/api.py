@@ -6,6 +6,7 @@ from django_facebook.utils import mass_get_or_create, cleanup_oauth_url, \
     get_user_attribute
 from open_facebook.exceptions import OpenFacebookException
 from django_facebook.exceptions import FacebookException
+from open_facebook.api import OpenFacebook
 try:
     from dateutil.parser import parse as parse_date
 except ImportError:
@@ -61,17 +62,18 @@ def get_persistent_graph(request, *args, **kwargs):
 
     if not graph:
         # search for the graph in the session
-        cached_graph = request.session.get('graph')
-        if cached_graph:
+        cached_graph_dict = request.session.get('graph_dict')
+        if cached_graph_dict:
+            cached_graph = OpenFacebook()
+            cached_graph.__setstate__(cached_graph_dict)
             cached_graph._me = None
-            graph = cached_graph
 
     if not graph or require_refresh:
         # gets the new graph, note this might do token conversions (slow)
         graph = get_facebook_graph(request, *args, **kwargs)
         # if it's valid replace the old cache
         if graph is not None and graph.access_token:
-            request.session['graph'] = graph
+            request.session['graph_dict'] = graph.__getstate__()
 
     # add the current user id and cache the graph at the request level
     _add_current_user_id(graph, request.user)

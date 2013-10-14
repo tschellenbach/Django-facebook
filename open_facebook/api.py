@@ -659,7 +659,18 @@ class OpenFacebook(FacebookConnection):
         # hook to store the current user id if representing the
         # facebook connection to a logged in user :)
         self.current_user_id = current_user_id
-
+        
+    def __getstate__(self):
+        state = dict(
+            access_token=self.access_token,
+            prefetched_data=self.prefetched_data
+        )
+        return state
+    
+    def __setstate__(self, state):
+        self.access_token = state['access_token']
+        self.prefetched_data = state['prefetched_data']
+        
     def is_authenticated(self):
         '''
         Ask facebook if we have access to the users data
