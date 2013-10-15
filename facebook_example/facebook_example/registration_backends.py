@@ -1,11 +1,11 @@
 '''
 Here a demo of how you can customize the registration backends
 '''
-from registration.backends.default import DefaultBackend
+from registration.backends.default.views import RegistrationView
 from django_facebook.registration_backends import NooptRegistrationBackend
 
 
-class DjangoRegistrationDefaultBackend(DefaultBackend, NooptRegistrationBackend):
+class DjangoRegistrationDefaultBackend(RegistrationView, NooptRegistrationBackend):
     '''
     The redirect behaviour will still be controlled by the
         post_error
