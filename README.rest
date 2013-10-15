@@ -11,7 +11,8 @@ Contributions are strongly appreciated. Seriously, give github a try, fork and g
 
 News
 ----
-Now with support for django custom user models
+* Now with support for django custom user models
+* Unfortunately django-registration doesn't support custom user models. I recommend you to use the provided registration flow or Userena.
 
 Demo & About
 ------------
