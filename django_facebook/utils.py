@@ -333,15 +333,22 @@ def mass_get_or_create(model_class, base_queryset, id_field, default_dict,
     given_ids = map(unicode, default_dict.keys())
     # both ends of the comparison are in unicode ensuring the not in works
     new_ids = [g for g in given_ids if g not in current_ids]
-    inserted_model_instances = []
+    prepared_models = []
     for new_id in new_ids:
         defaults = default_dict[new_id]
         defaults[id_field] = new_id
         defaults.update(global_defaults)
-        model_instance = model_class.objects.create(
+        model_instance = model_class(
             **defaults
         )
-        inserted_model_instances.append(model_instance)
+        prepared_models.append(model_instance)
+    # efficiently create these objects all at once
+    # django 1.4 only
+    if hasattr(model_class.objects, 'bulk_create'):
+        model_class.objects.bulk_create(prepared_models)
+    else:
+        [m.save() for m in prepared_models]
+    inserted_model_instances = prepared_models
     # returns a list of existing and new items
     return current_instances, inserted_model_instances
 
