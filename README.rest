@@ -172,6 +172,7 @@ Don't forget to update your database using syncdb or south after this step.
 Note: You need a profile model attached to every user model. For new accounts this will get created automatically, but you will need to migrate older accounts.
 
 **Congratulations**
+
 Right now you should have a working registration/connect/login in flow available at /facebook/example/!
 Test if everything is working and ensure you didn't miss a step somewhere.
 If you encounter any difficulties please open an issue.
@@ -203,7 +204,7 @@ Note that you can control which page to go to after connect using the next input
 
 ::
 
-    <form action="{% url facebook_connect %}?facebook_login=1" method="post">
+    <form action="{% url 'facebook_connect' %}?facebook_login=1" method="post">
     <a href="javascript:void(0);" style="font-size: 20px;" onclick="F.connect(this.parentNode);">Register, login or connect with facebook</a>
     <input type="hidden" value="{{ request.path }}" name="next" />
     <input type="hidden" value="{{ request.path }}" name="register_next" />
