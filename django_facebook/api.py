@@ -64,9 +64,9 @@ def get_persistent_graph(request, *args, **kwargs):
         # search for the graph in the session
         cached_graph_dict = request.session.get('graph_dict')
         if cached_graph_dict:
-            cached_graph = OpenFacebook()
-            cached_graph.__setstate__(cached_graph_dict)
-            cached_graph._me = None
+            graph = OpenFacebook()
+            graph.__setstate__(cached_graph_dict)
+            graph._me = None
 
     if not graph or require_refresh:
         # gets the new graph, note this might do token conversions (slow)
