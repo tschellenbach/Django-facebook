@@ -486,7 +486,7 @@ class OpenGraphShare(BaseModel):
                 self.user, profile, 'facebook_id')
         return BaseModel.save(self, *args, **kwargs)
 
-    def send(self, graph=None):
+    def send(self, graph=None, shared_explicitly=False):
         result = None
         # update the last attempt
         self.last_attempt = datetime.now()
@@ -497,8 +497,9 @@ class OpenGraphShare(BaseModel):
         user_or_profile = get_instance_for_attribute(
             self.user, profile, 'access_token')
         graph = graph or user_or_profile.get_offline_graph()
-        user_enabled = user_or_profile.facebook_open_graph and self.facebook_user_id
-
+        user_enabled = shared_explicitly or \
+                       (user_or_profile.facebook_open_graph \
+                        and self.facebook_user_id)
         # start sharing
         if graph and user_enabled:
             graph_location = '%s/%s' % (
