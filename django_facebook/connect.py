@@ -227,7 +227,8 @@ def _register_user(request, facebook, profile_callback=None,
     if not form.is_valid():
         # show errors in sentry
         form_errors = form.errors
-        error = facebook_exceptions.IncompleteProfileError('Facebook signup incomplete')
+        error = facebook_exceptions.IncompleteProfileError(
+            'Facebook signup incomplete')
         error.form = form
         raise error
 

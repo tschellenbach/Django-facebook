@@ -1,23 +1,20 @@
 from django.forms.util import ValidationError
-import json
-from django_facebook import settings as facebook_settings
-from django_facebook.utils import mass_get_or_create, cleanup_oauth_url, \
-    get_profile_model, parse_signed_request, hash_key, try_get_profile, \
-    get_user_attribute
-from open_facebook.exceptions import OpenFacebookException
+from django_facebook import settings as facebook_settings, signals
 from django_facebook.exceptions import FacebookException
-from open_facebook.api import OpenFacebook
+from django_facebook.utils import get_user_model, mass_get_or_create, \
+    cleanup_oauth_url, get_profile_model, parse_signed_request, hash_key, \
+    try_get_profile, get_user_attribute
+from open_facebook import exceptions as open_facebook_exceptions
+from open_facebook.exceptions import OpenFacebookException
+from open_facebook.utils import send_warning, validate_is_instance
+import datetime
+import json
+import logging
 try:
     from dateutil.parser import parse as parse_date
 except ImportError:
     from django_facebook.utils import parse_like_datetime as parse_date
-from django_facebook.utils import get_user_model
 
-import datetime
-import logging
-from open_facebook import exceptions as open_facebook_exceptions
-from open_facebook.utils import send_warning, validate_is_instance
-from django_facebook import signals
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +40,7 @@ def get_persistent_graph(request, *args, **kwargs):
     for permanent usage
     Atleast not without asking for the offline_access permission
     '''
+    from open_facebook.api import OpenFacebook
     if not request:
         raise(ValidationError,
               'Request is required if you want to use persistent tokens')

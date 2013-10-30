@@ -445,6 +445,8 @@ def simplify_class_decorator(class_decorator):
     '''
     Makes the decorator syntax uniform
     Regardless if you call the decorator like
+
+    **Decorator examples**::
         @decorator
         or
         @decorator()
@@ -455,10 +457,13 @@ def simplify_class_decorator(class_decorator):
     http://www.artima.com/weblogs/viewpost.jsp?thread=240845
 
     This function makes sure that your decorator class always gets called with
-    __init__(fn, *option_args, *option_kwargs)
-    __call__()
-        return a function which accepts the *args and *kwargs intended
-        for fn
+
+    **Methods called**::
+
+        __init__(fn, *option_args, *option_kwargs)
+        __call__()
+            return a function which accepts the *args and *kwargs intended
+            for fn
     '''
     # this makes sure the resulting decorator shows up as
     # function FacebookRequired instead of outer

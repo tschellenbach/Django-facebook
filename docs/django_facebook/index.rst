@@ -1,7 +1,7 @@
 .. _api:
 
 Django Facebook
-=============================
+===============
 
 .. toctree::
    :maxdepth: 2
