@@ -90,7 +90,7 @@ def _connect(request, graph):
             context['facebook_mode'] = True
             context['form'] = e.form
             return render_to_response(
-                facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE,
+                backend.get_registration_template(),
                 context_instance=context,
             )
         except facebook_exceptions.AlreadyConnectedError, e:
