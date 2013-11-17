@@ -86,7 +86,7 @@ class FacebookRequired(object):
 
             # Otherwise check if this page is the connect page, if it is, use the default
             elif request.path == reverse('django_facebook.views.connect'):
-                next = urlencode({'next': settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT})
+                next = urlencode({'next': fb_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT})
 
             # Finally assume we're on a regular site page and set next to request.path
             else:
