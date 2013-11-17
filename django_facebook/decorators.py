@@ -82,16 +82,16 @@ class FacebookRequired(object):
             '''
             # Do we have a next in the GET or POST? If so use that.
             if request.GET.get('next') or request.POST.get('next'):
-                next = urlencode({'next' : request.GET.get('next') or request.POST.get('next') })
+                next = urlencode({'next': request.GET.get('next') or request.POST.get('next')})
 
             # Otherwise check if this page is the connect page, if it is, use the default
             elif request.path == reverse('django_facebook.views.connect'):
-                next = urlencode({'next' : settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT})
+                next = urlencode({'next': settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT})
 
             # Finally assume we're on a regular site page and set next to request.path
             else:
-                next = urlencode({'next' : request.path})
-    
+                next = urlencode({'next': request.path})
+
             redirect_uri = request.build_absolute_uri(reverse('django_facebook.views.connect') + '?' + next)
 
         # set attempt=1 to prevent endless redirect loops
