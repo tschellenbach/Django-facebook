@@ -4,10 +4,11 @@ python:
   - 2.7
 env:
   # test the standalone functionality
-  - DJANGO=1.3.7 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
   - DJANGO=1.4.5 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
   - DJANGO=1.5.4 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
   - DJANGO=1.5.4 CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=1.6 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=1.6 CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
   # test django registration integration
   # Django registration doesn't support 1.5.4
   #- DJANGO=1.5.4 CUSTOM_USER_MODEL=0 MODE=django_registration REQUIREMENTS=django_registration SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook

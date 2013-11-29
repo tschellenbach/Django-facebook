@@ -253,9 +253,11 @@
                 <tr>
                     <td>Website Url:</td><td>{{ user.profile_or_self.website_url }}</td>
                 </tr>
+                {% if user.profile_or_self.image %}
                 <tr>
                     <td>Local Image:</td><td><img src="{{ user.profile_or_self.image.url }}" title="local copy" /></td>
                 </tr>
+                {% endif %}
                 <tr>
                     <td>Hotlinked Image:</td><td><img src="http://graph.facebook.com/{{ user.profile_or_self.facebook_id }}/picture?type=large" title="facebook stored image" /><br /></td>
                 </tr>
