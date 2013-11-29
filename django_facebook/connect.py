@@ -348,7 +348,7 @@ def _update_user(user, facebook, overwrite=True):
     if facebook_settings.FACEBOOK_STORE_LOCAL_IMAGE:
         image_field = get_user_attribute(user, profile, 'image', True)
         if not image_field:
-            image_name, image_file = _update_image(profile, image_url)
+            image_name, image_file = _update_image(facebook_data['facebook_id'], image_url)
             image_field.save(image_name, image_file)
 
     # save both models if they changed
