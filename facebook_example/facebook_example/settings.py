@@ -164,6 +164,7 @@ INSTALLED_APPS = (
     'member',
     'south',
     'open_facebook',
+    'django.contrib.admin',
 )
 
 

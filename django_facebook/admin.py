@@ -18,7 +18,7 @@ class FacebookLikeAdmin(admin.ModelAdmin):
 
 
 class FacebookProfileAdmin(admin.ModelAdmin):
-    list_display = ('image_', 'user_', 'facebook_name', 'facebook_id',)
+    list_display = ('image_', 'user', 'facebook_name', 'facebook_id',)
 
     raw_id_fields = ('user',)
 
@@ -38,14 +38,6 @@ class FacebookProfileAdmin(admin.ModelAdmin):
             instance.image.url if (instance and instance.image) else ''
         )
     image_.allow_tags = True
-
-    def user_(self, instance):
-        admin_url = reverse('admin:auth_user_change', args=[instance.user.pk])
-        return '<a href="{0}">{1}</a>'.format(
-            admin_url,
-            instance.user
-        )
-    user_.allow_tags = True
 
 
 def facebook_profile(open_graph_share):
