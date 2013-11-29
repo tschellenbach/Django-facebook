@@ -631,6 +631,8 @@ class FacebookUserConverter(object):
             global_defaults = dict(user_id=user.id)
             default_dict = {}
             gender_map = dict(female='F', male='M')
+            gender_map['male (hidden)'] = 'M'
+            gender_map['female (hidden)'] = 'F'
             for f in friends:
                 name = f.get('name')
                 gender = None
