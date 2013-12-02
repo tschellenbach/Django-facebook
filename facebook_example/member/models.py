@@ -9,14 +9,16 @@ logger = logging.getLogger(__name__)
 
 
 try:
-    from django.contrib.auth.models import AbstractUser, UserManager
-    class CustomFacebookUser(AbstractUser, FacebookModel):
-        '''
-        The django 1.5 approach to adding the facebook related fields
-        '''
-        objects = UserManager()
-        # add any customizations you like
-        state = models.CharField(max_length=255, blank=True, null=True)
+    # There can only be one custom user model defined at the same time
+    if getattr(settings, 'AUTH_USER_MODEL', None) == 'member.CustomFacebookUser':
+        from django.contrib.auth.models import AbstractUser, UserManager
+        class CustomFacebookUser(AbstractUser, FacebookModel):
+            '''
+            The django 1.5 approach to adding the facebook related fields
+            '''
+            objects = UserManager()
+            # add any customizations you like
+            state = models.CharField(max_length=255, blank=True, null=True)
 except ImportError, e:
     logger.info('Couldnt setup FacebookUser, got error %s', e)
     pass
