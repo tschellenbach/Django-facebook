@@ -876,7 +876,7 @@ class OpenFacebook(FacebookConnection):
                 has_permissions = False
         return has_permissions
 
-    def my_image_url(self, size=None):
+    def my_image_url(self, size='large'):
         '''
         Returns the image url from your profile
         Shortcut for me/picture
@@ -887,8 +887,7 @@ class OpenFacebook(FacebookConnection):
         :returns: string
         '''
         query_dict = QueryDict('', True)
-        if size:
-            query_dict['type'] = size
+        query_dict['type'] = size
         query_dict['access_token'] = self.access_token
 
         url = '%sme/picture?%s' % (self.api_url, query_dict.urlencode())
