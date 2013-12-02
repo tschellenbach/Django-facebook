@@ -2,6 +2,9 @@ language: python
 python:
   - 2.6
   - 2.7
+notifications:
+  email:
+    - thierryschellenbach@gmail.com
 env:
   # test the standalone functionality
   - DJANGO=1.4.5 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
@@ -32,3 +35,4 @@ script:
   - cd facebook_example
   - coverage run manage.py test $TESTS --settings=$SETTINGS -v2
   - coverage report
+  
