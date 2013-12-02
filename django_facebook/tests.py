@@ -16,7 +16,7 @@ from django_facebook.test_utils.mocks import RequestMock
 from django_facebook.test_utils.testcases import FacebookTest, LiveFacebookTest
 from django_facebook.utils import cleanup_oauth_url, get_profile_model, \
     ScriptRedirect, get_user_model, get_user_attribute, try_get_profile, \
-    get_instance_for_attribute, update_user_attributes
+    get_instance_for_attribute, update_user_attributes, get_registration_backend
 from functools import partial
 from mock import Mock, patch
 from open_facebook.api import FacebookConnection, FacebookAuthorization, \
@@ -317,7 +317,8 @@ class ConnectViewTest(FacebookTest):
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context)
             template = self.get_response_template(response)
-            assert template.name in facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE or template.name == facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE
+            backend = get_registration_backend()
+            assert template.name in backend.get_registration_template()
 
     def test_slow_connect(self):
         '''

@@ -113,7 +113,8 @@ class UserenaBackend(NooptRegistrationBackend):
         return SignupForm
 
     def get_registration_template(self):
-        template = 'userena/signup_form.html'
+        if facebook_settings.FACEBOOK_REGISTRATION_TEMPLATE == facebook_settings.default_registration_template:
+            template = 'userena/signup_form.html'
         return template
 
 

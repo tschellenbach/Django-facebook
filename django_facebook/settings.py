@@ -46,8 +46,9 @@ FACEBOOK_DEBUG_REDIRECTS = getattr(settings, 'FACEBOOK_DEBUG_REDIRECTS', False)
 FACEBOOK_READ_ONLY = getattr(settings, 'FACEBOOK_READ_ONLY', False)
 
 # Allow custom registration template
+default_registration_template = ['django_facebook/registration.html', 'registration/registration_form.html']
 FACEBOOK_REGISTRATION_TEMPLATE = getattr(settings,
-                                         'FACEBOOK_REGISTRATION_TEMPLATE', ['django_facebook/registration.html', 'registration/registration_form.html'])
+                                         'FACEBOOK_REGISTRATION_TEMPLATE', default_registration_template)
 
 # Allow custom signup form
 FACEBOOK_REGISTRATION_FORM = getattr(settings,
