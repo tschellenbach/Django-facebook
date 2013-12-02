@@ -658,9 +658,10 @@ def get_class_for(purpose):
 
 def get_instance_for(purpose, *args, **kwargs):
     '''
-    Usage:
-    conversion_instance = get_instance_for(
-        'facebook_user_conversion', user=user)
+    **Usage**::
+    
+        conversion_instance = get_instance_for(
+            'facebook_user_conversion', user=user)
     '''
     class_ = get_class_for(purpose)
     instance = class_(*args, **kwargs)

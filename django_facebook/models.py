@@ -412,13 +412,13 @@ class CreatedAtAbstractBase(BaseModel):
 
 
 class OpenGraphShare(BaseModel):
-
     '''
     Object for tracking all shares to Facebook
     Used for statistics and evaluating how things are going
 
     I recommend running this in a task
-    Example usage:
+    **Example usage**::
+    
         from user.models import OpenGraphShare
         user = UserObject
         url = 'http://www.fashiolista.com/'
@@ -433,19 +433,22 @@ class OpenGraphShare(BaseModel):
         share.save()
         result = share.send()
 
-    Advanced usage:
+    **Advanced usage**::
+    
         share.send()
         share.update(message='Hello world')
         share.remove()
         share.retry()
 
     Using this model has the advantage that it allows us to
+    
     - remove open graph shares (since we store the Facebook id)
+    
     - retry open graph shares, which is handy in case of
-      - updated access tokens (retry all shares from this user in the last
-        facebook_settings.FACEBOOK_OG_SHARE_RETRY_DAYS)
-      - Facebook outages (Facebook often has minor interruptions, retry in 15m,
-        for max facebook_settings.FACEBOOK_OG_SHARE_RETRIES)
+    
+      - updated access tokens (retry all shares from this user in the last facebook_settings.FACEBOOK_OG_SHARE_RETRY_DAYS)
+        
+      - Facebook outages (Facebook often has minor interruptions, retry in 15m, for max facebook_settings.FACEBOOK_OG_SHARE_RETRIES)
     '''
     objects = model_managers.OpenGraphShareManager()
 

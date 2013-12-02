@@ -1,5 +1,3 @@
-.. _api:
-
 Django Facebook
 ===============
 

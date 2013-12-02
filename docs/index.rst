@@ -2,9 +2,8 @@
 
 .. include :: ../README.rest
 
-########
 API Docs
-########
+========
 
 .. toctree::
    :maxdepth: 2

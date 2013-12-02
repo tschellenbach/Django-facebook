@@ -1,6 +1,6 @@
-######################################################################
+##############################################################################################
 Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmorning.com/>`_)
-######################################################################
+##############################################################################################
 
 .. image:: https://secure.travis-ci.org/tschellenbach/Django-facebook.png?branch=master
 
@@ -136,7 +136,7 @@ Whereas Django 1.5 and up can use a custom user model.
 
 If you don't already have a custom user model, simply uses the provided model by setting your AUTH_USER_MODEL to FacebookCustomUser::
 
-AUTH_USER_MODEL = 'django_facebook.FacebookCustomUser'
+    AUTH_USER_MODEL = 'django_facebook.FacebookCustomUser'
 
 Alternatively use the abstract model provided in django_facebook.models.FacebookProfileModel
 
@@ -232,13 +232,13 @@ If the default customizability isn't adequate for your needs you can also subcla
 
 ::
 
-class CustomBackend(FacebookRegistrationBackend):
-    def post_connect(action):
-        # go as crazy as you want, just be sure to return a response
-        response = HttpRedirect('/something/')
-        if action is CONNECT_ACTIONS.LOGIN:
-            response = HttpRedirect('/')
-        return response
+    class CustomBackend(FacebookRegistrationBackend):
+        def post_connect(action):
+            # go as crazy as you want, just be sure to return a response
+            response = HttpRedirect('/something/')
+            if action is CONNECT_ACTIONS.LOGIN:
+                response = HttpRedirect('/')
+            return response
 
 Canvas Application
 ------------------
@@ -281,6 +281,7 @@ Create a registration backend which subclasses both Django Facebook and Django R
 registration backend. An example is included in facebook_example/registration_backends.py
 
 ::
+    
     # in registration_backends.py
     class DjangoRegistrationDefaultBackend(DefaultBackend, NooptRegistrationBackend):
         '''

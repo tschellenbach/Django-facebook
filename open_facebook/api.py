@@ -6,12 +6,12 @@ Open Facebook - Pythonic access to the open graph
 
 Open Facebook allows you to use Facebook's open graph API with simple python code
 
-**Features**:
+**Features**
 
-* Supported and maintained
-* Tested so people can contribute
-* Facebook exceptions are mapped
-* Logging
+    * Supported and maintained
+    * Tested so people can contribute
+    * Facebook exceptions are mapped
+    * Logging
 
 
 **Basic examples**::
@@ -502,8 +502,8 @@ class FacebookAuthorization(FacebookConnection):
         response = cls.request('oauth/access_token', **kwargs)
         return response['access_token']
 
-    @classmethod
     @memoized
+    @classmethod
     def get_cached_app_access_token(cls):
         '''
         Caches the access token in memory, good for speeding up testing
