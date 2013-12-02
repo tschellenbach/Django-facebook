@@ -412,6 +412,7 @@ class CreatedAtAbstractBase(BaseModel):
 
 
 class OpenGraphShare(BaseModel):
+
     '''
     Object for tracking all shares to Facebook
     Used for statistics and evaluating how things are going
