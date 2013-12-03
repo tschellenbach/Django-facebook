@@ -58,7 +58,12 @@ Documentation
 * `Installation <http://django-facebook.readthedocs.org/en/latest/installation.html>`_
 * `Customizing <http://django-facebook.readthedocs.org/en/latest/customizing.html>`_
 * `Settings <http://django-facebook.readthedocs.org/en/latest/settings.html>`_
-* `Registration backends <http://django-facebook.readthedocs.org/en/latest/registration_backend.html>`_
+* `Registration backends & Redirects <http://django-facebook.readthedocs.org/en/latest/registration_backend.html>`_
+
+**Open Facebook API**
+
+* `Getting an OpenFacebook object <http://django-facebook.readthedocs.org/en/latest/graph.html>`_
+* `Making calls <http://django-facebook.readthedocs.org/en/latest/open_facebook/api.html>`_
 
 **Advanced**
 
