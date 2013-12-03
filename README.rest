@@ -55,16 +55,17 @@ Documentation
 
 **Basics**
 
-`Installation <http://django-facebook.readthedocs.org/en/latest/django_facebook/installation.html>`_
-`Customizing <http://django-facebook.readthedocs.org/en/latest/django_facebook/customizing.html>`_
-`Settings <http://django-facebook.readthedocs.org/en/latest/django_facebook/settings.html>`_
-`Registration backends <http://django-facebook.readthedocs.org/en/latest/django_facebook/registration_backend.html>`_
+* `Installation <http://django-facebook.readthedocs.org/en/latest/django_facebook/installation.html>`_
+* `Customizing <http://django-facebook.readthedocs.org/en/latest/django_facebook/customizing.html>`_
+* `Settings <http://django-facebook.readthedocs.org/en/latest/django_facebook/settings.html>`_
+* `Registration backends <http://django-facebook.readthedocs.org/en/latest/django_facebook/registration_backend.html>`_
 
 **Advanced**
-`Mobile <http://django-facebook.readthedocs.org/en/latest/django_facebook/mobile.html>`_
-`Celery <http://django-facebook.readthedocs.org/en/latest/django_facebook/celery.html>`_
-`Signals <http://django-facebook.readthedocs.org/en/latest/django_facebook/signals.html>`_
-`Canvas <http://django-facebook.readthedocs.org/en/latest/django_facebook/canvas.html>`_
+
+* `Mobile <http://django-facebook.readthedocs.org/en/latest/django_facebook/mobile.html>`_
+* `Celery <http://django-facebook.readthedocs.org/en/latest/django_facebook/celery.html>`_
+* `Signals <http://django-facebook.readthedocs.org/en/latest/django_facebook/signals.html>`_
+* `Canvas <http://django-facebook.readthedocs.org/en/latest/django_facebook/canvas.html>`_
 
 
 Contributing and Running tests
