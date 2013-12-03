@@ -11,8 +11,8 @@ Contributions are strongly appreciated. Seriously, give github a try, fork and g
 
 News
 ----
-* Now with support for django custom user models
-* Unfortunately django-registration doesn't support custom user models. I recommend you to use the provided registration flow or Userena.
+* 5.3.0 will be released early December, getting started with Django Facebook will be a lot easier now.
+
 
 Demo & About
 ------------
@@ -34,9 +34,6 @@ After registration Django Facebook gives you access to user's graph. Allowing fo
 
 Updates and tutorials can be found on my blog `mellowmorning <http://www.mellowmorning.com/>`_
 
-Further demos and tutorials will soon be available on `django-facebook.com <http://www.django-facebook.com/>`_
-
-
 
 Features
 --------
@@ -56,10 +53,7 @@ Features
 Installation
 ------------
 
-Clone the source code or use ``pip install django_facebook``.
-
-
-**Create a Facebook App**
+**0.) Create a Facebook App**
 
 You need a facebook app to use the open graph API and make the login process work.
 If you don't have a facebook app, now is the time to create one.
@@ -73,7 +67,13 @@ An example:
 Your site is www.fashiolista.com, your app domain is set to fashiolista.com and you do your development at ``local.fashiolista.com``.
 If you try to authenticate with Facebook from a different domain you will get an authentication error.
 
-**Settings**
+**1.) Pip install**
+
+.. code-block:: bash
+
+	pip install django_facebook
+
+**2.) Settings**
 
 Define the following settings in your settings.py file:
 
@@ -94,7 +94,9 @@ Add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS`` settin
     # and add request if you didn't do so already
     'django.core.context_processors.request',
 
-The full setting on a new django 1.5 app looks like this::
+The full setting on a new django 1.5 app looks like this
+
+.. code-block:: python
 
   TEMPLATE_CONTEXT_PROCESSORS = (
       'django.contrib.auth.context_processors.auth',
@@ -121,18 +123,19 @@ The full setting on a new django 1.5 app looks like this::
   )
 
 
+**3.) Urls**
 Now, add this line to your url config::
 
     (r'^facebook/', include('django_facebook.urls')),
     (r'^accounts/', include('django_facebook.auth_urls')), #Don't add this line if you use django registration or userena for registration and auth.
 
 
-**Update your models**
+**4.) Update your models**
 
 The following step depends on your version of Django. Django versions before 1.5 need to use a custom profile model.
 Whereas Django 1.5 and up can use a custom user model.
 
-**Django 1.5**
+**A. Custom user model**
 
 If you don't already have a custom user model, simply uses the provided model by setting your AUTH_USER_MODEL to FacebookCustomUser::
 
@@ -140,7 +143,7 @@ If you don't already have a custom user model, simply uses the provided model by
 
 Alternatively use the abstract model provided in django_facebook.models.FacebookProfileModel
 
-**Django < 1.5**
+**B. Profile model**
 
 If you don't already have a custom Profile model, simply uses the provided model by setting your AUTH_PROFILE_MODULE to FacebookProfile::
 
@@ -177,8 +180,11 @@ Right now you should have a working registration/connect/login in flow available
 Test if everything is working and ensure you didn't miss a step somewhere.
 If you encounter any difficulties please open an issue.
 
+Of course you now want to customize things like the login button, the page after registration etc.
+This is explained in the integration section.
 
-**Customize and integrate into your site**
+Customizing
+-----------
 
 Now it's time to customize things a little.
 For an example you can look at connect.html in the templates directory.
