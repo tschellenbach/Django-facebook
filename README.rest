@@ -186,36 +186,29 @@ This is explained in the integration section.
 Customizing
 -----------
 
-Now it's time to customize things a little.
-For an example you can look at connect.html in the templates directory.
+Now it's time to customize things a little. For a full example you can look at connect.html in the templates directory.
 
-First load the css:
+
+1.) First load the css and javascript:
 
 ::
 
     <link href="{{ STATIC_URL }}css/facebook.css" type="text/css" rel="stylesheet" media="all" />
-
-Secondly load the javascript:
-
-::
-
     {% include 'django_facebook/_facebook_js.html' %}
 
 If you encounter issues here you probably don't have django static files setup correctly.
-Alternatively you might be missing the context processor.
 
+2.) Next design the form
 
-Subsequently implement a form which calls Facebook via javascript.
-Note that you can control which page to go to after connect using the next input field.
-
+You can control redirects using next, register_next and error_next.
 ::
 
     <form action="{% url 'facebook_connect' %}?facebook_login=1" method="post">
-    <a href="javascript:void(0);" style="font-size: 20px;" onclick="F.connect(this.parentNode);">Register, login or connect with facebook</a>
-    <input type="hidden" value="{{ request.path }}" name="next" />
-    <input type="hidden" value="{{ request.path }}" name="register_next" />
-    <input type="hidden" value="{{ request.path }}" name="error_next" />
-    {% csrf_token %}
+	    <input type="hidden" value="{{ request.path }}" name="next" />
+	    <input type="hidden" value="{{ request.path }}" name="register_next" />
+	    <input type="hidden" value="{{ request.path }}" name="error_next" />
+	    {% csrf_token %}
+	    <input onclick="F.connect(this.parentNode); return false;" type="image" src="{{ STATIC_URL }}django_facebook/images/facebook_login.png" />
     </form>
 
 
@@ -234,7 +227,7 @@ Flows
 
 The default redirect is specified by the FACEBOOK_LOGIN_DEFAULT_REDIRECT setting.
 
-If the default customizability isn't adequate for your needs you can also subclass the default registration backend.
+If the default customizability isn't adequate for your needs you can also subclass the registration backend.
 
 ::
 
