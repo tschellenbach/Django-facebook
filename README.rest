@@ -218,6 +218,7 @@ You can control redirects using next, register_next and error_next.
 Usually you'll also want to offer your users the ability to connect their existing account to Facebook.
 You can control this by setting connect_facebook=1. The default behaviour is not to connect automatically.
 (As this previously caused users to connect their accounts to Facebook by accident)
+::
 
     <form action="{% url 'facebook_connect' %}?facebook_login=1" method="post">
 	    <input type="hidden" value="1" name="connect" />
