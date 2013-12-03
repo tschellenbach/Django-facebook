@@ -2,20 +2,34 @@
 
 .. include :: ../README.rest
 
-API Docs
-========
+Basic documentation
+===================
 
 .. toctree::
    :maxdepth: 2
 
-   canvas
-   celery
-   customizing
    installation
-   mobile
-   registration_backend
+   customizing
    settings
+   registration_backend
+   
+Advanced documentation
+======================
+   
+.. toctree::
+   :maxdepth: 2
+   
+   mobile
+   celery
    signals
+   canvas
+   
+API documentation
+===================
+   
+.. toctree::
+   :maxdepth: 2
+   
    django_facebook/index
    open_facebook/index
 

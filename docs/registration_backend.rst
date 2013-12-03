@@ -77,3 +77,5 @@ It provides a clear example of how to configure Userena and Django Facebook to w
 Supporting any other registration system is quite easy.
 Adjust the above settings to point to your own code.
 Note that the form's save method needs to return the new user object.
+
+Also have a look at the API docs for :class:`.FacebookRegistrationBackend`

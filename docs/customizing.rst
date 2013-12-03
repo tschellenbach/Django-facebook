@@ -7,7 +7,7 @@ Now it's time to customize things a little. For a full example you can look at c
 
 1.) First load the css and javascript:
 
-::
+.. code-block:: django
 
     <link href="{{ STATIC_URL }}css/facebook.css" type="text/css" rel="stylesheet" media="all" />
     {% include 'django_facebook/_facebook_js.html' %}
@@ -17,7 +17,8 @@ If you encounter issues here you probably don't have django static files setup c
 2.) Next design the form
 
 You can control redirects using next, register_next and error_next.
-::
+
+.. code-block:: django
 
     <form action="{% url 'facebook_connect' %}?facebook_login=1" method="post">
         <input type="hidden" value="{{ request.path }}" name="next" />
@@ -33,7 +34,8 @@ You can control redirects using next, register_next and error_next.
 Usually you'll also want to offer your users the ability to connect their existing account to Facebook.
 You can control this by setting connect_facebook=1. The default behaviour is not to connect automatically.
 (As this previously caused users to connect their accounts to Facebook by accident)
-::
+
+.. code-block:: django
 
     <form action="{% url 'facebook_connect' %}?facebook_login=1" method="post">
         <input type="hidden" value="1" name="connect" />

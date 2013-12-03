@@ -1,3 +1,4 @@
+
 Mobile usage
 ------------
 
@@ -6,6 +7,6 @@ In the view you can use the token to get a user.
 
 .. code-block:: python
 
-from django_facebook.connect import connect_user
-access_token = request.POST['access_token']
-action, user = connect_user(request, access_token)
+    from django_facebook.connect import connect_user
+    access_token = request.POST['access_token']
+    action, user = connect_user(request, access_token)
