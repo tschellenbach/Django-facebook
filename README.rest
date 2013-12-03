@@ -225,6 +225,12 @@ You can control this by setting connect_facebook=1. The default behaviour is not
 	    {% csrf_token %}
 	    <a onclick="F.connect(this.parentNode); return false;" href="javascript:void(0);">Connect</a>
     </form>
+    
+    
+Documentation
+-------------
+
+`Settings <http://django-facebook.readthedocs.org/en/latest/django_facebook/settings.html>`_
 
 
 Redirects
