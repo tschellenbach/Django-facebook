@@ -19,7 +19,7 @@ class NooptRegistrationBackend(object):
     def get_form_class(self, request):
         '''
         Returns the form class to use for registration
-        
+
         :param request: the request object
         '''
         return FacebookRegistrationFormUniqueEmail
@@ -34,11 +34,10 @@ class NooptRegistrationBackend(object):
     def register(self, request, form=None, **kwargs):
         '''
         Implement your registration logic in this method
-        
+
         :param request: the request object
         :param form: the form with the users data
         :param kwargs: additional data
-        
         '''
         pass
 

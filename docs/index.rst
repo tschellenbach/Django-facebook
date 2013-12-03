@@ -13,6 +13,16 @@ Basic documentation
    settings
    registration_backend
    
+Using the Open graph API
+========================
+
+.. toctree::
+   :maxdepth: 2
+
+   graph
+   open_facebook/api
+
+   
 Advanced documentation
 ======================
    

@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
 
-Open Facebook - Pythonic access to the open graph
-=================================================
-
 Open Facebook allows you to use Facebook's open graph API with simple python code
 
 **Features**

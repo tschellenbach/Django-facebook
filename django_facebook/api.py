@@ -31,6 +31,18 @@ def require_persistent_graph(request, *args, **kwargs):
     return graph
 
 
+def require_facebook_graph(request, *args, **kwargs):
+    '''
+    Just like get_facebook graph, but instead of returning None
+    raise an OpenFacebookException if we can't access facebook
+    '''
+    kwargs['raise_'] = True
+    graph = get_facebook_graph(request, *args, **kwargs)
+    if not graph:
+        raise OpenFacebookException('please authenticate')
+    return graph
+
+
 def get_persistent_graph(request, *args, **kwargs):
     '''
     Wraps itself around get facebook graph
