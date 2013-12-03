@@ -260,17 +260,6 @@ If the default customizability isn't adequate for your needs you can also subcla
                 response = HttpRedirect('/')
             return response
 
-Canvas Application
-------------------
-
-In order to use build a facebook canvas application, you should add this to your ``MIDDLEWARE_CLASSES`` setting::
-
-    'django_facebook.middleware.FacebookCanvasMiddleWare'
-
-This middleware will check for the signed_request parameter in the url and take the appropriate action:
-	* redirect to app authorization dialog if user has not authorized the app, some permission is missing or any other error.
-	* login the current facebook user in django's system and store the access token.
-
 
 Registration Backends
 ---------------------
@@ -455,15 +444,12 @@ Assuming you have vagrant installed, simply type the following in your shell:
     # Go to the directory:
     cd django-facebook
 
-    # Currently Vagrant is only support on branch `five`, so until this has been merged you need to switch branches:
-    git checkout five
-
     # Time to start Vagrant (grab a cup of coffee after this command, it'll take a while) :)
-    vagrant up
+    vagrant up; vagrant provision
 
     # Finally done?
     vagrant ssh
-    python manage.py runserver 0:8080
+    python manage.py runserver 0:8000
 
 To have a working Django Facebook example up and running at 192.168.50.42:8000/facebook/example/.
 For the facebook login to work simply map that ip to vagrant.mellowmorning.com
