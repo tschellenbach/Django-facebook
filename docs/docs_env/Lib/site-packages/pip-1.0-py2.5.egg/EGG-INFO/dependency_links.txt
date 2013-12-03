@@ -1,0 +1,1 @@
+https://github.com/pypa/virtualenv/tarball/master#egg=virtualenv-1.5.2.post2

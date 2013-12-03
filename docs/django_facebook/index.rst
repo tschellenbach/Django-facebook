@@ -13,7 +13,6 @@ Django Facebook
    middleware
    models
    registration_backends
-   settings
    signals
    tasks
    utils
