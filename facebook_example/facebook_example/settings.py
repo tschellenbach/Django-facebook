@@ -225,6 +225,12 @@ CACHES = {
         'LOCATION': '127.0.0.1:11211',
     }
 }
+# Using memcached breaks RTD
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
 
 if MODE == 'django_registration':
     FACEBOOK_REGISTRATION_BACKEND = 'facebook_example.registration_backends.DjangoRegistrationDefaultBackend'
