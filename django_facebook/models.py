@@ -13,6 +13,7 @@ from django_facebook.utils import compatible_datetime as datetime, \
 from django_facebook.utils import get_user_model
 from open_facebook.exceptions import OAuthException
 import logging
+import os
 logger = logging.getLogger(__name__)
 
 
@@ -58,14 +59,7 @@ Its recommended to enable FACEBOOK_CELERY_STORE or disable FACEBOOK_STORE_FRIEND
     if required not in backends:
         logger.warn('Required auth backend %s wasnt found', required)
     
-        
-        
-    
 validate_settings()
-
-import logging
-import os
-logger = logging.getLogger(__name__)
 
 
 if facebook_settings.FACEBOOK_PROFILE_IMAGE_PATH:
