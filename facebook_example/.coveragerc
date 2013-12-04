@@ -1,6 +1,8 @@
 # .coveragerc to control coverage.py
 [run]
-source = django_facebook
+source = 
+        django_facebook
+        open_facebook
 omit = 
         migrations/*
 
