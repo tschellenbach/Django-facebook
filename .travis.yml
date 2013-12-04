@@ -21,6 +21,8 @@ postgres:
   adapter: sqlite3
   database: django_fb_test
 install:
+  # faster than installing PIL manually
+  - apt-get install python-imaging
   - pip install pep8 --use-mirrors
   - pip install coverage --use-mirrors
   - pip install python-coveralls --use-mirrors
