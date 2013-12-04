@@ -10,10 +10,8 @@ Django Facebook
    decorators
    exceptions
    forms
-   middleware
    models
    registration_backends
-   signals
    tasks
    utils
    views

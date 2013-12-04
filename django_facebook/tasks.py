@@ -2,12 +2,20 @@ from celery import task
 from django.db import IntegrityError
 import logging
 from django_facebook.utils import get_class_for
+from functools import wraps
 
 logger = logging.getLogger(__name__)
 
 
 @task.task(ignore_result=True)
 def extend_access_token(profile, access_token):
+    '''
+    Extends the access token to 60 days and saves it on the profile
+    
+    :param profile: the profile or user object
+    :param access_token: a valid access token
+    :type access_token: string
+    '''
     results = profile._extend_access_token(access_token)
     return results
 
@@ -31,8 +39,21 @@ def store_likes(user, likes):
 
 
 @task.task(ignore_result=True)
-def remove_share(share):
-    share._remove()
+def store_friends(user, friends):
+    '''
+    Inserting again will not cause any errors, so this is safe
+    for multiple executions
+
+    :param user: The user for which we are storing
+    :type user: User object
+
+    :param friends: List of your friends
+    :type friends: list
+    '''
+    converter_class = get_class_for('user_conversion')
+    logger.info('celery is storing %s friends' % len(friends))
+    converter_class._store_friends(user, friends)
+    return friends
 
 
 @task.task(ignore_result=True)
@@ -61,24 +82,6 @@ def get_and_store_likes(user, facebook):
 
 
 @task.task(ignore_result=True)
-def store_friends(user, friends):
-    '''
-    Inserting again will not cause any errors, so this is safe
-    for multiple executions
-
-    :param user: The user for which we are storing
-    :type user: User object
-
-    :param friends: List of your friends
-    :type friends: list
-    '''
-    converter_class = get_class_for('user_conversion')
-    logger.info('celery is storing %s friends' % len(friends))
-    converter_class._store_friends(user, friends)
-    return friends
-
-
-@task.task(ignore_result=True)
 def get_and_store_friends(user, facebook):
     '''
     Since facebook is quite slow this version also runs the get
@@ -101,6 +104,16 @@ def get_and_store_friends(user, facebook):
     except IntegrityError, e:
         logger.warn(
             'get_and_store_friends failed for %s with error %s', user.id, e)
+
+
+@task.task(ignore_result=True)
+def remove_share(share):
+    '''
+    Removes the given open graph share
+    
+    :param share: the open graph share object
+    '''
+    share._remove()
 
 
 @task.task(ignore_result=True)
