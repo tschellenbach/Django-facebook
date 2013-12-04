@@ -33,32 +33,34 @@ def validate_settings():
 
     if facebook_settings.FACEBOOK_SKIP_VALIDATE:
         return
-    
+
     # check for required settings
     if not facebook_settings.FACEBOOK_APP_ID:
         logger.warn('Warning FACEBOOK_APP_ID isnt specified')
     if not facebook_settings.FACEBOOK_APP_SECRET:
         logger.warn('Warning FACEBOOK_APP_SECRET isnt specified')
-        
+
     # warn on things which will cause bad performance
     if facebook_settings.FACEBOOK_STORE_LIKES or facebook_settings.FACEBOOK_STORE_FRIENDS:
         if not facebook_settings.FACEBOOK_CELERY_STORE:
             msg = '''Storing friends or likes without using Celery will significantly slow down your login
 Its recommended to enable FACEBOOK_CELERY_STORE or disable FACEBOOK_STORE_FRIENDS and FACEBOOK_STORE_LIKES'''
             logger.warn(msg)
-            
+
     # make sure the context processors are present
-    required = ['django_facebook.context_processors.facebook', 'django.core.context_processors.request']
+    required = ['django_facebook.context_processors.facebook',
+                'django.core.context_processors.request']
     context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
     for context_processor in required:
         if not context_processor in context_processors:
-            logger.warn('Required context processor %s wasnt found', context_processor)
-        
+            logger.warn(
+                'Required context processor %s wasnt found', context_processor)
+
     backends = settings.AUTHENTICATION_BACKENDS
     required = 'django_facebook.auth_backends.FacebookBackend'
     if required not in backends:
         logger.warn('Required auth backend %s wasnt found', required)
-    
+
 validate_settings()
 
 
