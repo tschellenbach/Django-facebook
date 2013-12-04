@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def extend_access_token(profile, access_token):
     '''
     Extends the access token to 60 days and saves it on the profile
-    
+
     :param profile: the profile or user object
     :param access_token: a valid access token
     :type access_token: string
@@ -110,7 +110,7 @@ def get_and_store_friends(user, facebook):
 def remove_share(share):
     '''
     Removes the given open graph share
-    
+
     :param share: the open graph share object
     '''
     share._remove()
