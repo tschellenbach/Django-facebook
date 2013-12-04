@@ -30,7 +30,7 @@ Define the following settings in your settings.py file:
     FACEBOOK_APP_ID
     FACEBOOK_APP_SECRET
 
-**Url config, context processor, auth backend**
+**Context processor**
 
 add django facebook to your installed apps::
 
@@ -58,6 +58,7 @@ The full setting on a new django 1.5 app looks like this
       'django_facebook.context_processors.facebook',
   )
 
+**Auth backend**
 
 Add this to your ``AUTHENTICATION_BACKENDS`` setting::
 

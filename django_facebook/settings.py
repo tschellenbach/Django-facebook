@@ -87,15 +87,5 @@ FACEBOOK_PROFILE_IMAGE_PATH = getattr(
 FACEBOOK_CLASS_MAPPING = getattr(
     settings, 'FACEBOOK_CLASS_MAPPING', None)
 
-
-# check for required settings
-required_settings = ['FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET']
-locals_dict = locals()
-for setting_name in required_settings:
-    setting_available = locals_dict.get(setting_name) is not None
-    assert setting_available, 'Please provide setting %s' % setting_name
-
-# Make sure the settings make sense
-if (FACEBOOK_STORE_LIKES or FACEBOOK_STORE_FRIENDS) and not FACEBOOK_CELERY_STORE:
-    logger.warn(
-        'storing Facebook likes or friends while not using Celery really slows down Facebook authentication. Either disable FACEBOOK_STORE_FRIENDS or enable FACEBOOK_CELERY_STORE')
+FACEBOOK_SKIP_VALIDATE = getattr(
+    settings, 'FACEBOOK_SKIP_VALIDATE', False)

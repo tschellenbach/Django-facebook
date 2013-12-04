@@ -12,6 +12,8 @@ from django_facebook.utils import compatible_datetime as datetime, \
     try_get_profile, update_user_attributes
 from django_facebook.utils import get_user_model
 from open_facebook.exceptions import OAuthException
+import logging
+logger = logging.getLogger(__name__)
 
 
 def get_user_model_setting():
@@ -20,6 +22,46 @@ def get_user_model_setting():
     user_model_setting = getattr(settings, 'AUTH_USER_MODEL', default)
     return user_model_setting
 
+
+def validate_settings():
+    '''
+    Checks our Facebook and Django settings and looks for common errors
+    '''
+    from django.conf import settings
+    from django_facebook import settings as facebook_settings
+
+    if facebook_settings.FACEBOOK_SKIP_VALIDATE:
+        return
+    
+    # check for required settings
+    if not facebook_settings.FACEBOOK_APP_ID:
+        logger.warn('Warning FACEBOOK_APP_ID isnt specified')
+    if not facebook_settings.FACEBOOK_APP_SECRET:
+        logger.warn('Warning FACEBOOK_APP_SECRET isnt specified')
+        
+    # warn on things which will cause bad performance
+    if facebook_settings.FACEBOOK_STORE_LIKES or facebook_settings.FACEBOOK_STORE_FRIENDS:
+        if not facebook_settings.FACEBOOK_CELERY_STORE:
+            msg = '''Storing friends or likes without using Celery will significantly slow down your login
+Its recommended to enable FACEBOOK_CELERY_STORE or disable FACEBOOK_STORE_FRIENDS and FACEBOOK_STORE_LIKES'''
+            logger.warn(msg)
+            
+    # make sure the context processors are present
+    required = ['django_facebook.context_processors.facebook', 'django.core.context_processors.request']
+    context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
+    for context_processor in required:
+        if not context_processor in context_processors:
+            logger.warn('Required context processor %s wasnt found', context_processor)
+        
+    backends = settings.AUTHENTICATION_BACKENDS
+    required = 'django_facebook.auth_backends.FacebookBackend'
+    if required not in backends:
+        logger.warn('Required auth backend %s wasnt found', required)
+    
+        
+        
+    
+validate_settings()
 
 import logging
 import os
