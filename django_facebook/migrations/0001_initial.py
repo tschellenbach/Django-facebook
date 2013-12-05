@@ -12,7 +12,8 @@ See this blog post for inspiration
 http://kevindias.com/writing/django-custom-user-models-south-and-reusable-apps/
 https://github.com/stephenmcd/mezzanine/blob/master/mezzanine/core/migrations/0005_auto__chg_field_sitepermission_user__del_unique_sitepermission_user.py
 '''
-from django_facebook.utils import User, user_model_label, user_orm_label
+from django_facebook.utils import get_migration_data
+User, user_model_label, user_orm_label = get_migration_data()
 
 
 class Migration(SchemaMigration):

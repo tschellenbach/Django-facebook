@@ -668,20 +668,22 @@ def get_instance_for(purpose, *args, **kwargs):
     return instance
 
 
-'''
-Support for Django custom user models
-See this blog post for inspiration
-
-http://kevindias.com/writing/django-custom-user-models-south-and-reusable-apps/
-https://github.com/stephenmcd/mezzanine/blob/master/mezzanine/core/migrations/0005_auto__chg_field_sitepermission_user__del_unique_sitepermission_user.py
-'''
-
-try:
-    from django.contrib.auth import get_user_model
-except ImportError:  # django < 1.5
-    from django.contrib.auth.models import User
-else:
-    User = get_user_model()
-
-user_orm_label = '%s.%s' % (User._meta.app_label, User._meta.object_name)
-user_model_label = '%s.%s' % (User._meta.app_label, User._meta.module_name)
+def get_migration_data():
+    '''
+    Support for Django custom user models
+    See this blog post for inspiration
+    
+    http://kevindias.com/writing/django-custom-user-models-south-and-reusable-apps/
+    https://github.com/stephenmcd/mezzanine/blob/master/mezzanine/core/migrations/0005_auto__chg_field_sitepermission_user__del_unique_sitepermission_user.py
+    '''
+    
+    try:
+        from django.contrib.auth import get_user_model
+    except ImportError:  # django < 1.5
+        from django.contrib.auth.models import User
+    else:
+        User = get_user_model()
+    
+    user_orm_label = '%s.%s' % (User._meta.app_label, User._meta.object_name)
+    user_model_label = '%s.%s' % (User._meta.app_label, User._meta.module_name)
+    return User, user_orm_label, user_model_label
