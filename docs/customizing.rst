@@ -1,7 +1,7 @@
 Customizing
 -----------
 
-Now it's time to customize things a little. For a full example you can look at connect.html in the templates directory.
+Now it's time to customize things a little. For a full example you can look at example.html in the templates directory.
 
 **Login flow**
 
