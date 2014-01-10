@@ -13,8 +13,9 @@ if DJANGO != '1.5.1':
     
 TESTING = 'test' in sys.argv
 
-FACEBOOK_APP_ID = '215464901804004'
-FACEBOOK_APP_SECRET = '0aceba27823a9dfefa955f76949fa4b4'
+FACEBOOK_APP_ID = 'YOUR_APP_ID'
+FACEBOOK_APP_SECRET = 'YOUR_APP_SECRET'
+
 TEMPLATE_CONTEXT_PROCESSORS = [
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
@@ -39,6 +40,7 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 
 if CUSTOM_USER_MODEL:
     AUTH_USER_MODEL = 'django_facebook.FacebookCustomUser'
+    AUTH_PROFILE_MODULE = 'member.UserProfile'
 else:
     AUTH_USER_MODEL = 'auth.User'
     AUTH_PROFILE_MODULE = 'member.UserProfile'
@@ -75,12 +77,6 @@ DATABASES = {
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = []
 
-# Local time zone for this installation. Choices can be found here:
-# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
-# although not all choices may be available on all operating systems.
-# In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'America/Chicago'
-
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
@@ -94,10 +90,6 @@ USE_I18N = True
 # If you set this to False, Django will not format dates, numbers and
 # calendars according to the current locale.
 USE_L10N = True
-
-# If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = True
-
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
@@ -162,7 +154,6 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'django_facebook',
     'member',
-    'south',
     'open_facebook',
     'django.contrib.admin',
 )

@@ -40,3 +40,8 @@ def create_profile(sender, instance, created, **kwargs):
         profile_model = get_profile_model()
         if profile_model == UserProfile and created:
             profile, new = UserProfile.objects.get_or_create(user=instance)
+
+
+class VisitTimestamp(models.Model):
+    visitor_profile = models.ForeignKey(UserProfile)
+    date_time = models.DateTimeField()
