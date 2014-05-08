@@ -466,7 +466,7 @@ class FacebookUserConverter(object):
         if link:
             username = link.split('/')[-1]
             username = cls._make_username(username)
-            if 'profilephp' in username:
+            if username and 'profilephp' in username:
                 username = None
 
         # try the email adress next
