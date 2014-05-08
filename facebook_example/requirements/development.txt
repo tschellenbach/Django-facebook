@@ -2,7 +2,7 @@ django>=1.5
 django_facebook
 fabric
 south
-PIL
+pillow
 mock
 python-memcached
 pep8
