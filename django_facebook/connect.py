@@ -12,6 +12,7 @@ from django_facebook.utils import get_registration_backend, get_form_class, \
     get_profile_model, to_bool, get_user_model, get_instance_for,\
     get_user_attribute, try_get_profile, get_model_for_attribute,\
     get_instance_for_attribute, update_user_attributes
+from django.utils.datastructures import MultiValueDictKeyError
 from random import randint
 import logging
 import sys
@@ -218,8 +219,11 @@ def _register_user(request, facebook, profile_callback=None,
         _remove_old_connections(facebook_data['facebook_id'])
 
     if request.REQUEST.get('force_registration_hard'):
-        data['email'] = data['email'].replace(
-            '@', '+test%s@' % randint(0, 1000000000))
+	try:
+            data['email'] = data['email'].replace(
+                '@', '+test%s@' % randint(0, 1000000000))
+        except MultiValueDictKeyError:
+            data['email'] = ('null+%s@null.com' % randint(0, 1000000000))
 
     form = form_class(data=data, files=request.FILES,
                       initial={'ip': request.META['REMOTE_ADDR']})
