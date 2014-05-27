@@ -1,10 +1,5 @@
-from django.utils.decorators import available_attrs
+from django.utils import six
 from functools import wraps
-try:
-    unicode = unicode
-except NameError:
-    unicode = str
-    basestring = (str, bytes)
 try:
     # using compatible_datetime instead of datetime only
     # not to override the original datetime package
@@ -436,7 +431,7 @@ def parse_scope(scope):
     ['email','user_about_me']
     '''
     assert scope, 'scope is required'
-    if isinstance(scope, basestring):
+    if isinstance(scope, six.string_types):
         scope_list = scope.split(',')
     elif isinstance(scope, (list, tuple)):
         scope_list = list(scope)
@@ -506,7 +501,7 @@ def to_int(input, default=0, exception=(ValueError, TypeError), regexp=None):
     '''
     if regexp is True:
         regexp = re.compile('(\d+)')
-    elif isinstance(regexp, basestring):
+    elif isinstance(regexp, six.string_types):
         regexp = re.compile(regexp)
     elif hasattr(regexp, 'search'):
         pass
@@ -656,7 +651,7 @@ def get_class_for(purpose):
     '''
     mapping = get_class_mapping()
     class_ = mapping[purpose]
-    if isinstance(class_, basestring):
+    if isinstance(class_, six.string_types):
         class_ = get_class_from_string(class_)
     return class_
 

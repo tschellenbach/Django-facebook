@@ -3,7 +3,7 @@
 try:
     from urlparse import urlparse
 except ImportError:
-    import urllib.parse as urlparse
+    from urllib.parse import urlparse
 
 from django.contrib.auth import logout
 

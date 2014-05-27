@@ -375,7 +375,10 @@ class FacebookUserConverter(object):
         import re
         text_url_field = text_url_field.encode('utf8')
         seperation = re.compile('[ ,;\n\r]+')
-        parts = seperation.split(text_url_field)
+        try:
+            parts = seperation.split(text_url_field)
+        except TypeError:
+            parts = seperation.split(text_url_field.decode())
         for part in parts:
             from django_facebook.utils import get_url_field
             url_check = get_url_field()

@@ -45,7 +45,7 @@ def connect(request, graph):
     except open_facebook_exceptions.FacebookUnreachable as e:
         # often triggered when Facebook is slow
         warning_format = u'%s, often caused by Facebook slowdown, error %s'
-        warn_message = warning_format % (type(e), e.message)
+        warn_message = warning_format % (type(e), str(e))
         send_warning(warn_message, e=e)
         additional_params = dict(fb_error_or_cancel=1)
         response = backend.post_error(request, additional_params)

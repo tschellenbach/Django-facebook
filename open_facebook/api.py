@@ -80,6 +80,8 @@ understand the required functionality
 
 
 '''
+
+from django.utils import six
 from django.http import QueryDict
 from django_facebook import settings as facebook_settings
 from open_facebook import exceptions as facebook_exceptions
@@ -364,7 +366,7 @@ class FacebookConnection(object):
                     if error_code and start <= error_code <= stop:
                         matching_error_class = class_
                         logger.info('Matched error on code %s', code)
-                elif isinstance(code, (int, long)):
+                elif isinstance(code, (int, six.integer_types)):
                     if int(code) == error_code:
                         matching_error_class = class_
                         logger.info('Matched error on code %s', code)

@@ -1,7 +1,8 @@
+from __future__ import unicode_literals
+from django.utils.encoding import python_2_unicode_compatible
 from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.base import ModelBase
 from django_facebook import model_managers, settings as facebook_settings
@@ -97,6 +98,7 @@ class FACEBOOK_OG_STATE:
         pass
 
 
+@python_2_unicode_compatible
 class BaseFacebookModel(models.Model):
 
     '''
@@ -137,8 +139,8 @@ class BaseFacebookModel(models.Model):
             reauthentication = True
         return reauthentication
 
-    def __unicode__(self):
-        return self.user.__unicode__()
+    def __str__(self):
+        return self.facebook_name
 
     class Meta:
         abstract = True

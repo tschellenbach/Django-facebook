@@ -147,7 +147,7 @@ class ScopedDecoratorTest(DecoratorTest):
             to_fail()
         except TypeError as e:
             right_error = "inner() got an unexpected keyword argument 'c'"
-            self.assertEqual(e.message, right_error)
+            self.assertEqual(str(e), right_error)
 
 
 class LazyDecoratorTest(DecoratorTest):
