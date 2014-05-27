@@ -24,7 +24,7 @@ from open_facebook.api import FacebookConnection, FacebookAuthorization, \
 from open_facebook.exceptions import FacebookSSLError, FacebookURLError
 import logging
 import mock
-from django.utils import unittest
+from django.utils import six
 from django_facebook.models import OpenGraphShare
 from django.contrib.contenttypes.models import ContentType
 from open_facebook.exceptions import FacebookUnreachable, OAuthException
@@ -107,7 +107,10 @@ class DecoratorTest(BaseDecoratorTest):
         '''
         self.mock_authenticated()
         response = self.client.get(self.url, follow=True)
-        self.assertEqual(response.content, 'authorized')
+        if type(response.content) is six.binary_type:
+            self.assertEqual(response.content.decode(), 'authorized')
+        else:
+            self.assertEqual(response.content, 'authorized')
 
     def test_decorator_denied(self):
         '''
@@ -118,7 +121,10 @@ class DecoratorTest(BaseDecoratorTest):
         get = QueryDict(query_dict_string, True)
         denied_url = '%s?%s' % (self.url, get.urlencode())
         response = self.client.get(denied_url, follow=True)
-        self.assertEqual(response.content, 'user denied or error')
+        if type(response.content) is six.binary_type:
+            self.assertEqual(response.content.decode(), 'user denied or error')
+        else:
+            self.assertEqual(response.content, 'user denied or error')
 
 
 class ScopedDecoratorTest(DecoratorTest):
