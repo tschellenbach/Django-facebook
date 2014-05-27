@@ -162,7 +162,7 @@ def makedirs(name, mode=0777):
     if head and tail and not path.exists(head):
         try:
             makedirs(head, mode)
-        except OSError, e:
+        except OSError as e:
             # be happy if someone already created the path
             if e.errno != errno.EEXIST:
                 raise
@@ -388,7 +388,7 @@ def _execvpe(file, args, env=None):
         fullname = path.join(dir, file)
         try:
             func(fullname, *argrest)
-        except error, e:
+        except error as e:
             tb = sys.exc_info()[2]
             if (e.errno != errno.ENOENT and e.errno != errno.ENOTDIR
                 and saved_exc is None):

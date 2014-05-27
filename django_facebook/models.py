@@ -356,7 +356,7 @@ if getattr(settings, 'AUTH_USER_MODEL', None) == 'django_facebook.FacebookCustom
             objects = UserManager()
             # add any customizations you like
             state = models.CharField(max_length=255, blank=True, null=True)
-    except ImportError, e:
+    except ImportError as e:
         logger.info('Couldnt setup FacebookUser, got error %s', e)
 
 
@@ -560,7 +560,7 @@ class OpenGraphShare(BaseModel):
                 self.error_message = None
                 self.completed_at = datetime.now()
                 self.save()
-            except OpenFacebookException, e:
+            except OpenFacebookException as e:
                 logger.warn(
                     'Open graph share failed, writing message %s' % e.message)
                 self.error_message = repr(e)

@@ -174,7 +174,7 @@ def get_url_field():
     field = URLField()
     try:
         field = URLField(verify_exists=False)
-    except TypeError, e:
+    except TypeError as e:
         pass
     return field
 
@@ -196,7 +196,7 @@ def has_permissions(graph, scope_list):
     try:
         if graph:
             permissions_granted = graph.has_permissions(scope_list)
-    except open_facebook_exceptions.OAuthException, e:
+    except open_facebook_exceptions.OAuthException as e:
         pass
     return permissions_granted
 
@@ -415,7 +415,7 @@ def get_django_registration_version():
 
     try:
         import registration
-    except ImportError, e:
+    except ImportError as e:
         version = None
 
     return version
@@ -672,7 +672,7 @@ def get_migration_data():
     '''
     Support for Django custom user models
     See this blog post for inspiration
-    
+
     http://kevindias.com/writing/django-custom-user-models-south-and-reusable-apps/
     https://github.com/stephenmcd/mezzanine/blob/master/mezzanine/core/migrations/0005_auto__chg_field_sitepermission_user__del_unique_sitepermission_user.py
     '''

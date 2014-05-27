@@ -176,7 +176,7 @@ class FacebookConnection(object):
                     response_file = opener.open(
                         url, post_string, timeout=extended_timeout)
                     response = response_file.read().decode('utf8')
-                except (urllib2.HTTPError,), e:
+                except (urllib2.HTTPError,) as e:
                     response_file = e
                     response = response_file.read().decode('utf8')
                     # Facebook sents error codes for many of their flows
@@ -190,7 +190,7 @@ class FacebookConnection(object):
                         raise urllib2.URLError(
                             'Facebook is down %s' % response)
                 break
-            except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError), e:
+            except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError) as e:
                 # These are often temporary errors, so we will retry before
                 # failing
                 error_format = 'Facebook encountered a timeout (%ss) or error %s'
@@ -216,7 +216,7 @@ class FacebookConnection(object):
         try:
             parsed_response = json.loads(response)
             logger.info('facebook send response %s' % parsed_response)
-        except Exception, e:
+        except Exception as e:
             # using exception because we need to support multiple json libs :S
             parsed_response = QueryDict(response, True)
             logger.info('facebook send response %s' % parsed_response)
@@ -685,7 +685,7 @@ class OpenFacebook(FacebookConnection):
         '''
         try:
             me = self.me()
-        except facebook_exceptions.OpenFacebookException, e:
+        except facebook_exceptions.OpenFacebookException as e:
             if isinstance(e, facebook_exceptions.OAuthException):
                 raise
             me = None

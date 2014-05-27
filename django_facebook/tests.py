@@ -145,7 +145,7 @@ class ScopedDecoratorTest(DecoratorTest):
         to_fail = partial(myview, self.request)
         try:
             to_fail()
-        except TypeError, e:
+        except TypeError as e:
             right_error = "inner() got an unexpected keyword argument 'c'"
             self.assertEqual(e.message, right_error)
 

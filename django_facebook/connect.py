@@ -87,7 +87,7 @@ def connect_user(request, access_token=None, facebook_graph=None, connect_facebo
             try:
                 user = _register_user(request, converter,
                                       remove_old_connections=force_registration)
-            except facebook_exceptions.AlreadyRegistered, e:
+            except facebook_exceptions.AlreadyRegistered as e:
                 # in Multithreaded environments it's possible someone beats us to
                 # the punch, in that case just login
                 logger.info(
@@ -151,7 +151,7 @@ def _update_likes_and_friends(request, user, facebook):
         if facebook_settings.FACEBOOK_STORE_FRIENDS:
             facebook.get_and_store_friends(user)
         transaction.savepoint_commit(sid)
-    except IntegrityError, e:
+    except IntegrityError as e:
         logger.warn(u'Integrity error encountered during registration, '
                     'probably a double submission %s' % e,
                     exc_info=sys.exc_info(), extra={
@@ -242,7 +242,7 @@ def _register_user(request, facebook, profile_callback=None,
         if new_user is None:
             raise ValueError(
                 'new_user is None, note that backward compatability for the older versions of django registration has been dropped.')
-    except IntegrityError, e:
+    except IntegrityError as e:
         # this happens when users click multiple times, the first request registers
         # the second one raises an error
         raise facebook_exceptions.AlreadyRegistered(e)
