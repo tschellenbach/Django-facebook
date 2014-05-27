@@ -4,7 +4,10 @@ Facebook error classes also see
 http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
 '''
 import ssl
-import urllib2
+try:
+    import urllib2
+except ImportError:
+    import urllib.error as urllib2
 
 
 class OpenFacebookException(Exception):

@@ -87,7 +87,10 @@ from open_facebook.utils import json, encode_params, send_warning, memoized, \
     stop_statsd, start_statsd
 import logging
 import urllib
-import urllib2
+try:
+    import urllib2
+except ImportError:
+    import urllib.error as urllib2
 from django_facebook.utils import to_int
 import ssl
 import re
