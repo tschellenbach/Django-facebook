@@ -57,8 +57,8 @@ class OpenFacebookTest(unittest.TestCase):
 
         # capture print statements
         import sys
-        import StringIO
-        self.prints = sys.stdout = StringIO.StringIO()
+        from six.moves import cStringIO
+        self.prints = sys.stdout = cStringIO()
 
     def tearDown(self):
         # complain about print statements
@@ -159,7 +159,7 @@ class Test500Detection(OpenFacebookTest):
         This is actually an application error
 
         '''
-        from StringIO import StringIO
+        from six.moves import cStringIO
         graph = self.guy.graph()
 
         with mock.patch('urllib2.build_opener') as patched:
@@ -190,7 +190,7 @@ class Test500Detection(OpenFacebookTest):
         Exception
 
         '''
-        from StringIO import StringIO
+        from six.moves import cStringIO
         graph = self.guy.graph()
 
         with mock.patch('urllib2.build_opener') as patched:

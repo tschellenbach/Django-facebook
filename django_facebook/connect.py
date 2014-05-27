@@ -15,7 +15,11 @@ from django_facebook.utils import get_registration_backend, get_form_class, \
 from random import randint
 import logging
 import sys
-import urllib2
+import urllib
+try:
+    import urllib2
+except ImportError:
+    import urllib.error as urllib2
 
 
 logger = logging.getLogger(__name__)
@@ -373,12 +377,18 @@ def _update_image(facebook_id, image_url):
     '''
     image_name = 'fb_image_%s.jpg' % facebook_id
     image_temp = NamedTemporaryFile()
-    image_response = urllib2.urlopen(image_url)
+    try:
+        image_response = urllib2.urlopen(image_url)
+    except AttributeError:
+        image_response = urllib.request.urlopen(image_url)
     image_content = image_response.read()
     image_temp.write(image_content)
     http_message = image_response.info()
     image_size = len(image_content)
-    content_type = http_message.type
+    try:
+        content_type = http_message.type
+    except AttributeError:
+        content_type = http_message.get_content_type()
     image_file = InMemoryUploadedFile(
         file=image_temp, name=image_name, field_name='image',
         content_type=content_type, size=image_size, charset=None

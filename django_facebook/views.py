@@ -16,6 +16,10 @@ from open_facebook import exceptions as open_facebook_exceptions
 from open_facebook.utils import send_warning
 import logging
 
+try:
+    unicode = unicode
+except NameError:
+    unicode = str
 
 logger = logging.getLogger(__name__)
 

@@ -94,7 +94,10 @@ except ImportError:
 from django_facebook.utils import to_int
 import ssl
 import re
-from urlparse import urlparse
+try:
+    from urlparse import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 logger = logging.getLogger(__name__)
 
 

@@ -1,6 +1,11 @@
 from django.utils.decorators import available_attrs
 from functools import wraps
 try:
+    unicode = unicode
+except NameError:
+    unicode = str
+    basestring = (str, bytes)
+try:
     # using compatible_datetime instead of datetime only
     # not to override the original datetime package
     from django.utils import timezone as compatible_datetime

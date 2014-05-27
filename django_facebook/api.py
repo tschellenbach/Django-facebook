@@ -393,6 +393,10 @@ class FacebookUserConverter(object):
         import string
         from random import choice
         size = 9
+        try:
+            string.letters
+        except AttributeError:
+            string.letters = string.ascii_letters
         password = ''.join([choice(string.letters + string.digits)
                             for i in range(size)])
         return password.lower()

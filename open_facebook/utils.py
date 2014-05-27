@@ -3,6 +3,11 @@ import re
 import sys
 import functools
 
+try:
+    unicode = unicode
+except NameError:
+    unicode = str
+
 logger = logging.getLogger(__name__)
 URL_PARAM_RE = re.compile('(?P<k>[^(=|&)]+)=(?P<v>[^&]+)(&|$)')
 URL_PARAM_NO_VALUE_RE = re.compile('(?P<k>[^(&|?)]+)(&|$)')

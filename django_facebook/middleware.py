@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from urlparse import urlparse
+try:
+    from urlparse import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 
 from django.contrib.auth import logout
 
