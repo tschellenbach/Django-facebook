@@ -258,3 +258,5 @@ elif MODE == 'userena':
         'userena',
         'guardian',
     )
+
+FACEBOOK_OG_SHARE_DB_TABLE = 'django_facebook_open_graph_share'

@@ -136,10 +136,10 @@ class FacebookRequired(object):
     def execute_view(self, view_func, *args, **kwargs):
         try:
             result = view_func(*args, **kwargs)
-        except TypeError, e:
+        except TypeError as e:
             # this might be another error type error, raise it
             # the only way I know to check this is the message :(
-            if 'graph' not in e.message:
+            if 'graph' not in str(e):
                 raise
             graph = kwargs.pop('graph', None)
             result = view_func(*args, **kwargs)
@@ -178,7 +178,7 @@ class FacebookRequiredLazy(FacebookRequired):
             # using this
             response = self.execute_view(
                 fn, request, graph=graph, *args, **kwargs)
-        except open_facebook_exceptions.OpenFacebookException, e:
+        except open_facebook_exceptions.OpenFacebookException as e:
             permission_granted = has_permissions(graph, self.scope_list)
             if permission_granted:
                 # an error if we already have permissions

@@ -57,8 +57,8 @@ class OpenFacebookTest(unittest.TestCase):
 
         # capture print statements
         import sys
-        import StringIO
-        self.prints = sys.stdout = StringIO.StringIO()
+        from six.moves import cStringIO
+        self.prints = sys.stdout = cStringIO()
 
     def tearDown(self):
         # complain about print statements
@@ -127,7 +127,7 @@ class TestErrorMapping(OpenFacebookTest):
             try:
                 FacebookConnection.raise_error(response['error']['type'],
                                                response['error']['message'])
-            except open_facebook_exceptions.OAuthException, e:
+            except open_facebook_exceptions.OAuthException as e:
                 oauth = True
             assert oauth, 'response %s didnt raise oauth error' % response
 
@@ -159,7 +159,7 @@ class Test500Detection(OpenFacebookTest):
         This is actually an application error
 
         '''
-        from StringIO import StringIO
+        from six.moves import cStringIO
         graph = self.guy.graph()
 
         with mock.patch('urllib2.build_opener') as patched:
@@ -190,7 +190,7 @@ class Test500Detection(OpenFacebookTest):
         Exception
 
         '''
-        from StringIO import StringIO
+        from six.moves import cStringIO
         graph = self.guy.graph()
 
         with mock.patch('urllib2.build_opener') as patched:
@@ -252,7 +252,7 @@ class TestPublishing(OpenFacebookTest):
         try:
             guy_graph.set('me/feed', message='Nonnonono')
             raise ValueError('We were expecting a permissions exception')
-        except facebook_exceptions.PermissionException, e:
+        except facebook_exceptions.PermissionException as e:
             pass
 
     def test_og_follow(self):
@@ -306,7 +306,7 @@ class TestOpenFacebook(OpenFacebookTest):
                 code, redirect_uri='http://local.mellowmorning.com:8080')
             facebook = OpenFacebook(user_token['access_token'])
             facebook.me()
-        except open_facebook_exceptions.ParameterException, e:
+        except open_facebook_exceptions.ParameterException as e:
             pass
 
     def test_fql(self):

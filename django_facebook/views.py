@@ -16,6 +16,10 @@ from open_facebook import exceptions as open_facebook_exceptions
 from open_facebook.utils import send_warning
 import logging
 
+try:
+    unicode = unicode
+except NameError:
+    unicode = str
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +42,10 @@ def connect(request, graph):
 
     try:
         response = _connect(request, graph)
-    except open_facebook_exceptions.FacebookUnreachable, e:
+    except open_facebook_exceptions.FacebookUnreachable as e:
         # often triggered when Facebook is slow
         warning_format = u'%s, often caused by Facebook slowdown, error %s'
-        warn_message = warning_format % (type(e), e.message)
+        warn_message = warning_format % (type(e), str(e))
         send_warning(warn_message, e=e)
         additional_params = dict(fb_error_or_cancel=1)
         response = backend.post_error(request, additional_params)
@@ -80,7 +84,7 @@ def _connect(request, graph):
             action, user = connect_user(
                 request, connect_facebook=connect_facebook)
             logger.info('Django facebook performed action: %s', action)
-        except facebook_exceptions.IncompleteProfileError, e:
+        except facebook_exceptions.IncompleteProfileError as e:
             # show them a registration form to add additional data
             warning_format = u'Incomplete profile data encountered with error %s'
             warn_message = warning_format % unicode(e)
@@ -93,7 +97,7 @@ def _connect(request, graph):
                 backend.get_registration_template(),
                 context_instance=context,
             )
-        except facebook_exceptions.AlreadyConnectedError, e:
+        except facebook_exceptions.AlreadyConnectedError as e:
             user_ids = [u.get_user_id() for u in e.users]
             ids_string = ','.join(map(str, user_ids))
             additional_params = dict(already_connected=ids_string)

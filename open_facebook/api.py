@@ -80,6 +80,8 @@ understand the required functionality
 
 
 '''
+
+from django.utils import six
 from django.http import QueryDict
 from django_facebook import settings as facebook_settings
 from open_facebook import exceptions as facebook_exceptions
@@ -87,11 +89,17 @@ from open_facebook.utils import json, encode_params, send_warning, memoized, \
     stop_statsd, start_statsd
 import logging
 import urllib
-import urllib2
+try:
+    import urllib2
+except ImportError:
+    import urllib.error as urllib2
 from django_facebook.utils import to_int
 import ssl
 import re
-from urlparse import urlparse
+try:
+    from urlparse import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 logger = logging.getLogger(__name__)
 
 
@@ -176,7 +184,7 @@ class FacebookConnection(object):
                     response_file = opener.open(
                         url, post_string, timeout=extended_timeout)
                     response = response_file.read().decode('utf8')
-                except (urllib2.HTTPError,), e:
+                except (urllib2.HTTPError,) as e:
                     response_file = e
                     response = response_file.read().decode('utf8')
                     # Facebook sents error codes for many of their flows
@@ -190,7 +198,7 @@ class FacebookConnection(object):
                         raise urllib2.URLError(
                             'Facebook is down %s' % response)
                 break
-            except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError), e:
+            except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError) as e:
                 # These are often temporary errors, so we will retry before
                 # failing
                 error_format = 'Facebook encountered a timeout (%ss) or error %s'
@@ -216,7 +224,7 @@ class FacebookConnection(object):
         try:
             parsed_response = json.loads(response)
             logger.info('facebook send response %s' % parsed_response)
-        except Exception, e:
+        except Exception as e:
             # using exception because we need to support multiple json libs :S
             parsed_response = QueryDict(response, True)
             logger.info('facebook send response %s' % parsed_response)
@@ -358,7 +366,7 @@ class FacebookConnection(object):
                     if error_code and start <= error_code <= stop:
                         matching_error_class = class_
                         logger.info('Matched error on code %s', code)
-                elif isinstance(code, (int, long)):
+                elif isinstance(code, (int, six.integer_types)):
                     if int(code) == error_code:
                         matching_error_class = class_
                         logger.info('Matched error on code %s', code)
@@ -685,7 +693,7 @@ class OpenFacebook(FacebookConnection):
         '''
         try:
             me = self.me()
-        except facebook_exceptions.OpenFacebookException, e:
+        except facebook_exceptions.OpenFacebookException as e:
             if isinstance(e, facebook_exceptions.OAuthException):
                 raise
             me = None

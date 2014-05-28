@@ -12,8 +12,8 @@ class FacebookTest(TestCase):
     def setUp(self):
         from django_facebook.test_utils.mocks import MockFacebookAPI, MockFacebookAuthorization, RequestMock
         import sys
-        import StringIO
-        self.prints = sys.stdout = StringIO.StringIO()
+        from six.moves import cStringIO
+        self.prints = sys.stdout = cStringIO()
 
         from open_facebook import api
         import open_facebook

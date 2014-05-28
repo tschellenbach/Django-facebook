@@ -1,7 +1,8 @@
+from __future__ import unicode_literals
+from django.utils.encoding import python_2_unicode_compatible
 from django.conf import settings
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.base import ModelBase
 from django_facebook import model_managers, settings as facebook_settings
@@ -97,6 +98,7 @@ class FACEBOOK_OG_STATE:
         pass
 
 
+@python_2_unicode_compatible
 class BaseFacebookModel(models.Model):
 
     '''
@@ -137,8 +139,8 @@ class BaseFacebookModel(models.Model):
             reauthentication = True
         return reauthentication
 
-    def __unicode__(self):
-        return self.user.__unicode__()
+    def __str__(self):
+        return self.facebook_name
 
     class Meta:
         abstract = True
@@ -296,6 +298,7 @@ class FacebookModel(BaseFacebookModel):
 FacebookProfileModel = FacebookModel
 
 
+@python_2_unicode_compatible
 class FacebookUser(models.Model):
 
     '''
@@ -314,7 +317,7 @@ class FacebookUser(models.Model):
     class Meta:
         unique_together = ['user_id', 'facebook_id']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Facebook user %s' % self.name
 
 
@@ -356,7 +359,7 @@ if getattr(settings, 'AUTH_USER_MODEL', None) == 'django_facebook.FacebookCustom
             objects = UserManager()
             # add any customizations you like
             state = models.CharField(max_length=255, blank=True, null=True)
-    except ImportError, e:
+    except ImportError as e:
         logger.info('Couldnt setup FacebookUser, got error %s', e)
 
 
@@ -383,6 +386,7 @@ class BaseModelMetaclass(ModelBase):
         return super_new
 
 
+@python_2_unicode_compatible
 class BaseModel(models.Model):
 
     '''
@@ -390,7 +394,7 @@ class BaseModel(models.Model):
     '''
     __metaclass__ = BaseModelMetaclass
 
-    def __unicode__(self):
+    def __str__(self):
         '''
         Looks at some common ORM naming standards and tries to display those before
         default to the django default
@@ -408,6 +412,7 @@ class BaseModel(models.Model):
         abstract = True
 
 
+@python_2_unicode_compatible
 class CreatedAtAbstractBase(BaseModel):
 
     '''
@@ -428,7 +433,7 @@ class CreatedAtAbstractBase(BaseModel):
         saved = models.Model.save(self, *args, **kwargs)
         return saved
 
-    def __unicode__(self):
+    def __str__(self):
         '''
         Looks at some common ORM naming standards and tries to display those before
         default to the django default
@@ -560,9 +565,9 @@ class OpenGraphShare(BaseModel):
                 self.error_message = None
                 self.completed_at = datetime.now()
                 self.save()
-            except OpenFacebookException, e:
+            except OpenFacebookException as e:
                 logger.warn(
-                    'Open graph share failed, writing message %s' % e.message)
+                    'Open graph share failed, writing message %s' % str(e))
                 self.error_message = repr(e)
                 self.save()
                 # maybe we need a new access token

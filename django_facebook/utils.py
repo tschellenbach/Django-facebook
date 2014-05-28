@@ -1,4 +1,4 @@
-from django.utils.decorators import available_attrs
+from django.utils import six
 from functools import wraps
 try:
     # using compatible_datetime instead of datetime only
@@ -174,7 +174,7 @@ def get_url_field():
     field = URLField()
     try:
         field = URLField(verify_exists=False)
-    except TypeError, e:
+    except TypeError as e:
         pass
     return field
 
@@ -196,7 +196,7 @@ def has_permissions(graph, scope_list):
     try:
         if graph:
             permissions_granted = graph.has_permissions(scope_list)
-    except open_facebook_exceptions.OAuthException, e:
+    except open_facebook_exceptions.OAuthException as e:
         pass
     return permissions_granted
 
@@ -415,7 +415,7 @@ def get_django_registration_version():
 
     try:
         import registration
-    except ImportError, e:
+    except ImportError as e:
         version = None
 
     return version
@@ -431,7 +431,7 @@ def parse_scope(scope):
     ['email','user_about_me']
     '''
     assert scope, 'scope is required'
-    if isinstance(scope, basestring):
+    if isinstance(scope, six.string_types):
         scope_list = scope.split(',')
     elif isinstance(scope, (list, tuple)):
         scope_list = list(scope)
@@ -501,7 +501,7 @@ def to_int(input, default=0, exception=(ValueError, TypeError), regexp=None):
     '''
     if regexp is True:
         regexp = re.compile('(\d+)')
-    elif isinstance(regexp, basestring):
+    elif isinstance(regexp, six.string_types):
         regexp = re.compile(regexp)
     elif hasattr(regexp, 'search'):
         pass
@@ -651,7 +651,7 @@ def get_class_for(purpose):
     '''
     mapping = get_class_mapping()
     class_ = mapping[purpose]
-    if isinstance(class_, basestring):
+    if isinstance(class_, six.string_types):
         class_ = get_class_from_string(class_)
     return class_
 
@@ -672,7 +672,7 @@ def get_migration_data():
     '''
     Support for Django custom user models
     See this blog post for inspiration
-    
+
     http://kevindias.com/writing/django-custom-user-models-south-and-reusable-apps/
     https://github.com/stephenmcd/mezzanine/blob/master/mezzanine/core/migrations/0005_auto__chg_field_sitepermission_user__del_unique_sitepermission_user.py
     '''

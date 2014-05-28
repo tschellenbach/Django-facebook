@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from urlparse import urlparse
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 
 from django.contrib.auth import logout
+from django.utils import six
 
 from open_facebook.api import FacebookAuthorization, OpenFacebook
 
@@ -72,7 +76,10 @@ class FacebookCanvasMiddleWare(object):
             parsed_signed_request = FacebookAuthorization.parse_signed_data(
                 signed_request)
             access_token = parsed_signed_request['oauth_token']
-            facebook_id = long(parsed_signed_request['user_id'])
+            if six.PY2:
+                facebook_id = long(parsed_signed_request['user_id'])
+            else:
+                facebook_id = int(parsed_signed_request['user_id'])
         except:
             # redirect to authorization dialog
             # if app not authorized by user

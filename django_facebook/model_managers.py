@@ -104,7 +104,7 @@ class OpenGraphShareManager(models.Manager):
             logger.info('removed share %s', share)
             try:
                 share.remove()
-            except (OAuthException, UnsupportedDeleteRequest), e:
+            except (OAuthException, UnsupportedDeleteRequest) as e:
                 # oauth exceptions happen when tokens are removed
                 # unsupported delete requests when the resource is already
                 # removed

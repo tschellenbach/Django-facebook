@@ -6,6 +6,11 @@ from django_facebook.utils import get_profile_model, is_user_attribute, \
     get_user_model
 import operator
 
+try:
+    reduce = reduce
+except NameError:
+    from functools import reduce
+
 
 class FacebookBackend(backends.ModelBackend):
 

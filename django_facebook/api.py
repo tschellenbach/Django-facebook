@@ -199,7 +199,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                         # would use cookies instead, but django's cookie setting
                         # is a bit of a mess
                         cache.set(cache_key, access_token, 60 * 60 * 2)
-                    except (open_facebook_exceptions.OAuthException, open_facebook_exceptions.ParameterException), e:
+                    except (open_facebook_exceptions.OAuthException, open_facebook_exceptions.ParameterException) as e:
                         # this sometimes fails, but it shouldnt raise because
                         # it happens when users remove your
                         # permissions and then try to reauthenticate
@@ -280,7 +280,7 @@ class FacebookUserConverter(object):
         try:
             user_data = self._convert_facebook_data(
                 facebook_profile_data, username=username)
-        except OpenFacebookException, e:
+        except OpenFacebookException as e:
             self._report_broken_facebook_data(
                 user_data, facebook_profile_data, e)
             raise
@@ -375,7 +375,10 @@ class FacebookUserConverter(object):
         import re
         text_url_field = text_url_field.encode('utf8')
         seperation = re.compile('[ ,;\n\r]+')
-        parts = seperation.split(text_url_field)
+        try:
+            parts = seperation.split(text_url_field)
+        except TypeError:
+            parts = seperation.split(text_url_field.decode())
         for part in parts:
             from django_facebook.utils import get_url_field
             url_check = get_url_field()
@@ -393,6 +396,10 @@ class FacebookUserConverter(object):
         import string
         from random import choice
         size = 9
+        try:
+            string.letters
+        except AttributeError:
+            string.letters = string.ascii_letters
         password = ''.join([choice(string.letters + string.digits)
                             for i in range(size)])
         return password.lower()

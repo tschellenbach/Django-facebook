@@ -4,7 +4,10 @@ Facebook error classes also see
 http://fbdevwiki.com/wiki/Error_codes#User_Permission_Errors
 '''
 import ssl
-import urllib2
+try:
+    import urllib2
+except ImportError:
+    import urllib.error as urllib2
 
 
 class OpenFacebookException(Exception):
@@ -166,7 +169,7 @@ def convert_unreachable_exception(e, error_format='Facebook is unreachable %s'):
     FacebookUnreachable allowing code to easily try except this
     '''
     exception_class = map_unreachable_exception(e)
-    error_message = error_format % e.message
+    error_message = error_format % str(e)
     exception = exception_class(error_message)
     return exception
 
