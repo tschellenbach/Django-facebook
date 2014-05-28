@@ -76,9 +76,10 @@ class FacebookCanvasMiddleWare(object):
             parsed_signed_request = FacebookAuthorization.parse_signed_data(
                 signed_request)
             access_token = parsed_signed_request['oauth_token']
-            if six.PY3:
-                long = int
-            facebook_id = long(parsed_signed_request['user_id'])
+            if six.PY2:
+                facebook_id = long(parsed_signed_request['user_id'])
+            else:
+                facebook_id = int(parsed_signed_request['user_id'])
         except:
             # redirect to authorization dialog
             # if app not authorized by user
