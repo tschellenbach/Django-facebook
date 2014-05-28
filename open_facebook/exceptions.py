@@ -169,7 +169,7 @@ def convert_unreachable_exception(e, error_format='Facebook is unreachable %s'):
     FacebookUnreachable allowing code to easily try except this
     '''
     exception_class = map_unreachable_exception(e)
-    error_message = error_format % e.message
+    error_message = error_format % str(e)
     exception = exception_class(error_message)
     return exception
 
