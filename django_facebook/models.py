@@ -298,6 +298,7 @@ class FacebookModel(BaseFacebookModel):
 FacebookProfileModel = FacebookModel
 
 
+@python_2_unicode_compatible
 class FacebookUser(models.Model):
 
     '''
@@ -316,7 +317,7 @@ class FacebookUser(models.Model):
     class Meta:
         unique_together = ['user_id', 'facebook_id']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Facebook user %s' % self.name
 
 
@@ -385,6 +386,7 @@ class BaseModelMetaclass(ModelBase):
         return super_new
 
 
+@python_2_unicode_compatible
 class BaseModel(models.Model):
 
     '''
@@ -392,7 +394,7 @@ class BaseModel(models.Model):
     '''
     __metaclass__ = BaseModelMetaclass
 
-    def __unicode__(self):
+    def __str__(self):
         '''
         Looks at some common ORM naming standards and tries to display those before
         default to the django default
@@ -410,6 +412,7 @@ class BaseModel(models.Model):
         abstract = True
 
 
+@python_2_unicode_compatible
 class CreatedAtAbstractBase(BaseModel):
 
     '''
@@ -430,7 +433,7 @@ class CreatedAtAbstractBase(BaseModel):
         saved = models.Model.save(self, *args, **kwargs)
         return saved
 
-    def __unicode__(self):
+    def __str__(self):
         '''
         Looks at some common ORM naming standards and tries to display those before
         default to the django default
