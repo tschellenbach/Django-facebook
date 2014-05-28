@@ -564,7 +564,7 @@ class OpenGraphShare(BaseModel):
                 self.save()
             except OpenFacebookException as e:
                 logger.warn(
-                    'Open graph share failed, writing message %s' % e.message)
+                    'Open graph share failed, writing message %s' % str(e))
                 self.error_message = repr(e)
                 self.save()
                 # maybe we need a new access token
