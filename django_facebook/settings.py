@@ -11,6 +11,8 @@ FACEBOOK_APP_SECRET = getattr(settings, 'FACEBOOK_APP_SECRET', None)
 FACEBOOK_DEFAULT_SCOPE = getattr(settings, 'FACEBOOK_DEFAULT_SCOPE', [
     'email', 'user_about_me', 'user_birthday', 'user_website'])
 
+FACEBOOK_APP_VERSION = getattr(settings, 'FACEBOOK_APP_VERSION', '1.0')
+
 # : If we should store likes
 FACEBOOK_STORE_LIKES = getattr(settings, 'FACEBOOK_STORE_LIKES', False)
 # : If we should store friends
