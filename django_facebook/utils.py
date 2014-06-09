@@ -4,6 +4,7 @@ try:
     # using compatible_datetime instead of datetime only
     # not to override the original datetime package
     from django.utils import timezone as compatible_datetime
+    from django.utils.timezone import utc
 except ImportError:
     from datetime import datetime as compatible_datetime
 from datetime import datetime
@@ -626,7 +627,11 @@ def get_class_from_string(path, default=None):
 
 
 def parse_like_datetime(dt):
-    return datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S+0000")
+    try:
+        result = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S+0000")
+        return result.replace(tzinfo=utc)
+    except AttributeError:
+        return result
 
 
 def get_default_mapping():
@@ -672,7 +677,7 @@ def get_migration_data():
     '''
     Support for Django custom user models
     See this blog post for inspiration
-    
+
     http://kevindias.com/writing/django-custom-user-models-south-and-reusable-apps/
     https://github.com/stephenmcd/mezzanine/blob/master/mezzanine/core/migrations/0005_auto__chg_field_sitepermission_user__del_unique_sitepermission_user.py
     '''
