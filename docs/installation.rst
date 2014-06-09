@@ -100,7 +100,7 @@ If you don't already have a custom Profile model, simply uses the provided model
 
 Be sure to run manage.py syncdb after setting this up.
 
-Otherwise Django Facebook provides an abstract model which you can inherit like this::
+Otherwise Django Facebook provides an abstract model which you can inherit like this
 
 .. code-block:: python
 
