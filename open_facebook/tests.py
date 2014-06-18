@@ -4,7 +4,7 @@ import datetime
 import logging
 import unittest
 
-from six import StringIO
+from django.utils.six import StringIO
 
 import mock
 from open_facebook.api import *
@@ -61,8 +61,7 @@ class OpenFacebookTest(unittest.TestCase):
 
         # capture print statements
         import sys
-        from six.moves import cStringIO
-        self.prints = sys.stdout = cStringIO()
+        self.prints = sys.stdout = StringIO()
 
     def tearDown(self):
         # complain about print statements

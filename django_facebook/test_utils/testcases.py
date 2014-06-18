@@ -1,6 +1,9 @@
 from django.test import TestCase
 from django.test.client import Client
+from django.utils.six import StringIO
+
 from django_facebook.utils import get_user_model, is_user_attribute
+from mock import patch
 
 
 class FacebookTest(TestCase):
@@ -12,8 +15,8 @@ class FacebookTest(TestCase):
     def setUp(self):
         from django_facebook.test_utils.mocks import MockFacebookAPI, MockFacebookAuthorization, RequestMock
         import sys
-        from six.moves import cStringIO
-        self.prints = sys.stdout = cStringIO()
+
+        self.prints = sys.stdout = StringIO()
 
         from open_facebook import api
         import open_facebook
@@ -63,7 +66,6 @@ class FacebookTest(TestCase):
         '''
         Easy workaround for having to nest mock.patch context managers
         '''
-        from mock import patch
         patcher = patch(name)
         thing = patcher.start()
         if return_value is not None:
