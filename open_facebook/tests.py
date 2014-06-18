@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from open_facebook.api import *
-import unittest
-import logging
-import mock
 import datetime
+import logging
+import unittest
+
+from six import StringIO
+
+import mock
+from open_facebook.api import *
 from open_facebook.exceptions import OpenGraphException
-logger = logging.getLogger()
 from open_facebook.utils import json
 
+
+logger = logging.getLogger()
 
 TEST_USER_FORCE_CREATE = False
 TEST_USER_DICT = {
@@ -159,7 +163,6 @@ class Test500Detection(OpenFacebookTest):
         This is actually an application error
 
         '''
-        from six.moves import cStringIO
         graph = self.guy.graph()
 
         with mock.patch('urllib2.build_opener') as patched:
@@ -190,7 +193,6 @@ class Test500Detection(OpenFacebookTest):
         Exception
 
         '''
-        from six.moves import cStringIO
         graph = self.guy.graph()
 
         with mock.patch('urllib2.build_opener') as patched:
