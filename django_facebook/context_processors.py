@@ -1,9 +1,11 @@
 from django.utils.safestring import mark_safe
 
+
 try:
     unicode = unicode
 except NameError:
     unicode = str
+
 
 def facebook(request):
     context = {}

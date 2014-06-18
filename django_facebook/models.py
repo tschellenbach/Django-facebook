@@ -53,7 +53,7 @@ Its recommended to enable FACEBOOK_CELERY_STORE or disable FACEBOOK_STORE_FRIEND
                 'django.core.context_processors.request']
     context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
     for context_processor in required:
-        if not context_processor in context_processors:
+        if context_processor not in context_processors:
             logger.warn(
                 'Required context processor %s wasnt found', context_processor)
 
