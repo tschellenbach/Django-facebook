@@ -3,14 +3,18 @@ django_facebook
 south
 pillow
 mock
-python-memcached
 pep8
 git+http://github.com/dcramer/pyflakes.git#egg=pyflakes
 autopep8
 unidecode
 six
+
 # The items below are for local development only.  In order for tests to run
 # successfully for both py2 and py3, these need to be commented out because
 # fabric isn't python 3 ready yet.  See:
 # https://github.com/fabric/fabric/issues/1050
 #fabric
+# python-memcached isn't needed when running tests.  If if is needed, there's 
+# a python 3 port located at:
+# https://github.com/eguven/python3-memcached
+# python-memcached
