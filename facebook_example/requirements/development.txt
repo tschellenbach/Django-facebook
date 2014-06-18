@@ -1,4 +1,5 @@
 django>=1.5
+django_facebook
 south
 pillow
 mock
@@ -12,5 +13,4 @@ six
 # successfully for both py2 and py3, these need to be commented out because
 # fabric isn't python 3 ready yet.  See:
 # https://github.com/fabric/fabric/issues/1050
-#django_facebook
 #fabric
