@@ -1,7 +1,7 @@
 language: python
 python:
   - 2.7
-  - 3.4
+  - 3.3
 notifications:
   email:
     - thierryschellenbach@gmail.com
@@ -27,7 +27,7 @@ install:
   - pip install python-coveralls --use-mirrors
   - pip install https://github.com/dcramer/pyflakes/tarball/master
   - python setup.py install
-  - pip install -r facebook_example/requirements/$REQUIREMENTS.txt --use-mirrors -I --allow-external
+  - pip install -r facebook_example/requirements/$REQUIREMENTS.txt --use-mirrors -I --allow-all-external
   - pip install -q Django==$DJANGO --use-mirrors -I
 before_script:
   - "pep8 --exclude=migrations --ignore=E501,E225,W293 django_facebook open_facebook"
