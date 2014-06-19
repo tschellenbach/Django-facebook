@@ -140,7 +140,7 @@ class BaseFacebookModel(models.Model):
         return reauthentication
 
     def __str__(self):
-        return self.facebook_name
+        return self.get_user().username
 
     class Meta:
         abstract = True
