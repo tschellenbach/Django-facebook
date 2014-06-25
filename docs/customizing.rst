@@ -9,7 +9,7 @@ Now it's time to customize things a little. For a full example you can look at c
 
 .. code-block:: django
 
-    <link href="{{ STATIC_URL }}css/facebook.css" type="text/css" rel="stylesheet" media="all" />
+    <link href="{{ STATIC_URL }}django_facebook/css/facebook.css" type="text/css" rel="stylesheet" media="all" />
     {% include 'django_facebook/_facebook_js.html' %}
 
 If you encounter issues here you probably don't have django static files setup correctly.
