@@ -81,8 +81,8 @@ understand the required functionality
 
 '''
 
-from django.utils import six
 from django.http import QueryDict
+from django.utils import six
 from django.utils.http import urlencode
 from django_facebook import settings as facebook_settings
 from open_facebook import exceptions as facebook_exceptions
