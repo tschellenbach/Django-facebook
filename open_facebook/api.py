@@ -83,12 +83,13 @@ understand the required functionality
 
 from django.utils import six
 from django.http import QueryDict
+from django.utils.http import urlencode
 from django_facebook import settings as facebook_settings
 from open_facebook import exceptions as facebook_exceptions
 from open_facebook.utils import json, encode_params, send_warning, memoized, \
     stop_statsd, start_statsd
 import logging
-import urllib
+
 try:
     import urllib2
 except ImportError:
@@ -139,7 +140,7 @@ class FacebookConnection(object):
         api_base_url = cls.old_api_url if old_api else cls.api_url
         if getattr(cls, 'access_token', None):
             params['access_token'] = cls.access_token
-        url = '%s%s?%s' % (api_base_url, path, urllib.urlencode(params))
+        url = '%s%s?%s' % (api_base_url, path, urlencode(params))
         response = cls._request(url, post_data)
         return response
 
@@ -175,7 +176,7 @@ class FacebookConnection(object):
             extended_timeout = timeout * timeout_mp
             response_file = None
             encoded_params = encode_params(post_data) if post_data else None
-            post_string = (urllib.urlencode(encoded_params)
+            post_string = (urlencode(encoded_params)
                            if post_data else None)
             try:
                 start_statsd('facebook.%s' % statsd_path)
@@ -902,7 +903,7 @@ class OpenFacebook(FacebookConnection):
         api_base_url = self.old_api_url if old_api else self.api_url
         if getattr(self, 'access_token', None):
             params['access_token'] = self.access_token
-        url = '%s%s?%s' % (api_base_url, path, urllib.urlencode(params))
+        url = '%s%s?%s' % (api_base_url, path, urlencode(params))
         logger.info('requesting url %s', url)
         response = self._request(url, post_data)
         return response
