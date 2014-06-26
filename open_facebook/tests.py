@@ -11,6 +11,12 @@ from open_facebook.api import *
 from open_facebook.exceptions import OpenGraphException
 from open_facebook.utils import json
 
+try:
+    # python 2 imports
+    from urllib2 import HTTPError
+except ImportError:
+    # python 3 imports
+    from urllib.error import HTTPError
 
 logger = logging.getLogger()
 
@@ -165,8 +171,6 @@ class Test500Detection(OpenFacebookTest):
         graph = self.guy.graph()
 
         with mock.patch('urllib2.build_opener') as patched:
-            from urllib2 import HTTPError
-
             opener = mock.MagicMock()
             response = StringIO('''{
               "error": {
@@ -195,8 +199,6 @@ class Test500Detection(OpenFacebookTest):
         graph = self.guy.graph()
 
         with mock.patch('urllib2.build_opener') as patched:
-            from urllib2 import HTTPError
-
             opener = mock.MagicMock()
 
             def side_effect(*args, **kwargs):
