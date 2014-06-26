@@ -90,17 +90,20 @@ from open_facebook.utils import json, encode_params, send_warning, memoized, \
     stop_statsd, start_statsd
 import logging
 
-try:
-    import urllib2
-except ImportError:
-    import urllib.error as urllib2
 from django_facebook.utils import to_int
 import ssl
 import re
+
 try:
+    # python 2 imports
     from urlparse import urlparse
+    from urllib2 import build_opener, HTTPError, URLError
 except ImportError:
-    import urllib.parse as urlparse
+    # python 3 imports
+    from urllib.error import HTTPError, URLError
+    from urllib.parse import urlparse
+    from urllib.request import build_opener
+
 logger = logging.getLogger(__name__)
 
 
@@ -161,7 +164,7 @@ class FacebookConnection(object):
             return response
 
         # nicely identify ourselves before sending the request
-        opener = urllib2.build_opener()
+        opener = build_opener()
         opener.addheaders = [('User-agent', 'Open Facebook Python')]
 
         # get the statsd path to track response times with
@@ -185,7 +188,7 @@ class FacebookConnection(object):
                     response_file = opener.open(
                         url, post_string, timeout=extended_timeout)
                     response = response_file.read().decode('utf8')
-                except (urllib2.HTTPError,) as e:
+                except (HTTPError,) as e:
                     response_file = e
                     response = response_file.read().decode('utf8')
                     # Facebook sents error codes for many of their flows
@@ -196,10 +199,10 @@ class FacebookConnection(object):
                     server_error = cls.is_server_error(e, response)
                     if server_error:
                         # trigger a retry
-                        raise urllib2.URLError(
+                        raise URLError(
                             'Facebook is down %s' % response)
                 break
-            except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError) as e:
+            except (HTTPError, URLError, ssl.SSLError) as e:
                 # These are often temporary errors, so we will retry before
                 # failing
                 error_format = 'Facebook encountered a timeout (%ss) or error %s'
