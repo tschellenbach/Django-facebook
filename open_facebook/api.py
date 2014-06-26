@@ -81,25 +81,29 @@ understand the required functionality
 
 '''
 
-from django.utils import six
 from django.http import QueryDict
+from django.utils import six
+from django.utils.http import urlencode
 from django_facebook import settings as facebook_settings
 from open_facebook import exceptions as facebook_exceptions
 from open_facebook.utils import json, encode_params, send_warning, memoized, \
     stop_statsd, start_statsd
 import logging
-import urllib
-try:
-    import urllib2
-except ImportError:
-    import urllib.error as urllib2
+
 from django_facebook.utils import to_int
 import ssl
 import re
+
 try:
+    # python 2 imports
     from urlparse import urlparse
+    from urllib2 import build_opener, HTTPError, URLError
 except ImportError:
-    import urllib.parse as urlparse
+    # python 3 imports
+    from urllib.error import HTTPError, URLError
+    from urllib.parse import urlparse
+    from urllib.request import build_opener
+
 logger = logging.getLogger(__name__)
 
 
@@ -139,7 +143,7 @@ class FacebookConnection(object):
         api_base_url = cls.old_api_url if old_api else cls.api_url
         if getattr(cls, 'access_token', None):
             params['access_token'] = cls.access_token
-        url = '%s%s?%s' % (api_base_url, path, urllib.urlencode(params))
+        url = '%s%s?%s' % (api_base_url, path, urlencode(params))
         response = cls._request(url, post_data)
         return response
 
@@ -160,7 +164,7 @@ class FacebookConnection(object):
             return response
 
         # nicely identify ourselves before sending the request
-        opener = urllib2.build_opener()
+        opener = build_opener()
         opener.addheaders = [('User-agent', 'Open Facebook Python')]
 
         # get the statsd path to track response times with
@@ -175,7 +179,7 @@ class FacebookConnection(object):
             extended_timeout = timeout * timeout_mp
             response_file = None
             encoded_params = encode_params(post_data) if post_data else None
-            post_string = (urllib.urlencode(encoded_params)
+            post_string = (urlencode(encoded_params)
                            if post_data else None)
             try:
                 start_statsd('facebook.%s' % statsd_path)
@@ -184,7 +188,7 @@ class FacebookConnection(object):
                     response_file = opener.open(
                         url, post_string, timeout=extended_timeout)
                     response = response_file.read().decode('utf8')
-                except (urllib2.HTTPError,) as e:
+                except (HTTPError,) as e:
                     response_file = e
                     response = response_file.read().decode('utf8')
                     # Facebook sents error codes for many of their flows
@@ -195,10 +199,10 @@ class FacebookConnection(object):
                     server_error = cls.is_server_error(e, response)
                     if server_error:
                         # trigger a retry
-                        raise urllib2.URLError(
+                        raise URLError(
                             'Facebook is down %s' % response)
                 break
-            except (urllib2.HTTPError, urllib2.URLError, ssl.SSLError) as e:
+            except (HTTPError, URLError, ssl.SSLError) as e:
                 # These are often temporary errors, so we will retry before
                 # failing
                 error_format = 'Facebook encountered a timeout (%ss) or error %s'
@@ -902,7 +906,7 @@ class OpenFacebook(FacebookConnection):
         api_base_url = self.old_api_url if old_api else self.api_url
         if getattr(self, 'access_token', None):
             params['access_token'] = self.access_token
-        url = '%s%s?%s' % (api_base_url, path, urllib.urlencode(params))
+        url = '%s%s?%s' % (api_base_url, path, urlencode(params))
         logger.info('requesting url %s', url)
         response = self._request(url, post_data)
         return response
