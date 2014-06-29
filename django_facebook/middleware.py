@@ -60,6 +60,9 @@ class FacebookCanvasMiddleWare(object):
             # facebook redirect
             if is_facebook and urlparsed.path.endswith('/l.php'):
                 return
+            if is_facebook and urlparsed.path.endswith('/dialog/oauth'):
+                return
+
             if not is_facebook:
                 return
             # when there is an error, we attempt to allow user to

@@ -855,12 +855,21 @@ class OpenFacebook(FacebookConnection):
             permissions = {}
             permissions_response = self.get('me/permissions')
             if permissions_response.get('data'):
-                permissions = permissions_response['data'][0]
+                if facebook_settings.FACEBOOK_APP_VERSION == '1.0':
+                    permissions = permissions_response['data'][0]
+                else:
+                    permissions = permissions_response['data']
         except facebook_exceptions.OAuthException:
             permissions = {}
-        permissions_dict = dict([(k, bool(int(v)))
+        if facebook_settings.FACEBOOK_APP_VERSION == '1.0':
+            permissions_dict = dict([(k, bool(int(v)))
                                  for k, v in permissions.items()
                                  if v == '1' or v == 1])
+        else:
+            permissions_dict = {}
+            for permission in permissions:
+                if permission['status'] == 'granted':
+                    permissions_dict[permission['permission']] = 1
         return permissions_dict
 
     def has_permissions(self, required_permissions):
@@ -902,8 +911,15 @@ class OpenFacebook(FacebookConnection):
         url = '%sme/picture?%s' % (self.api_url, query_dict.urlencode())
         return url
 
+    def get_base_url(self, old_api=False):
+        if old_api:
+            return self.old_api_url
+        if facebook_settings.FACEBOOK_APP_VERSION == '1.0':
+            return self.api_url
+        return self.api_url + 'v2.0/'
+
     def request(self, path='', post_data=None, old_api=False, **params):
-        api_base_url = self.old_api_url if old_api else self.api_url
+        api_base_url = self.get_base_url(old_api=old_api)
         if getattr(self, 'access_token', None):
             params['access_token'] = self.access_token
         url = '%s%s?%s' % (api_base_url, path, urlencode(params))
