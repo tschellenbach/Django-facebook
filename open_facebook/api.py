@@ -27,7 +27,7 @@ Open Facebook allows you to use Facebook's open graph API with simple python cod
 
     # Posting to a users wall
     facebook.set('me/feed', message='check out fashiolista',
-                 url='http://www.fashiolista.com')
+                 link='http://www.fashiolista.com')
 
     # Liking a page
     facebook.set('fashiolista/likes')
@@ -51,7 +51,7 @@ Open Facebook allows you to use Facebook's open graph API with simple python cod
     ]
     for photo in photo_urls:
         print facebook.set('me/feed', message='Check out Fashiolista',
-                           picture=photo, url='http://www.fashiolista.com')
+                           picture=photo, link='http://www.fashiolista.com')
 
 
 **Getting an access token**
