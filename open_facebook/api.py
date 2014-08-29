@@ -124,7 +124,7 @@ class FacebookConnection(object):
     old_api_url = 'https://api.facebook.com/method/'
 
     @classmethod
-    def request(cls, path='', post_data=None, old_api=False, **params):
+    def request(cls, path='', version=None, post_data=None, old_api=False, **params):
         '''
         Main function for sending the request to facebook
 
@@ -141,6 +141,9 @@ class FacebookConnection(object):
             The get params to include
         '''
         api_base_url = cls.old_api_url if old_api else cls.api_url
+        if version and not old_api:
+            api_base_url = ''.join((api_base_url, 'v', str(version), '/'))
+
         if getattr(cls, 'access_token', None):
             params['access_token'] = cls.access_token
         url = '%s%s?%s' % (api_base_url, path, urlencode(params))
@@ -902,8 +905,10 @@ class OpenFacebook(FacebookConnection):
         url = '%sme/picture?%s' % (self.api_url, query_dict.urlencode())
         return url
 
-    def request(self, path='', post_data=None, old_api=False, **params):
+    def request(self, path='', version=None, post_data=None, old_api=False, **params):
         api_base_url = self.old_api_url if old_api else self.api_url
+        if version and not old_api:
+            api_base_url = ''.join((api_base_url, 'v', str(version), '/'))
         if getattr(self, 'access_token', None):
             params['access_token'] = self.access_token
         url = '%s%s?%s' % (api_base_url, path, urlencode(params))
