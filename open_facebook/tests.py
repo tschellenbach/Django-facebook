@@ -10,6 +10,7 @@ import mock
 from open_facebook.api import *
 from open_facebook.exceptions import OpenGraphException
 from open_facebook.utils import json
+from pprint import pprint
 
 try:
     # python 2 imports
@@ -321,3 +322,22 @@ class TestOpenFacebook(OpenFacebookTest):
         facebook = self.guy.graph()
         assert 'name' in facebook.me()
         assert facebook.get('fashiolista')
+        
+    def test_albums(self):
+        graph = self.guy.graph()
+        graph.version = 'v2.1'
+        albums = graph.get('me/albums')['data']
+        album_type_dict = {a['type']: a for a in albums}
+        profile_album = album_type_dict.get('profile')
+        cover_album = album_type_dict.get('cover')
+        if profile_album:
+            pictures = graph.get('%s/photos' % profile_album['id'])['data'][:3]
+            for picture in pictures:
+                print picture['source']
+        if cover_album:
+            pictures = graph.get('%s/photos' % cover_album['id'])['data'][:3]
+            for picture in pictures:
+                print picture['source']
+        
+        
+        
