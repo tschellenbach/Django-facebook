@@ -251,12 +251,12 @@ def _register_user(request, facebook, profile_callback=None,
         # the second one raises an error
         raise facebook_exceptions.AlreadyRegistered(e)
 
-    signals.facebook_user_registered.send(sender=get_user_model(),
-                                          user=new_user, facebook_data=facebook_data, request=request)
 
     # update some extra data not yet done by the form
     new_user = _update_user(new_user, facebook)
 
+    signals.facebook_user_registered.send(sender=get_user_model(),
+                                          user=new_user, facebook_data=facebook_data, request=request, converter=facebook)
     # IS this the correct way for django 1.3? seems to require the backend
     # attribute for some reason
     new_user.backend = 'django_facebook.auth_backends.FacebookBackend'

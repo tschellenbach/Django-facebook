@@ -326,7 +326,7 @@ class TestOpenFacebook(OpenFacebookTest):
     def test_albums(self):
         graph = self.guy.graph()
         graph.version = 'v2.1'
-        albums = graph.get('me/albums')['data']
+        albums = graph.get('me/albums', fields='id,type')['data']
         album_type_dict = {a['type']: a for a in albums}
         profile_album = album_type_dict.get('profile')
         cover_album = album_type_dict.get('cover')
