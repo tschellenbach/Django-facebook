@@ -8,11 +8,11 @@ Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmo
 .. image:: https://pypip.in/d/django-facebook/badge.png
         :target: https://pypi.python.org/pypi/django-facebook
 
-Contributions are strongly appreciated. Seriously, give github a try, fork and get started :)
+Contributions are strongly appreciated. Seriously, give GitHub a try, fork and get started :)
 
 News
 ----
-* django-facebook is now python 3 compatible!  With this change, django-facebook will be dropping support for django 1.4 and the mininum required django version will be 1.5.
+* django-facebook is now python 3 compatible!  With this change, django-facebook will be dropping support for Django 1.4 and the minimum required Django version will be 1.5.
 
 
 Demo & About
