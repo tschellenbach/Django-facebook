@@ -35,7 +35,8 @@ class FacebookBackend(backends.ModelBackend):
         '''
         user_attribute = is_user_attribute('facebook_id')
         if user_attribute:
-            user = self.user_authenticate(*args, **kwargs)
+            kwargs1 = dict(filter(lambda(k,v): k in ['facebook_id', 'facebook_email'], kwargs.items()))
+            user = self.user_authenticate(*args, **kwargs1)
         else:
             user = self.profile_authenticate(*args, **kwargs)
         return user
