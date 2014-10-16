@@ -251,7 +251,6 @@ def _register_user(request, facebook, profile_callback=None,
         # the second one raises an error
         raise facebook_exceptions.AlreadyRegistered(e)
 
-
     # update some extra data not yet done by the form
     new_user = _update_user(new_user, facebook)
 

@@ -322,7 +322,7 @@ class TestOpenFacebook(OpenFacebookTest):
         facebook = self.guy.graph()
         assert 'name' in facebook.me()
         assert facebook.get('fashiolista')
-        
+
     def test_albums(self):
         graph = self.guy.graph()
         graph.version = 'v2.1'
@@ -338,6 +338,3 @@ class TestOpenFacebook(OpenFacebookTest):
             pictures = graph.get('%s/photos' % cover_album['id'])['data'][:3]
             for picture in pictures:
                 print picture['source']
-        
-        
-        
