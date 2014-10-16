@@ -1,6 +1,5 @@
 django==1.6
 django_facebook
-south==1.0
 pillow==2.6.1
 mock
 pep8
