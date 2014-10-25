@@ -167,6 +167,9 @@ INSTALLED_APPS = (
 )
 
 if django_version < (1, 7, 0):
+    # south isn't needed by django >= 1.7 since migrations were added.  See:
+    # - https://docs.djangoproject.com/en/dev/topics/migrations/#libraries-third-party-apps
+    # - http://south.readthedocs.org/en/latest/releasenotes/1.0.html#library-migration-path
     INSTALLED_APPS += ('south',)
 
 # A sample logging configuration. The only tangible logging
