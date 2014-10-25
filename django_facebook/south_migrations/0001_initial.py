@@ -135,6 +135,7 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'django_facebook', ['OpenGraphShare'])
 
+
     def backwards(self, orm):
         # Removing unique constraint on 'FacebookLike', fields ['user_id', 'facebook_id']
         db.delete_unique(u'django_facebook_facebooklike', ['user_id', 'facebook_id'])
@@ -162,6 +163,7 @@ class Migration(SchemaMigration):
 
         # Deleting model 'OpenGraphShare'
         db.delete_table('django_facebook_open_graph_share')
+
 
     models = {
         u'auth.group': {
