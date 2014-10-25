@@ -333,8 +333,8 @@ class TestOpenFacebook(OpenFacebookTest):
         if profile_album:
             pictures = graph.get('%s/photos' % profile_album['id'])['data'][:3]
             for picture in pictures:
-                print picture['source']
+                print(picture['source'])
         if cover_album:
             pictures = graph.get('%s/photos' % cover_album['id'])['data'][:3]
             for picture in pictures:
-                print picture['source']
+                print(picture['source'])

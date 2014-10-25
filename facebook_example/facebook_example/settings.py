@@ -10,7 +10,7 @@ CUSTOM_USER_MODEL = bool(int(os.environ.get('CUSTOM_USER_MODEL', '1')))
 
 if DJANGO != '1.5.1':
     CUSTOM_USER_MODEL = False
-    
+
 TESTING = 'test' in sys.argv
 
 FACEBOOK_APP_ID = '215464901804004'
@@ -28,7 +28,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
 
 if django_version >= (1, 4, 0):
     TEMPLATE_CONTEXT_PROCESSORS.append('django.core.context_processors.tz')
-    
+
 AUTHENTICATION_BACKENDS = (
     'django_facebook.auth_backends.FacebookBackend',
     'django.contrib.auth.backends.ModelBackend',
@@ -162,12 +162,15 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
     'django_facebook',
     'member',
-    'south',
     'open_facebook',
     'django.contrib.admin',
 )
 
-
+if django_version < (1, 7, 0):
+    # south isn't needed by django >= 1.7 since migrations were added.  See:
+    # - https://docs.djangoproject.com/en/dev/topics/migrations/#libraries-third-party-apps
+    # - http://south.readthedocs.org/en/latest/releasenotes/1.0.html#library-migration-path
+    INSTALLED_APPS += ('south',)
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

@@ -96,7 +96,7 @@ class Migration(SchemaMigration):
                 ('state', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
             ))
             db.send_create_signal(u'django_facebook', ['FacebookCustomUser'])
-    
+
             # Adding M2M table for field groups on 'FacebookCustomUser'
             m2m_table_name = db.shorten_name(u'django_facebook_facebookcustomuser_groups')
             db.create_table(m2m_table_name, (
@@ -105,7 +105,7 @@ class Migration(SchemaMigration):
                 ('group', models.ForeignKey(orm[u'auth.group'], null=False))
             ))
             db.create_unique(m2m_table_name, ['facebookcustomuser_id', 'group_id'])
-    
+
             # Adding M2M table for field user_permissions on 'FacebookCustomUser'
             m2m_table_name = db.shorten_name(u'django_facebook_facebookcustomuser_user_permissions')
             db.create_table(m2m_table_name, (
