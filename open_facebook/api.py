@@ -472,7 +472,7 @@ class FacebookAuthorization(FacebookConnection):
         sig = base64_url_decode_php_style(encoded_sig)
         import hmac
         import hashlib
-        data = json.loads(base64_url_decode_php_style(payload))
+        data = json.loads(base64_url_decode_php_style(payload).decode('utf-8'))
 
         algo = data.get('algorithm').upper()
         if algo != 'HMAC-SHA256':
@@ -482,8 +482,12 @@ class FacebookAuthorization(FacebookConnection):
             logger.error('Unknown algorithm')
             return None
         else:
-            expected_sig = hmac.new(secret, msg=payload,
-                                    digestmod=hashlib.sha256).digest()
+            if six.PY2:
+                expected_sig = hmac.new(secret, msg=payload,
+                                        digestmod=hashlib.sha256).digest()
+            else:
+                expected_sig = hmac.new(secret.encode(), msg=payload.encode(),
+                                        digestmod=hashlib.sha256).digest()
 
         if sig != expected_sig:
             error_format = 'Signature %s didnt match the expected signature %s'
@@ -860,16 +864,12 @@ class OpenFacebook(FacebookConnection):
         :returns: dict
         '''
         try:
-            permissions = {}
             permissions_response = self.get('me/permissions')
-            if permissions_response.get('data'):
-                permissions = permissions_response['data'][0]
+            permissions = permissions_response.get('data', {})
         except facebook_exceptions.OAuthException:
             permissions = {}
-        permissions_dict = dict([(k, bool(int(v)))
-                                 for k, v in permissions.items()
-                                 if v == '1' or v == 1])
-        return permissions_dict
+
+        return {perm['permission']: True for perm in permissions if perm['status'] == 'granted'}
 
     def has_permissions(self, required_permissions):
         '''
