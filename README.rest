@@ -8,6 +8,11 @@ Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmo
 .. image:: https://pypip.in/d/django-facebook/badge.png
         :target: https://pypi.python.org/pypi/django-facebook
 
+
+Status
+-------
+Django and Facebook are both rapidly changing at the moment. Meanwhile, I'm caught up in a startup and don't have much spare time.
+The library needs a good round of testing against the latest python, django and facebook graph API.
 Contributions are strongly appreciated. Seriously, give github a try, fork and get started :)
 
 News
