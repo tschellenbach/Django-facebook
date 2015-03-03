@@ -609,7 +609,6 @@ class FacebookUserConverter(object):
             friends_response = self.open_facebook.get('me/friends', limit=limit, fields='gender,name')
 
             friends = []
-            print friends_response
             for response_dict in friends_response.get('data'):
                 response_dict['id'] = response_dict['id']
                 friends.append(response_dict)
