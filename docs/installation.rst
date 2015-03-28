@@ -92,6 +92,9 @@ If you don't already have a custom user model, simply uses the provided model by
 
 Alternatively use the abstract model provided in django_facebook.models.FacebookProfileModel
 
+.. note::
+    Please note that Django Facebook does not support custom user models with ``USERNAME_FIELD`` different than ``username``.
+
 **B. Profile model**
 
 If you don't already have a custom Profile model, simply uses the provided model by setting your AUTH_PROFILE_MODULE to FacebookProfile::
