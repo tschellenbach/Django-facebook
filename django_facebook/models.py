@@ -546,8 +546,7 @@ class OpenGraphShare(BaseModel):
             self.user, profile, 'access_token')
         graph = graph or user_or_profile.get_offline_graph()
         user_enabled = shared_explicitly or \
-            (user_or_profile.facebook_open_graph
-             and self.facebook_user_id)
+            (user_or_profile.facebook_open_graph and self.facebook_user_id)
         # start sharing
         if graph and user_enabled:
             graph_location = '%s/%s' % (
