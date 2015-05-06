@@ -2,12 +2,17 @@
 Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmorning.com/>`_)
 ##############################################################################################
 
-.. image:: https://secure.travis-ci.org/tschellenbach/Django-facebook.png?branch=master
+.. image:: https://img.shields.io/travis/tschellenbach/Django-facebook/master.svg
         :target: https://travis-ci.org/tschellenbach/Django-facebook
 
-.. image:: https://pypip.in/d/django-facebook/badge.png
+.. image:: https://img.shields.io/pypi/v/django-facebook.svg
         :target: https://pypi.python.org/pypi/django-facebook
 
+Compatibility
+-------------
+Python: 2.7+, 3.4+  
+
+Django: 1.6.x, 1.7.x
 
 Status
 -------
@@ -126,7 +131,3 @@ Django Jobs
 Do you also see the beauty in clean code? Are you experienced with high scalability web apps?
 Currently we're looking for additional talent over at our Amsterdam office.
 Feel free to drop me a line at my personal email for more information: thierryschellenbach[at]gmail.com
-
-
-
-
