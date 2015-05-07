@@ -931,8 +931,7 @@ class OpenFacebook(FacebookConnection):
         version = version or self.version
         if getattr(self, 'access_token', None):
             params['access_token'] = self.access_token
-        url = '%s%s/%s?%s' % (api_base_url, self.version,
-                              path, urlencode(params))
+        url = '%s%s/%s?%s' % (api_base_url, version, path, urlencode(params))
         logger.info('requesting url %s', url)
         response = self._request(url, post_data)
         return response
