@@ -649,7 +649,7 @@ class OpenFacebook(FacebookConnection):
     **Example**::
 
         graph = OpenFacebook(access_token)
-        print graph.get('me')
+        print(graph.get('me'))
 
     '''
 
@@ -927,15 +927,30 @@ class OpenFacebook(FacebookConnection):
         return url
 
     def request(self, path='', post_data=None, old_api=False, version=None, **params):
-        api_base_url = self.old_api_url if old_api else self.api_url
-        version = version or self.version
-        if getattr(self, 'access_token', None):
-            params['access_token'] = self.access_token
-        url = '%s%s/%s?%s' % (api_base_url, self.version,
-                              path, urlencode(params))
+        url = self.get_request_url(path=path, old_api=old_api, version=version,
+                                   **params)
         logger.info('requesting url %s', url)
         response = self._request(url, post_data)
         return response
+
+    def get_request_url(self, path='', old_api=False, version=None, **params):
+        '''
+        Gets the url for the request.
+        '''
+        api_base_url = self.old_api_url if old_api else self.api_url
+        version = version or self.version
+
+        if getattr(self, 'access_token', None):
+            params['access_token'] = self.access_token
+
+        if api_base_url.endswith('/'):
+            api_base_url = api_base_url[:-1]
+
+        if path and path.startswith('/'):
+            path = path[1:]
+
+        url = '/'.join([api_base_url, version, path])
+        return '%s?%s' % (url, urlencode(params))
 
 
 class TestUser(object):
