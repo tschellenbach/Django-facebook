@@ -7,10 +7,12 @@ notifications:
     - thierryschellenbach@gmail.com
 env:
   # test the standalone functionality
-  - DJANGO=1.6.8 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development6 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
-  - DJANGO=1.6.8 CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development6 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
-  - DJANGO=1.7.1 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
-  - DJANGO=1.7.1 CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=1.6.11 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development6 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=1.6.11 CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development6 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=1.7.8 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=1.7.8 CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=1.8.2 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=1.8.2 CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
 postgres:
   adapter: sqlite3
   database: django_fb_test
