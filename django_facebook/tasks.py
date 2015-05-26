@@ -1,8 +1,9 @@
+from functools import wraps
+import logging
 from celery import task
 from django.db import IntegrityError
-import logging
 from django_facebook.utils import get_class_for
-from functools import wraps
+from django_facebook.signals import facebook_token_extend_finished
 
 logger = logging.getLogger(__name__)
 
@@ -147,5 +148,4 @@ def token_extended_connect(sender, user, profile, token_changed, old_token, **kw
         # make sure we don't have troubles caused by replication lag
         retry_open_graph_shares_for_user.apply_async(args=[user], countdown=60)
 
-from django_facebook.signals import facebook_token_extend_finished
 facebook_token_extend_finished.connect(token_extended_connect)

@@ -4,6 +4,9 @@ except ImportError:
     from django.conf.urls.defaults import patterns, url
 from django.conf import settings
 
+# help autodiscovery a bit
+from django_facebook import admin
+
 urlpatterns = patterns(
     'django_facebook.views',
     url(r'^connect/$', 'connect', name='facebook_connect'),
@@ -42,8 +45,6 @@ if settings.DEBUG or getattr(settings, 'TESTING', False):
     # only enable example views while developing
     urlpatterns += dev_patterns
 
-# help autodiscovery a bit
-from django_facebook import admin
 
 # putting this here instead of models.py reduces issues with import ordering
 if getattr(settings, 'AUTH_PROFILE_MODULE', None) == 'django_facebook.FacebookProfile':

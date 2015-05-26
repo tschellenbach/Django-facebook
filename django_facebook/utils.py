@@ -150,8 +150,8 @@ def try_get_profile(user):
 
 def hash_key(key):
     import hashlib
-    hashed = hashlib.md5(key).hexdigest()
-    return hashed
+    key = key.encode('utf-8')
+    return hashlib.md5(key).hexdigest()
 
 
 def parse_signed_request(signed_request_string):

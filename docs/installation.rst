@@ -92,6 +92,9 @@ If you don't already have a custom user model, simply uses the provided model by
 
 Alternatively use the abstract model provided in django_facebook.models.FacebookProfileModel
 
+.. note::
+    Please note that Django Facebook does not support custom user models with ``USERNAME_FIELD`` different than ``username``.
+
 **B. Profile model**
 
 If you don't already have a custom Profile model, simply uses the provided model by setting your AUTH_PROFILE_MODULE to FacebookProfile::
@@ -100,27 +103,27 @@ If you don't already have a custom Profile model, simply uses the provided model
 
 Be sure to run manage.py syncdb after setting this up.
 
-Otherwise Django Facebook provides an abstract model which you can inherit like this::
+Otherwise Django Facebook provides an abstract model which you can inherit like this.
+::
+    from django.db import models
+    from django.dispatch.dispatcher import receiver
+    from django_facebook.models import FacebookModel
+    from django.db.models.signals import post_save
+    from django_facebook.utils import get_user_model, get_profile_model
+    from your_project import settings
 
-from django.db import models
-from django.dispatch.dispatcher import receiver
-from django_facebook.models import FacebookModel
-from django.db.models.signals import post_save
-from django_facebook.utils import get_user_model, get_profile_model
-from your_project import settings
 
+    class MyCustomProfile(FacebookModel):
+        user = models.OneToOneField(settings.AUTH_USER_MODEL)
 
-class MyCustomProfile(FacebookModel):
-  user = models.OneToOneField(settings.AUTH_USER_MODEL)
-
-@receiver(post_save)
-def create_profile(sender, instance, created, **kwargs):
-  """Create a matching profile whenever a user object is created."""
-  if sender == get_user_model():
-    user = instance
-    profile_model = get_profile_model()
-    if profile_model == MyCustomProfile and created:
-      profile, new = MyCustomProfile.objects.get_or_create(user=instance)
+        @receiver(post_save)
+        def create_profile(sender, instance, created, **kwargs):
+            """Create a matching profile whenever a user object is created."""
+            if sender == get_user_model():
+                user = instance
+                profile_model = get_profile_model()
+            if profile_model == MyCustomProfile and created:
+                profile, new = MyCustomProfile.objects.get_or_create(user=instance)``
 
 Remember to update AUTH_PROFILE_MODULE in settings to your new profile.
 Don't forget to update your database using syncdb or south after this step.

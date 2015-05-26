@@ -206,7 +206,7 @@ class FacebookConnection(object):
                 # These are often temporary errors, so we will retry before
                 # failing
                 error_format = 'Facebook encountered a timeout (%ss) or error %s'
-                logger.warn(error_format, extended_timeout, unicode(e))
+                logger.warn(error_format, extended_timeout, str(e))
                 attempts -= 1
                 if not attempts:
                     # if we have no more attempts actually raise the error
@@ -859,16 +859,32 @@ class OpenFacebook(FacebookConnection):
 
         :returns: dict
         '''
+        permissions_dict = {}
         try:
             permissions = {}
             permissions_response = self.get('me/permissions')
-            if permissions_response.get('data'):
-                permissions = permissions_response['data'][0]
+
+            # determine whether we're dealing with 1.0 or 2.0+
+            for permission in permissions_response.get('data', []):
+                # graph api 2.0+, returns multiple dicts with keys 'status' and
+                # 'permission'
+                if any(value in ['granted', 'declined'] for value in permission.values()):
+                    for perm in permissions_response['data']:
+                        grant = perm.get('status') == 'granted'
+                        name = perm.get('permission')
+                        # just in case something goes sideways
+                        if grant and name:
+                            permissions_dict[name] = grant
+                # graph api 1.0, returns single dict as {permission: intval}
+                elif any(value in [0, 1, '0', '1'] for value in permission.values()):
+                    permissions = permissions_response['data'][0]
+                    permissions_dict = dict([(k, bool(int(v)))
+                                             for k, v in permissions.items()
+                                             if v == '1' or v == 1])
+                break
         except facebook_exceptions.OAuthException:
-            permissions = {}
-        permissions_dict = dict([(k, bool(int(v)))
-                                 for k, v in permissions.items()
-                                 if v == '1' or v == 1])
+            pass
+
         return permissions_dict
 
     def has_permissions(self, required_permissions):
