@@ -5,11 +5,22 @@ logger = logging.getLogger(__name__)
 
 # : Your facebook app id
 FACEBOOK_APP_ID = getattr(settings, 'FACEBOOK_APP_ID', None)
+
+# : Keyword argument name for facebook app id
+FACEBOOK_APP_ID_KWARGS = getattr(settings, 'FACEBOOK_APP_ID_KWARGS', 'facebook_app_id')
+
 # : Your facebook app secret
 FACEBOOK_APP_SECRET = getattr(settings, 'FACEBOOK_APP_SECRET', None)
+
+# : Keyword argument name for facebook app secret
+FACEBOOK_APP_SECRET_KWARGS = getattr(settings, 'FACEBOOK_APP_SECRET_KWARGS', 'facebook_app_secret')
+
 # : The default scope we should use, note that registration will break without email
 FACEBOOK_DEFAULT_SCOPE = getattr(settings, 'FACEBOOK_DEFAULT_SCOPE', [
     'email', 'user_about_me', 'user_birthday', 'user_website'])
+
+# : Keyword argument name for facebook app default scope
+FACEBOOK_DEFAULT_SCOPE_KWARGS = getattr(settings, 'FACEBOOK_DEFAULT_SCOPE_KWARGS', 'facebook_default_scope')
 
 # : If we should store likes
 FACEBOOK_STORE_LIKES = getattr(settings, 'FACEBOOK_STORE_LIKES', False)
@@ -28,9 +39,12 @@ default_registration_backend = 'django_facebook.registration_backends.FacebookRe
 FACEBOOK_REGISTRATION_BACKEND = getattr(
     settings, 'FACEBOOK_REGISTRATION_BACKEND', default_registration_backend)
 
-# Absolute canvas page url as per facebook standard
+# : Absolute canvas page url as per facebook standard
 FACEBOOK_CANVAS_PAGE = getattr(settings, 'FACEBOOK_CANVAS_PAGE',
                                'http://apps.facebook.com/django_facebook_test/')
+
+# Keyword argument name for facebook app canvas page
+FACEBOOK_CANVAS_PAGE_KWARGS = getattr(settings, 'FACEBOOK_CANVAS_PAGE_KWARGS', 'facebook_canvas_page')
 
 # Disable this setting if you don't want to store a local image
 FACEBOOK_STORE_LOCAL_IMAGE = getattr(

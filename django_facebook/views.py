@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 @csrf_exempt
 @facebook_required_lazy
-def connect(request, graph):
+def connect(request, graph, *args, **kwargs):
     '''
     Exception and validation functionality around the _connect view
     Separated this out from _connect to preserve readability
@@ -34,9 +34,10 @@ def connect(request, graph):
     '''
     backend = get_registration_backend()
     context = RequestContext(request)
+    facebook_app_id = kwargs.get(facebook_settings.FACEBOOK_APP_ID_KWARGS, facebook_settings.FACEBOOK_APP_ID)
 
     # validation to ensure the context processor is enabled
-    if not context.get('FACEBOOK_APP_ID'):
+    if not context.get('FACEBOOK_APP_ID') and not facebook_app_id:
         message = 'Please specify a Facebook app id and ensure the context processor is enabled'
         raise ValueError(message)
 

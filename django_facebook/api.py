@@ -92,7 +92,7 @@ def get_persistent_graph(request, *args, **kwargs):
     return graph
 
 
-def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise_=False):
+def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise_=False, *args, **kwargs):
     '''
     given a request from one of these
     - js authentication flow (signed cookie)
@@ -137,6 +137,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
     if signed_data and 'oauth_token' in signed_data:
         access_token = signed_data['oauth_token']
 
+    facebook_app_id = kwargs.get(facebook_settings.FACEBOOK_APP_ID_KWARGS, facebook_settings.FACEBOOK_APP_ID)
     if not access_token:
         # easy case, code is in the get
         code = request.REQUEST.get('code')
@@ -145,7 +146,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
 
         if not code:
             # signed request or cookie leading, base 64 decoding needed
-            cookie_name = 'fbsr_%s' % facebook_settings.FACEBOOK_APP_ID
+            cookie_name = 'fbsr_%s' % facebook_app_id
             cookie_data = request.COOKIES.get(cookie_name)
 
             if cookie_data:

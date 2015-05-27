@@ -403,7 +403,9 @@ class FacebookAuthorization(FacebookConnection):
     '''
     @classmethod
     def convert_code(cls, code,
-                     redirect_uri='http://local.mellowmorning.com:8000/facebook/connect/'):
+                     redirect_uri='http://local.mellowmorning.com:8000/facebook/connect/',
+                     client_id=facebook_settings.FACEBOOK_APP_SECRET,
+                     client_secret=facebook_settings.FACEBOOK_APP_SECRET):
         '''
         Turns a code into an access token
 
@@ -420,14 +422,16 @@ class FacebookAuthorization(FacebookConnection):
         :returns: dict
 
         '''
-        kwargs = cls._client_info()
+        kwargs = cls._client_info(client_id, client_secret)
         kwargs['code'] = code
         kwargs['redirect_uri'] = redirect_uri
         response = cls.request('oauth/access_token', **kwargs)
         return response
 
     @classmethod
-    def extend_access_token(cls, access_token):
+    def extend_access_token(cls, access_token,
+                            client_id=facebook_settings.FACEBOOK_APP_SECRET,
+                            client_secret=facebook_settings.FACEBOOK_APP_SECRET):
         '''
         https://developers.facebook.com/roadmap/offline-access-removal/
         We can extend the token only once per day
@@ -443,17 +447,15 @@ class FacebookAuthorization(FacebookConnection):
 
         :returns: dict
         '''
-        kwargs = cls._client_info()
+        kwargs = cls._client_info(client_id, client_secret)
         kwargs['grant_type'] = 'fb_exchange_token'
         kwargs['fb_exchange_token'] = access_token
         response = cls.request('oauth/access_token', **kwargs)
         return response
 
     @classmethod
-    def _client_info(cls):
-        kwargs = dict(client_id=facebook_settings.FACEBOOK_APP_ID)
-        kwargs['client_secret'] = facebook_settings.FACEBOOK_APP_SECRET
-        return kwargs
+    def _client_info(cls, client_id, client_secret):
+        return dict(client_id=client_id, client_secret=client_secret)
 
     @classmethod
     def parse_signed_data(cls, signed_request,
@@ -495,7 +497,7 @@ class FacebookAuthorization(FacebookConnection):
             return data
 
     @classmethod
-    def get_app_access_token(cls):
+    def get_app_access_token(cls, *args, **kwargs):
         '''
         Get the access_token for the app that can be used for
         insights and creating test users
@@ -503,12 +505,17 @@ class FacebookAuthorization(FacebookConnection):
         application_secret = retrieved from the developer page
         returns the application access_token
         '''
-        kwargs = {
+        facebook_app_id = kwargs.get(facebook_settings.FACEBOOK_APP_ID_KWARGS,
+                                    facebook_settings.FACEBOOK_APP_ID)
+        facebook_app_secret = kwargs.get(facebook_settings.FACEBOOK_APP_SECRET_KWARGS,
+                                    facebook_settings.FACEBOOK_APP_SECRET)
+
+        data = {
             'grant_type': 'client_credentials',
-            'client_id': facebook_settings.FACEBOOK_APP_ID,
-            'client_secret': facebook_settings.FACEBOOK_APP_SECRET,
+            'client_id': facebook_app_id,
+            'client_secret': facebook_app_secret,
         }
-        response = cls.request('oauth/access_token', **kwargs)
+        response = cls.request('oauth/access_token', **data)
         return response['access_token']
 
     @memoized
@@ -521,7 +528,7 @@ class FacebookAuthorization(FacebookConnection):
         return app_access_token
 
     @classmethod
-    def create_test_user(cls, app_access_token, permissions=None, name=None):
+    def create_test_user(cls, app_access_token, permissions=None, name=None, *args, **kwargs):
         '''
         Creates a test user with the given permissions and name
 
@@ -544,16 +551,19 @@ class FacebookAuthorization(FacebookConnection):
             ',', ' ').replace('_', '')
         name = name or default_name
 
-        kwargs = {
+        facebook_app_id = kwargs.get(facebook_settings.FACEBOOK_APP_ID_KWARGS,
+                                    facebook_settings.FACEBOOK_APP_ID)
+
+        data = {
             'access_token': app_access_token,
             'installed': True,
             'name': name,
             'method': 'post',
             'permissions': permissions,
         }
-        path = '%s/accounts/test-users' % facebook_settings.FACEBOOK_APP_ID
+        path = '%s/accounts/test-users' % facebook_app_id
         # add the test user data to the test user data class
-        test_user_data = cls.request(path, **kwargs)
+        test_user_data = cls.request(path, **data)
         test_user_data['name'] = name
         test_user = TestUser(test_user_data)
 
@@ -615,11 +625,13 @@ class FacebookAuthorization(FacebookConnection):
         return test_user
 
     @classmethod
-    def get_test_users(cls, app_access_token):
-        kwargs = dict(access_token=app_access_token)
-        path = '%s/accounts/test-users' % facebook_settings.FACEBOOK_APP_ID
+    def get_test_users(cls, app_access_token, *args, **kwargs):
+        data = dict(access_token=app_access_token)
+        facebook_app_id = kwargs.get(facebook_settings.FACEBOOK_APP_ID_KWARGS,
+                                    facebook_settings.FACEBOOK_APP_ID)
+        path = '%s/accounts/test-users' % facebook_app_id
         # retrieve all test users
-        response = cls.request(path, **kwargs)
+        response = cls.request(path, **data)
         test_users = response['data']
         return test_users
 

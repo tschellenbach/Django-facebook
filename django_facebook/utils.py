@@ -228,14 +228,15 @@ def queryset_iterator(queryset, chunksize=1000, getfunc=getattr):
         gc.collect()
 
 
-def get_oauth_url(scope, redirect_uri, extra_params=None):
+def get_oauth_url(scope, redirect_uri, extra_params=None, *args, **kwargs):
     '''
     Returns the oAuth URL for the given scope and redirect_uri
     '''
     scope = parse_scope(scope)
+    facebook_app_id = kwargs.get(facebook_settings.FACEBOOK_APP_ID_KWARGS, facebook_settings.FACEBOOK_APP_ID)
     query_dict = QueryDict('', True)
     query_dict['scope'] = ','.join(scope)
-    query_dict['client_id'] = facebook_settings.FACEBOOK_APP_ID
+    query_dict['client_id'] = facebook_app_id
 
     query_dict['redirect_uri'] = redirect_uri
     oauth_url = 'https://www.facebook.com/dialog/oauth?'

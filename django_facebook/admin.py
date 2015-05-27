@@ -64,10 +64,11 @@ class OpenGraphShareAdmin(admin.ModelAdmin):
     actions = [admin_actions.retry_open_graph_share,
                admin_actions.retry_open_graph_share_for_user]
 
-    def view_share(self, instance):
+    def view_share(self, instance, *args, **kwargs):
         share_id = instance.share_id
         url_format = 'https://developers.facebook.com/tools/explorer/%s/?method=GET&path=%s%%2F'
-        url = url_format % (facebook_settings.FACEBOOK_APP_ID, share_id)
+        facebook_app_id = kwargs.get(facebook_settings.FACEBOOK_APP_ID_KWARGS, facebook_settings.FACEBOOK_APP_ID)
+        url = url_format % (facebook_app_id, share_id)
         template = '<a href="%s">%s</a>' % (url, share_id)
         return template
     view_share.allow_tags = True
