@@ -3,7 +3,7 @@ from django.db.models.query_utils import Q
 from django.db.utils import DatabaseError
 from django_facebook import settings as facebook_settings
 from django_facebook.utils import get_profile_model, is_user_attribute, \
-    get_user_model
+    get_user_model, get_profile
 import operator
 
 try:
@@ -125,7 +125,7 @@ class FacebookBackend(backends.ModelBackend):
                         ).objects.get(email=facebook_email)
                     except get_user_model().DoesNotExist:
                         user = None
-                    profile = user.get_profile() if user else None
+                    profile = get_profile(user) if user else None
 
             if profile:
                 # populate the profile cache while we're getting it anyway
