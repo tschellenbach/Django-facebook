@@ -15,6 +15,7 @@ from django_facebook.canvas import generate_oauth_url
 from django_facebook.connect import connect_user
 from django_facebook.exceptions import MissingPermissionsError
 from django_facebook.utils import ScriptRedirect
+from django_facebook import settings as facebook_settings
 
 
 class FacebookCanvasMiddleWare(object):
@@ -46,14 +47,18 @@ class FacebookCanvasMiddleWare(object):
             Return
         """
 
-        # This call cannot be global'ized or Django will return an empty response
-        # after the first one
-        redirect_login_oauth = ScriptRedirect(redirect_to=generate_oauth_url(),
-                                              show_body=False)
         # check referer to see if this is the first access
         # or it's part of navigation in app
         # facebook always sends a POST reuqest
         referer = request.META.get('HTTP_REFERER', None)
+        if referer and referer.startswith(facebook_settings.FACEBOOK_CANVAS_PAGE):
+            #If refferer starts with canvas page use it as next
+            #This will do the right redirect when we need ask for permissions
+            redirect_login_oauth = ScriptRedirect(redirect_to=generate_oauth_url(next=referer),
+                                                  show_body=False)
+        else:
+            redirect_login_oauth = ScriptRedirect(redirect_to=generate_oauth_url(),
+                                                  show_body=False)
         if referer:
             urlparsed = urlparse(referer)
             is_facebook = urlparsed.netloc.endswith('facebook.com')
