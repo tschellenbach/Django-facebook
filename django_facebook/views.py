@@ -11,7 +11,7 @@ from django_facebook import exceptions as facebook_exceptions, \
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
 from django_facebook.decorators import facebook_required_lazy
 from django_facebook.utils import next_redirect, get_registration_backend, \
-    to_bool, error_next_redirect, get_instance_for
+    to_bool, error_next_redirect, get_instance_for, get_profile
 from open_facebook import exceptions as open_facebook_exceptions
 from open_facebook.utils import send_warning
 import logging
@@ -33,12 +33,6 @@ def connect(request, graph):
     Don't bother reading this code, skip to _connect for the bit you're interested in :)
     '''
     backend = get_registration_backend()
-    context = RequestContext(request)
-
-    # validation to ensure the context processor is enabled
-    if not context.get('FACEBOOK_APP_ID'):
-        message = 'Please specify a Facebook app id and ensure the context processor is enabled'
-        raise ValueError(message)
 
     try:
         response = _connect(request, graph)
@@ -130,7 +124,7 @@ def disconnect(request):
     if request.method == 'POST':
         messages.info(
             request, _("You have disconnected your Facebook profile."))
-        profile = request.user.get_profile()
+        profile = get_profile(request.user)
         profile.disconnect_facebook()
         profile.save()
     response = next_redirect(request)

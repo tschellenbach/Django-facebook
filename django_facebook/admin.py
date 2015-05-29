@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django_facebook import admin_actions
 from django_facebook import models
 from django_facebook import settings as facebook_settings
+from django_facebook.utils import get_profile
 
 
 class FacebookUserAdmin(admin.ModelAdmin):
@@ -46,7 +47,7 @@ def facebook_profile(open_graph_share):
     with user id and image and link to facebook :)
     '''
     user = open_graph_share.user
-    profile = user.get_profile()
+    profile = get_profile(user)
     facebook_id = profile.facebook_id
     facebook_url = 'http://www.facebook.com/%s/' % facebook_id
     link = '<p><a href="%s"><img src="http://graph.facebook.com/%s/picture/?type=large" width="100px" style="float:left"/>%s</a><br/></p>' % (

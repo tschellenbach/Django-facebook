@@ -12,12 +12,14 @@ from django.conf import settings
 import django.contrib.auth
 from django.db import models, transaction
 import logging
+import django
 import re
 from django_facebook import settings as facebook_settings
 from django.utils.encoding import iri_to_uri
 from django.template.loader import render_to_string
 import gc
 
+django_version = django.VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +144,7 @@ def update_user_attributes(user, profile, attributes_dict, save=False):
 
 def try_get_profile(user):
     try:
-        p = user.get_profile()
+        p = get_profile(user)
     except:
         p = None
     return p
@@ -186,7 +188,7 @@ def clear_persistent_graph_cache(request):
     request.facebook = None
     request.session.delete('graph')
     if request.user.is_authenticated():
-        profile = request.user.get_profile()
+        profile = get_profile(request.user)
         profile.clear_access_token()
 
 
@@ -687,3 +689,14 @@ def get_migration_data():
     user_orm_label = '%s.%s' % (User._meta.app_label, User._meta.object_name)
     user_model_label = '%s.%s' % (User._meta.app_label, User._meta.module_name)
     return User, user_orm_label, user_model_label
+
+
+def get_profile(user):
+    '''
+    Get profile
+    '''
+    if django_version >= (1, 7, 0):
+        profile = user.facebookprofile
+    else:
+        profile = user.get_profile()
+    return profile
