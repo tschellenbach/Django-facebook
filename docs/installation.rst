@@ -132,7 +132,7 @@ Note: You need a profile model attached to every user model. For new accounts th
 
 **Congratulations**
 
-Right now you should have a working registration/connect/login in flow available at /facebook/example/!
+Right now you should have a working registration/connect/login in flow available at /facebook/example/! (settings.DEBUG needs to be set to True)
 Test if everything is working and ensure you didn't miss a step somewhere.
 If you encounter any difficulties please open an issue.
 
