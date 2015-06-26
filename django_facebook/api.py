@@ -1,4 +1,8 @@
-from django.forms.util import ValidationError
+try:
+    from django.forms.utils import ValidationError
+except ImportError:
+    from django.forms.util import ValidationError
+
 from django_facebook import settings as facebook_settings, signals
 from django_facebook.exceptions import FacebookException
 from django_facebook.utils import get_user_model, mass_get_or_create, \
