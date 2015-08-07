@@ -236,7 +236,7 @@ class FacebookConnection(object):
         if parsed_response and isinstance(parsed_response, dict):
             # of course we have two different syntaxes
             if parsed_response.get('error'):
-                cls.raise_error(parsed_response['error'].get('type'),
+                cls.raise_error(parsed_response['error'].get('type', 'no-type-defined'),
                                 parsed_response['error']['message'],
                                 parsed_response['error'].get('code'))
             elif parsed_response.get('error_code'):
