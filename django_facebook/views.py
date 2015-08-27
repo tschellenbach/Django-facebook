@@ -1,8 +1,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.http import Http404
-from django.shortcuts import render_to_response
-from django.template.context import RequestContext
+from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -59,7 +58,6 @@ def _connect(request, graph):
     the oAuth dialog
     '''
     backend = get_registration_backend()
-    context = RequestContext(request)
     connect_facebook = to_bool(request.REQUEST.get('connect_facebook'))
 
     logger.info('trying to connect using Facebook')
@@ -85,12 +83,8 @@ def _connect(request, graph):
             send_warning(warn_message, e=e,
                          facebook_data=facebook_data)
 
-            context['facebook_mode'] = True
-            context['form'] = e.form
-            return render_to_response(
-                backend.get_registration_template(),
-                context_instance=context,
-            )
+            context = {'facebook_mode': True, 'form': e.form}
+            return render(request, backend.get_registration_template(), context)
         except facebook_exceptions.AlreadyConnectedError as e:
             user_ids = [u.get_user_id() for u in e.users]
             ids_string = ','.join(map(str, user_ids))
@@ -132,5 +126,5 @@ def disconnect(request):
 
 
 def example(request):
-    context = RequestContext(request)
-    return render_to_response('django_facebook/example.html', context)
+    context = {}
+    return render(request, 'django_facebook/example.html', context)
