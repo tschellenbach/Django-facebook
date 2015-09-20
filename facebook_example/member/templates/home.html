@@ -1,0 +1,23 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Timestamp example</title>
+    <link href="{% static "django_facebook/css/facebook.css" %}" type="text/css" rel="stylesheet" media="all" />
+    {% include 'django_facebook/_facebook_js.html' %}
+</head>
+<body>
+
+    <form action="{% url 'facebook_connect' %}?facebook_login=1" method="post">
+        <input type="hidden" value="/timestamp_visit" name="next" />
+        <input type="hidden" value="/timestamp_visit" name="register_next" />
+        <input type="hidden" value="/timestamp_visit" name="error_next" />
+        {% csrf_token %}
+        <input onclick="F.connect(this.parentNode); return false;" type="image" src="{% static "django_facebook/images/facebook_login.png" %}" />
+    </form>
+    <div>
+        Visits : {{ num_visits }}
+    </div>
+
+</body>
+</html>

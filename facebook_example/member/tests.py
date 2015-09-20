@@ -1,23 +1,23 @@
-"""
-This file demonstrates two different styles of tests (one doctest and one
-unittest). These will both pass when you run "manage.py test".
+from datetime import datetime
+from django_facebook.test_utils.testcases import FacebookTest
+from django_facebook.utils import get_user_model, try_get_profile
+from .views import timestamp_visit_view
+from .models import VisitTimestamp
 
-Replace these with more appropriate tests for your application.
-"""
 
-from django.test import TestCase
+class VisitTimestampTest(FacebookTest):
+    def setUp(self):
+        FacebookTest.setUp(self)
+        self.url = "/picked_date"
+        user = get_user_model().objects.all()[:1][0]
+        profile = try_get_profile(user)
+        user.get_profile = lambda: profile
+        self.request.user = user
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.failUnlessEqual(1 + 1, 2)
-
-__test__ = {"doctest": """
-Another way to test that 1 + 1 is equal to 2.
-
->>> 1 + 1 == 2
-True
-"""}
+    def test(self):
+        self.mock_authenticated()
+        response = timestamp_visit_view(self.request)
+        timestamp = VisitTimestamp.objects.all()[:1][0].date_time.replace(tzinfo=None)
+        assert (datetime.now() - timestamp).total_seconds() < 1000
+        assert response.status_code == 302
 
