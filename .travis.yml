@@ -15,7 +15,9 @@ env:
 matrix:
   exclude:
     - python: 3.5
-      env: DJANGO=">=1.8,<1.9"
+      env: DJANGO=">=1.8,<1.9" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+    - python: 3.5
+      env: DJANGO=">=1.8,<1.9" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
 postgres:
   adapter: sqlite3
   database: django_fb_test
