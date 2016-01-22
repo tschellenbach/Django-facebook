@@ -1,2 +1,0 @@
--r development7.txt
-south==1.0.0
