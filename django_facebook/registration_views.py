@@ -24,7 +24,7 @@ def register(request):
     else:
         form = form_class()
 
-    context = {'form':form}
+    context = {'form': form}
     response = render(request, template_name, context)
 
     return response

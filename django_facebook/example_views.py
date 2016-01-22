@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
-from django_facebook.api import get_persistent_graph, require_persistent_graph
+from django_facebook.api import get_persistent_graph
 from django_facebook.decorators import facebook_required_lazy, facebook_required
 from django_facebook.utils import next_redirect, parse_signed_request
 
@@ -69,7 +69,7 @@ def canvas(request, graph):
     The facebook required and facebook required lazy decorator abstract this away
     '''
     signed_request_string = request.POST.get('signed_request')
-    
+
     signed_request = {}
     if signed_request_string:
         signed_request = parse_signed_request(signed_request_string)
@@ -78,7 +78,7 @@ def canvas(request, graph):
     if graph:
         likes = graph.get('me/likes')['data']
 
-    context = {'signed_request':signed_request, 'likes':likes}
+    context = {'signed_request': signed_request, 'likes': likes}
 
     return render(request, 'django_facebook/canvas.html', context)
 
@@ -92,7 +92,7 @@ def page_tab(request, graph):
 
     signed_request_string = request.POST['signed_request']
     signed_request = parse_signed_request(signed_request_string)
-    context = {'signed_request':signed_request}
+    context = {'signed_request': signed_request}
 
     return render(request, 'django_facebook/page_tab.html', context)
 
