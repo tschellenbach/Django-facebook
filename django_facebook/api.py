@@ -1,7 +1,4 @@
-try:
-    from django.forms.utils import ValidationError
-except ImportError:
-    from django.forms.util import ValidationError
+from django.core.exceptions import ValidationError
 
 from django_facebook import settings as facebook_settings, signals
 from django_facebook.exceptions import FacebookException
@@ -14,6 +11,7 @@ from open_facebook.utils import send_warning, validate_is_instance
 import datetime
 import json
 import logging
+
 try:
     from dateutil.parser import parse as parse_date
 except ImportError:
