@@ -15,7 +15,7 @@ env:
 matrix:
   exclude:
     - python: 3.5
-      env: DJANGO_VERSION=">=1.8,<1.9"
+      env: DJANGO=">=1.8,<1.9"
 postgres:
   adapter: sqlite3
   database: django_fb_test
