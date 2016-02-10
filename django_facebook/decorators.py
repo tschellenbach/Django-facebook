@@ -55,7 +55,7 @@ class FacebookRequired(object):
         if permissions_granted:
             response = self.execute_view(
                 fn, request, graph=graph, *args, **kwargs)
-        elif request.REQUEST.get('attempt') == '1':
+        elif request.POST.get('attempt', request.GET.get('attempt')) == '1':
             # Doing a redirect could end up causing infinite redirects
             # If Facebook is somehow not giving permissions
             # Time to show an error page
@@ -185,7 +185,7 @@ class FacebookRequiredLazy(FacebookRequired):
                 # shouldn't have been caught
                 # raise to prevent bugs with error mapping to cause issues
                 raise
-            elif request.REQUEST.get('attempt') == '1':
+            elif request.POST.get('attempt', request.GET.get('attempt')) == '1':
                 # Doing a redirect could end up causing infinite redirects
                 # If Facebook is somehow not giving permissions
                 # Time to show an error page

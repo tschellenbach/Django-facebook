@@ -58,7 +58,10 @@ def _connect(request, graph):
     the oAuth dialog
     '''
     backend = get_registration_backend()
-    connect_facebook = to_bool(request.REQUEST.get('connect_facebook'))
+    connect_facebook = to_bool(
+        request.POST.get('connect_facebook',
+             request.GET.get('connect_facebook'))
+    )
 
     logger.info('trying to connect using Facebook')
     if graph:

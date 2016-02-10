@@ -52,8 +52,10 @@ def connect_user(request, access_token=None, facebook_graph=None, connect_facebo
 
     assert converter.is_authenticated()
     facebook_data = converter.facebook_profile_data()
-    force_registration = request.REQUEST.get('force_registration') or\
-        request.REQUEST.get('force_registration_hard')
+    force_registration = request.POST.get('force_registration') or \
+            request.GET.get('force_registration') or \
+            request.POST.get('force_registration_hard') or \
+            request.GET.get('force_registration_hard')
 
     logger.debug('force registration is set to %s', force_registration)
     if connect_facebook and request.user.is_authenticated() and not force_registration:
@@ -139,7 +141,8 @@ def _connect_user(request, facebook, overwrite=True):
 
     # see if we already have profiles connected to this Facebook account
     old_connections = _get_old_connections(facebook_id, request.user.id)[:20]
-    if old_connections and not request.REQUEST.get('confirm_connect'):
+    if old_connections and not (request.POST.get('confirm_connect') or \
+                                request.GET.get('confirm_connect')):
         raise facebook_exceptions.AlreadyConnectedError(list(old_connections))
     user = _update_user(request.user, facebook, overwrite=overwrite)
 
@@ -221,7 +224,8 @@ def _register_user(request, facebook, profile_callback=None,
     if remove_old_connections:
         _remove_old_connections(facebook_data['facebook_id'])
 
-    if request.REQUEST.get('force_registration_hard'):
+    if request.POST.get('force_registration_hard') or \
+           request.GET.get('force_registration_hard'):
         data['email'] = data['email'].replace(
             '@', '+test%s@' % randint(0, 1000000000))
 
