@@ -298,7 +298,7 @@ def next_redirect(request, default='/', additional_params=None,
     # get the redirect url
     if not redirect_url:
         for key in next_key:
-            redirect_url = request.POST.get(key, requrest.GET.get(key))
+            redirect_url = request.POST.get(key, request.GET.get(key))
             if redirect_url:
                 break
         if not redirect_url:
