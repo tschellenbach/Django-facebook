@@ -59,8 +59,9 @@ def _connect(request, graph):
     '''
     backend = get_registration_backend()
     connect_facebook = to_bool(
-        request.POST.get('connect_facebook',
-             request.GET.get('connect_facebook'))
+        request.POST.get(
+            'connect_facebook',
+            request.GET.get('connect_facebook'))
     )
 
     logger.info('trying to connect using Facebook')
