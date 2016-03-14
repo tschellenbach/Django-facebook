@@ -194,13 +194,12 @@ class ConnectViewTest(FacebookTest):
     def setUp(self):
         FacebookTest.setUp(self)
 
-        self.base_url = base_url = 'http://testserver'
-        self.absolute_default_url = base_url + \
+        # According to django/test/testcase.py, the scheme and
+        # domain are not included on redirect_chain on django 1.9
+        self.default_url = \
             facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT
         self.url = reverse('facebook_connect')
-        self.absolute_url = base_url + reverse('facebook_connect')
         self.example_url = reverse('facebook_example')
-        self.absolute_example_url = base_url + reverse('facebook_example')
 
     def test_connect_redirect(self):
         '''
@@ -229,14 +228,14 @@ class ConnectViewTest(FacebookTest):
             '?attempt=1&client_id=215464901804004&next=bla&register_next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
-        self.assertEqual(redirect_url, self.absolute_example_url)
+        self.assertIn(self.example_url, redirect_url)
 
         # Verify that login_next works
         accepted_url = self.url + \
             '?attempt=1&client_id=215464901804004&next=bla&login_next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
-        self.assertEqual(redirect_url, self.absolute_example_url)
+        self.assertIn(self.example_url, redirect_url)
 
     def test_connect_redirect_default(self):
         # Now try without next
@@ -244,7 +243,7 @@ class ConnectViewTest(FacebookTest):
         accepted_url = self.url + '?attempt=1&client_id=215464901804004'
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
-        self.assertEqual(redirect_url, self.absolute_default_url)
+        self.assertIn(self.default_url, redirect_url)
 
     def test_connect_redirect_not_authenticated(self):
         # Meanwhile at Facebook they redirect the request
@@ -254,16 +253,16 @@ class ConnectViewTest(FacebookTest):
             '?attempt=1&client_id=215464901804004&next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
-        error_url = self.absolute_example_url + '?fb_error_or_cancel=1'
-        self.assertEqual(redirect_url, error_url)
+        error_url = self.example_url + '?fb_error_or_cancel=1'
+        self.assertIn(error_url, redirect_url)
 
         # Verify that error next also works
         accepted_url = self.url + \
             '?attempt=1&client_id=215464901804004&next=bla&error_next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
-        error_url = self.absolute_example_url + '?fb_error_or_cancel=1'
-        self.assertEqual(redirect_url, error_url)
+        error_url = self.example_url + '?fb_error_or_cancel=1'
+        self.assertIn(error_url, redirect_url)
 
     def test_connect(self):
         '''
