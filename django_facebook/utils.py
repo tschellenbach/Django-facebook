@@ -697,7 +697,25 @@ def get_profile(user):
     Get profile
     '''
     if django_version >= (1, 7, 0):
-        profile = user.facebookprofile
+        profile = get_profile_from_user(user)
     else:
         profile = user.get_profile()
     return profile
+
+
+def get_profile_from_user(user):
+    '''
+    Tries to get the profile according to the
+    class configured on AUTH_PROFILE_MODULE
+    '''
+    for field in user._meta.get_fields():
+        try:
+            if hasattr(user, field.name):
+                attribute = getattr(user, field.name)
+                if get_profile_model() == type(attribute):
+                    return attribute
+        except Exception:
+            logger.exception("Error getting profile attribute from user.")
+
+    logger.info("Could not find profile attribute.")
+    return None
