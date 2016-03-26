@@ -464,7 +464,7 @@ class FacebookAuthorization(FacebookConnection):
         and
         http://sunilarora.org/parsing-signedrequest-parameter-in-python-bas
         '''
-        from open_facebook.utils import base64_url_decode_php_style
+        from open_facebook.utils import base64_url_decode_php_style, smart_str
         l = signed_request.split('.', 2)
         encoded_sig = l[0]
         payload = l[1]
@@ -472,7 +472,7 @@ class FacebookAuthorization(FacebookConnection):
         sig = base64_url_decode_php_style(encoded_sig)
         import hmac
         import hashlib
-        data = json.loads(base64_url_decode_php_style(payload))
+        data = json.loads(base64_url_decode_php_style(payload).decode('utf-8'))
 
         algo = data.get('algorithm').upper()
         if algo != 'HMAC-SHA256':
@@ -482,10 +482,12 @@ class FacebookAuthorization(FacebookConnection):
             logger.error('Unknown algorithm')
             return None
         else:
-            expected_sig = hmac.new(secret, msg=payload,
+            expected_sig = hmac.new(smart_str(secret), msg=smart_str(payload),
                                     digestmod=hashlib.sha256).digest()
 
-        if sig != expected_sig:
+        if (hasattr(hmac, 'compare_digest') and
+                not hmac.compare_digest(sig, expected_sig) or
+                sig != expected_sig):
             error_format = 'Signature %s didnt match the expected signature %s'
             error_message = error_format % (sig, expected_sig)
             send_warning(error_message)
