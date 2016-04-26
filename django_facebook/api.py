@@ -211,7 +211,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                         # it happens when users remove your
                         # permissions and then try to reauthenticate
                         logger.warn('Error when trying to convert code %s',
-                                    unicode(e))
+                                    str(e))
                         if raise_:
                             raise
                         else:
