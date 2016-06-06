@@ -144,7 +144,7 @@ setup(
     tests_require=[
         'django',
         'python-memcached',
-        'pil',
+        'pillow',
         'mock',
         'pytest',
         'pytest-django'
