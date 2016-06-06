@@ -1,6 +1,6 @@
-django==1.6
+django>=1.8
 django_facebook
-pillow==2.6.1
+pillow>=2.6.1
 mock
 pep8
 git+http://github.com/dcramer/pyflakes.git#egg=pyflakes
