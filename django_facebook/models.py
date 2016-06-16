@@ -54,11 +54,18 @@ Its recommended to enable FACEBOOK_CELERY_STORE or disable FACEBOOK_STORE_FRIEND
     # make sure the context processors are present
     required = ['django_facebook.context_processors.facebook',
                 'django.core.context_processors.request']
-    context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
-    for context_processor in required:
-        if context_processor not in context_processors:
-            logger.warn(
-                'Required context processor %s wasnt found', context_processor)
+    try:
+        if settings.TEMPLATES:
+            # I don't know if this check makes sense with complex TEMPLATES settings.
+            pass
+    except AttributeError,e:
+        # we are on django <1.10 and user is using deprecated settings.
+        context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
+        for context_processor in required:
+            if context_processor not in context_processors:
+                logger.warn(
+                    'Required context processor %s wasnt found', context_processor)
+
 
     backends = settings.AUTHENTICATION_BACKENDS
     required = 'django_facebook.auth_backends.FacebookBackend'
