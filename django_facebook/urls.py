@@ -30,7 +30,7 @@ dev_patterns = [
         image_upload, name='facebook_image_upload'),
     url(r'^canvas/$', canvas, name='facebook_canvas'),
     url(r'^page_tab/$',
-        'page_tab', name=facebook_page_tab),
+        page_tab, name='facebook_page_tab'),
     url(r'^open_graph_beta/$', open_graph_beta,
         name='facebook_open_graph_beta'),
     url(r'^remove_og_share/$', remove_og_share,
