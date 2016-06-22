@@ -310,6 +310,13 @@ def _update_user(user, facebook, overwrite=True):
     facebook_fields = ['facebook_name', 'facebook_profile_url', 'gender',
                        'date_of_birth', 'about_me', 'website_url', 'first_name', 'last_name']
 
+    # prepare first_name and last_name
+    name = facebook_data.get('name', ' ').split()
+    if len(name):
+        facebook_data['first_name'] = name[0]
+    if len(name) > 1:
+        facebook_data['last_name'] = ' '.join(name[1:])
+
     profile = try_get_profile(user)
     # which attributes to update
     attributes_dict = {}
