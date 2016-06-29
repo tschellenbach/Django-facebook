@@ -317,6 +317,8 @@ def _update_user(user, facebook, overwrite=True):
     if len(name) > 1:
         facebook_data['last_name'] = ' '.join(name[1:])
 
+    facebook_data['facebook_profile_url'] = facebook_data.get('image')
+
     profile = try_get_profile(user)
     # which attributes to update
     attributes_dict = {}
