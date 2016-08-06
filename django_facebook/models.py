@@ -58,7 +58,7 @@ Its recommended to enable FACEBOOK_CELERY_STORE or disable FACEBOOK_STORE_FRIEND
         if settings.TEMPLATES:
             # I don't know if this check makes sense with complex TEMPLATES settings.
             pass
-    except AttributeError,e:
+    except AttributeError as e:
         # we are on django <1.10 and user is using deprecated settings.
         context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
         for context_processor in required:
