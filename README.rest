@@ -58,22 +58,22 @@ Documentation
 
 **Basics**
 
-* `Installation <http://django-facebook.readthedocs.org/en/latest/installation.html>`_
-* `Customizing <http://django-facebook.readthedocs.org/en/latest/customizing.html>`_
-* `Settings <http://django-facebook.readthedocs.org/en/latest/settings.html>`_
-* `Registration backends & Redirects <http://django-facebook.readthedocs.org/en/latest/registration_backend.html>`_
+* `Installation <https://django-facebook.readthedocs.io/en/latest/installation.html>`_
+* `Customizing <https://django-facebook.readthedocs.io/en/latest/customizing.html>`_
+* `Settings <https://django-facebook.readthedocs.io/en/latest/settings.html>`_
+* `Registration backends & Redirects <https://django-facebook.readthedocs.io/en/latest/registration_backend.html>`_
 
 **Open Facebook API**
 
-* `Getting an OpenFacebook object <http://django-facebook.readthedocs.org/en/latest/graph.html>`_
-* `Making calls <http://django-facebook.readthedocs.org/en/latest/open_facebook/api.html>`_
+* `Getting an OpenFacebook object <https://django-facebook.readthedocs.io/en/latest/graph.html>`_
+* `Making calls <https://django-facebook.readthedocs.io/en/latest/open_facebook/api.html>`_
 
 **Advanced**
 
-* `Mobile <http://django-facebook.readthedocs.org/en/latest/mobile.html>`_
-* `Celery <http://django-facebook.readthedocs.org/en/latest/celery.html>`_
-* `Signals <http://django-facebook.readthedocs.org/en/latest/signals.html>`_
-* `Canvas <http://django-facebook.readthedocs.org/en/latest/canvas.html>`_
+* `Mobile <https://django-facebook.readthedocs.io/en/latest/mobile.html>`_
+* `Celery <https://django-facebook.readthedocs.io/en/latest/celery.html>`_
+* `Signals <https://django-facebook.readthedocs.io/en/latest/signals.html>`_
+* `Canvas <https://django-facebook.readthedocs.io/en/latest/canvas.html>`_
 
 
 Contributing and Running tests
