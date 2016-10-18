@@ -734,8 +734,8 @@ class OpenFacebook(FacebookConnection):
 
         **Example**::
 
-            open_facebook.get('me', 'starbucks')
-            open_facebook.get('me', 'starbucks', fields='id,name')
+            open_facebook.get_many('me', 'starbucks')
+            open_facebook.get_many('me', 'starbucks', fields='id,name')
 
         :param path:
             The path to use for making the API call
