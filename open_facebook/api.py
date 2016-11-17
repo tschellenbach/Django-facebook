@@ -485,7 +485,7 @@ class FacebookAuthorization(FacebookConnection):
             expected_sig = hmac.new(smart_str(secret), msg=smart_str(payload),
                                     digestmod=hashlib.sha256).digest()
 
-        if not hmac.compare_digest(sig, expected_sig):
+        if not sig == expected_sig:
             error_format = 'Signature %s didnt match the expected signature %s'
             error_message = error_format % (sig, expected_sig)
             send_warning(error_message)
