@@ -848,7 +848,7 @@ class OpenFacebook(FacebookConnection):
         '''
         me = getattr(self, '_me', None)
         if me is None:
-            self._me = me = self.get('me', fields="id,name,email,verified")
+            self._me = me = self.get('me')
 
         return me
 
