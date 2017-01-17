@@ -27,8 +27,8 @@ Define the following settings in your settings.py file:
 
 ::
 
-    FACEBOOK_APP_ID
-    FACEBOOK_APP_SECRET
+    FACEBOOK_APP_ID=str('<your app id>')
+    FACEBOOK_APP_SECRET   = str('your app secret')
 
 **Context processor**
 
