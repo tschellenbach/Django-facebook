@@ -1,5 +1,9 @@
 from django.utils.decorators import available_attrs
 from django.utils.functional import wraps
+from django.utils.http import urlencode
+from django.core.urlresolvers import reverse
+from django.conf import settings
+
 from django_facebook import settings as fb_settings
 from django_facebook.api import get_persistent_graph, require_persistent_graph
 from django_facebook.utils import get_oauth_url, parse_scope, response_redirect, \
@@ -73,7 +77,22 @@ class FacebookRequired(object):
         if self.canvas:
             redirect_uri = fb_settings.FACEBOOK_CANVAS_PAGE
         else:
-            redirect_uri = request.build_absolute_uri()
+            '''
+            set up the ?next parameter for the uri
+            '''
+            # Do we have a next in the GET or POST? If so use that.
+            if request.GET.get('next') or request.POST.get('next'):
+                next = urlencode({'next': request.GET.get('next') or request.POST.get('next')})
+
+            # Otherwise check if this page is the connect page, if it is, use the default
+            elif request.path == reverse('django_facebook.views.connect'):
+                next = urlencode({'next': fb_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT})
+
+            # Finally assume we're on a regular site page and set next to request.path
+            else:
+                next = urlencode({'next': request.path})
+
+            redirect_uri = request.build_absolute_uri(reverse('django_facebook.views.connect') + '?' + next)
 
         # set attempt=1 to prevent endless redirect loops
         if 'attempt=1' not in redirect_uri:
