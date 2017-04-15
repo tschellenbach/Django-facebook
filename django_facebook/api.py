@@ -660,7 +660,8 @@ class FacebookUserConverter(object):
                 gender = None
                 if f.get('sex'):
                     gender = gender_map[f.get('sex')]
-                default_dict[str(f['id'])] = dict(name=name, gender=gender)
+                rawdata = json.dumps(f)
+                default_dict[str(f['id'])] = dict(name=name, gender=gender, raw_data=rawdata)
             id_field = 'facebook_id'
 
             current_friends, inserted_friends = mass_get_or_create(
