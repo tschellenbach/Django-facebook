@@ -19,6 +19,7 @@ from open_facebook.exceptions import OAuthException
 import logging
 import os
 
+
 def get_user_model_setting():
     from django.conf import settings
     default = 'auth.User'
@@ -591,7 +592,7 @@ class OpenGraphShare(BaseModel):
                     id=user_or_profile.id)
                 token_changed = graph.access_token != user_or_profile.access_token
                 logging.info('new token required is %s and token_changed is %s',
-                            new_token_required, token_changed)
+                             new_token_required, token_changed)
                 if new_token_required and not token_changed:
                     logging.info(
                         'a new token is required, setting the flag on the user or profile')
