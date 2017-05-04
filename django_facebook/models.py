@@ -18,8 +18,6 @@ from django_facebook.utils import get_user_model, get_profile
 from open_facebook.exceptions import OAuthException
 import logging
 import os
-logger = logging.getLogger(__name__)
-
 
 def get_user_model_setting():
     from django.conf import settings
@@ -40,30 +38,42 @@ def validate_settings():
 
     # check for required settings
     if not facebook_settings.FACEBOOK_APP_ID:
-        logger.warn('Warning FACEBOOK_APP_ID isnt specified')
+        logging.warn('Warning FACEBOOK_APP_ID isnt specified')
     if not facebook_settings.FACEBOOK_APP_SECRET:
-        logger.warn('Warning FACEBOOK_APP_SECRET isnt specified')
+        logging.warn('Warning FACEBOOK_APP_SECRET isnt specified')
 
     # warn on things which will cause bad performance
     if facebook_settings.FACEBOOK_STORE_LIKES or facebook_settings.FACEBOOK_STORE_FRIENDS:
         if not facebook_settings.FACEBOOK_CELERY_STORE:
             msg = '''Storing friends or likes without using Celery will significantly slow down your login
 Its recommended to enable FACEBOOK_CELERY_STORE or disable FACEBOOK_STORE_FRIENDS and FACEBOOK_STORE_LIKES'''
-            logger.warn(msg)
+            logging.warn(msg)
 
     # make sure the context processors are present
-    required = ['django_facebook.context_processors.facebook',
-                'django.core.context_processors.request']
-    context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
-    for context_processor in required:
-        if context_processor not in context_processors:
-            logger.warn(
-                'Required context processor %s wasnt found', context_processor)
+    if hasattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS'):
+        # Backwards-compatible for Django < 1.8
+        required = ['django_facebook.context_processors.facebook',
+                    'django.core.context_processors.request']
+        context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
+        for context_processor in required:
+            if context_processor not in context_processors:
+                logging.warn(
+                    'Required context processor %s wasnt found', context_processor)
+    else:
+        required = ['django_facebook.context_processors.facebook',
+                    'django.template.context_processors.request']
+        for index, template in enumerate(settings.TEMPLATES):
+            context_processors = template['OPTIONS']['context_processors']
+            for context_processor in required:
+                if context_processor not in context_processors:
+                    logging.warn(
+                        'Required context processor %s wasnt found in template %d',
+                        context_processor, index)
 
     backends = settings.AUTHENTICATION_BACKENDS
     required = 'django_facebook.auth_backends.FacebookBackend'
     if required not in backends:
-        logger.warn('Required auth backend %s wasnt found', required)
+        logging.warn('Required auth backend %s wasnt found', required)
 
 validate_settings()
 
@@ -226,7 +236,7 @@ class BaseFacebookModel(models.Model):
 
         The token can be extended multiple times, supposedly on every visit
         '''
-        logger.info('extending access token for user %s', self.get_user())
+        logging.info('extending access token for user %s', self.get_user())
         results = None
         if facebook_settings.FACEBOOK_CELERY_TOKEN_EXTEND:
             from django_facebook import tasks
@@ -244,9 +254,9 @@ class BaseFacebookModel(models.Model):
         message = 'a new' if token_changed else 'the same'
         log_format = 'Facebook provided %s token, which expires at %s'
         expires_delta = timedelta(days=60)
-        logger.info(log_format, message, expires_delta)
+        logging.info(log_format, message, expires_delta)
         if token_changed:
-            logger.info('Saving the new access token')
+            logging.info('Saving the new access token')
             self.update_access_token(access_token)
             self.save()
 
@@ -363,7 +373,7 @@ if getattr(settings, 'AUTH_USER_MODEL', None) == 'django_facebook.FacebookCustom
             # add any customizations you like
             state = models.CharField(max_length=255, blank=True, null=True)
     except ImportError as e:
-        logger.info('Couldnt setup FacebookUser, got error %s', e)
+        logging.info('Couldnt setup FacebookUser, got error %s', e)
 
 
 class BaseModelMetaclass(ModelBase):
@@ -562,14 +572,14 @@ class OpenGraphShare(BaseModel):
                 if not share_id:
                     error_message = 'No id in Facebook response, found %s for url %s with data %s' % (
                         result, graph_location, share_dict)
-                    logger.error(error_message)
+                    logging.error(error_message)
                     raise OpenFacebookException(error_message)
                 self.share_id = share_id
                 self.error_message = None
                 self.completed_at = datetime.now()
                 self.save()
             except OpenFacebookException as e:
-                logger.warn(
+                logging.warn(
                     'Open graph share failed, writing message %s' % str(e))
                 self.error_message = repr(e)
                 self.save()
@@ -580,10 +590,10 @@ class OpenGraphShare(BaseModel):
                 user_or_profile = user_or_profile.__class__.objects.get(
                     id=user_or_profile.id)
                 token_changed = graph.access_token != user_or_profile.access_token
-                logger.info('new token required is %s and token_changed is %s',
+                logging.info('new token required is %s and token_changed is %s',
                             new_token_required, token_changed)
                 if new_token_required and not token_changed:
-                    logger.info(
+                    logging.info(
                         'a new token is required, setting the flag on the user or profile')
                     # time to ask the user for a new token
                     update_user_attributes(self.user, profile, dict(
