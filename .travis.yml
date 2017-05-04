@@ -7,11 +7,13 @@ notifications:
   email:
     - thierryschellenbach@gmail.com
 env:
-  # test the standalone functionality
+  # test the standalone functionality (skipping django 1.10 to minimize the number of machines used on Travis)
   - DJANGO=">=1.8,<1.9" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
   - DJANGO=">=1.8,<1.9" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
   - DJANGO=">=1.9,<1.10" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
   - DJANGO=">=1.9,<1.10" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=">=1.11,<1.12" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=">=1.11,<1.12" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
 matrix:
   exclude:
     - python: 3.5
