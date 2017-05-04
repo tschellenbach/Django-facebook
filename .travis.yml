@@ -23,13 +23,13 @@ postgres:
   database: django_fb_test
 install:
   # faster than installing PIL manually
-  - pip install pep8 --use-mirrors
-  - pip install coverage --use-mirrors
-  - pip install python-coveralls --use-mirrors
+  - pip install pep8
+  - pip install coverage
+  - pip install python-coveralls
   - pip install https://github.com/dcramer/pyflakes/tarball/master
   - python setup.py install
-  - pip install -r facebook_example/requirements/$REQUIREMENTS.txt --use-mirrors -I --allow-all-external
-  - pip install -q Django$DJANGO --use-mirrors -I
+  - pip install -r facebook_example/requirements/$REQUIREMENTS.txt -I --allow-all-external
+  - pip install -q Django$DJANGO -I
 before_script:
   - "pep8 --exclude=south_migrations --ignore=E501,E225,W293,E731 django_facebook open_facebook"
 #  - pyflakes -x W src
