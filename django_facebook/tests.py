@@ -604,7 +604,6 @@ class UserConnectTest(FacebookTest):
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(action, CONNECT_ACTIONS.REGISTER)
 
-        self.request.user.is_authenticated = lambda: False
         with patch('django_facebook.connect.authenticate') as patched:
             return_sequence = [user, None]
 
