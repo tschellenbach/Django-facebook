@@ -36,35 +36,41 @@ add django facebook to your installed apps::
 
     'django_facebook',
 
-Add this line to your context processors (``TEMPLATE_CONTEXT_PROCESSORS`` setting)::
+Add this line to EACH of your templates' context processors (``TEMPLATES[*]['OPTIONS']['context_processors']`` setting)::
 
     'django_facebook.context_processors.facebook',
     # and add request if you didn't do so already
     'django.core.context_processors.request',
 
-The full setting on a new django 1.5 app looks like this
+The full setting on a new django 1.11 app looks like this
 
 .. code-block:: python
 
-  TEMPLATE_CONTEXT_PROCESSORS = (
-      'django.contrib.auth.context_processors.auth',
-      'django.core.context_processors.debug',
-      'django.core.context_processors.i18n',
-      'django.core.context_processors.media',
-      'django.core.context_processors.static',
-      'django.core.context_processors.tz',
-      'django.core.context_processors.request',
-      'django.contrib.messages.context_processors.messages',
-      'django_facebook.context_processors.facebook',
-  )
+    TEMPLATES = [
+        {
+            'BACKEND': 'django.template.backends.django.DjangoTemplates',
+            'DIRS': [],
+            'APP_DIRS': True,
+            'OPTIONS': {
+                'context_processors': [
+                    'django.template.context_processors.debug',
+                    'django.template.context_processors.request',
+                    'django.contrib.auth.context_processors.auth',
+                    'django.contrib.messages.context_processors.messages',
+                    'django_facebook.context_processors.facebook',
+                ],
+            },
+        },
+    ]
 
 **Auth backend**
 
-Add this to your ``AUTHENTICATION_BACKENDS`` setting::
+Add these to your ``AUTHENTICATION_BACKENDS`` setting::
 
     'django_facebook.auth_backends.FacebookBackend',
+    'django.contrib.auth.backends.ModelBackend',
 
-The full setting on a new django 1.5 app looks like this::
+The full setting on a new django 1.11 app looks like this::
 
   AUTHENTICATION_BACKENDS = (
       'django_facebook.auth_backends.FacebookBackend',
@@ -75,8 +81,8 @@ The full setting on a new django 1.5 app looks like this::
 **3.) Urls**
 Now, add this line to your url config::
 
-    (r'^facebook/', include('django_facebook.urls')),
-    (r'^accounts/', include('django_facebook.auth_urls')), #Don't add this line if you use django registration or userena for registration and auth.
+    url(r'^facebook/', include('django_facebook.urls')),
+    url(r'^accounts/', include('django_facebook.auth_urls')), #Don't add this line if you use django registration or userena for registration and auth.
 
 
 **4.) Update your models**
@@ -101,7 +107,7 @@ If you don't already have a custom Profile model, simply uses the provided model
 
     AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile'
 
-Be sure to run manage.py syncdb after setting this up.
+Be sure to sync the database via ``python manage.py migrate --run-syncdb`` after setting this up.
 
 Otherwise Django Facebook provides an abstract model which you can inherit like this.
 ::

@@ -98,11 +98,7 @@ class DecoratorTest(BaseDecoratorTest):
         We should redirect to Facebook oauth dialog
         '''
         response = self.client.get(self.url, follow=True)
-        if six.PY3:
-            self.assertEqual(response.redirect_chain[0][1], 302)
-        else:
-            self.assertRedirects(
-                response, self.target_url, target_status_code=404)
+        self.assertEqual(response.redirect_chain[0][1], 302)
 
     def test_decorator_authenticated(self):
         '''
@@ -604,7 +600,6 @@ class UserConnectTest(FacebookTest):
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(action, CONNECT_ACTIONS.REGISTER)
 
-        self.request.user.is_authenticated = lambda: False
         with patch('django_facebook.connect.authenticate') as patched:
             return_sequence = [user, None]
 
