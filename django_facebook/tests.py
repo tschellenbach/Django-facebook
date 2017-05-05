@@ -98,11 +98,7 @@ class DecoratorTest(BaseDecoratorTest):
         We should redirect to Facebook oauth dialog
         '''
         response = self.client.get(self.url, follow=True)
-        if six.PY3:
-            self.assertEqual(response.redirect_chain[0][1], 302)
-        else:
-            self.assertRedirects(
-                response, self.target_url, target_status_code=404)
+        self.assertEqual(response.redirect_chain[0][1], 302)
 
     def test_decorator_authenticated(self):
         '''
