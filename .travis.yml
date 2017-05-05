@@ -36,7 +36,7 @@ before_script:
   - "pep8 --exclude=south_migrations --ignore=E501,E225,W293,E731 django_facebook open_facebook"
 #  - pyflakes -x W src
 script:
-  - pip uninstall django-facebook && pip install -e .
+  - pip uninstall -y django-facebook && pip install -e .
   - cd facebook_example
   - coverage run manage.py test $TESTS --settings=$SETTINGS -v2
 after_success:
