@@ -949,6 +949,9 @@ class OpenFacebook(FacebookConnection):
 
         if path and path.startswith('/'):
             path = path[1:]
+            
+        if path == 'me':
+            params['fields'] = 'email,first_name,last_name,name,cover,picture'
 
         url = '/'.join([api_base_url, version, path])
         return '%s?%s' % (url, urlencode(params))
