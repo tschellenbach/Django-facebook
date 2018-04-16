@@ -50,7 +50,7 @@ facebookClass.prototype = {
        if (typeof(facebookDefaultScope) != 'undefined') {
             defaultScope = facebookDefaultScope;
        } else {
-           defaultScope = ['email', 'user_about_me', 'user_birthday', 'user_website'];
+           defaultScope = ['email', 'user_birthday'];
        }
        return defaultScope;
     },
