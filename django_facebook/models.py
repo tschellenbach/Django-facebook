@@ -377,36 +377,12 @@ if getattr(settings, 'AUTH_USER_MODEL', None) == 'django_facebook.FacebookCustom
         logging.info('Couldnt setup FacebookUser, got error %s', e)
 
 
-class BaseModelMetaclass(ModelBase):
-
-    '''
-    Cleaning up the table naming conventions
-    '''
-
-    def __new__(cls, name, bases, attrs):
-        super_new = ModelBase.__new__(cls, name, bases, attrs)
-        module_name = camel_to_underscore(name)
-
-        app_label = super_new.__module__.split('.')[-2]
-        db_table = '%s_%s' % (app_label, module_name)
-
-        django_default = '%s_%s' % (app_label, name.lower())
-        if not getattr(super_new._meta, 'proxy', False):
-            db_table_is_default = django_default == super_new._meta.db_table
-            # Don't overwrite when people customize the db_table
-            if db_table_is_default:
-                super_new._meta.db_table = db_table
-
-        return super_new
-
-
 @python_2_unicode_compatible
 class BaseModel(models.Model):
 
     '''
     Stores the fields common to all incentive models
     '''
-    __metaclass__ = BaseModelMetaclass
 
     def __str__(self):
         '''
@@ -538,8 +514,6 @@ class OpenGraphShare(BaseModel):
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
-    class Meta:
-        db_table = facebook_settings.FACEBOOK_OG_SHARE_DB_TABLE
 
     def save(self, *args, **kwargs):
         if self.user and not self.facebook_user_id:
