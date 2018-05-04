@@ -179,11 +179,10 @@ class FacebookConnection(object):
             extended_timeout = timeout * timeout_mp
             response_file = None
             encoded_params = encode_params(post_data) if post_data else None
-            post_string = (urlencode(encoded_params)
+            post_string = (urlencode(encoded_params).encode('utf-8')
                            if post_data else None)
             try:
                 start_statsd('facebook.%s' % statsd_path)
-
                 try:
                     response_file = opener.open(
                         url, post_string, timeout=extended_timeout)
