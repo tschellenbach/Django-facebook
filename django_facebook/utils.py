@@ -4,6 +4,7 @@ try:
     # using compatible_datetime instead of datetime only
     # not to override the original datetime package
     from django.utils import timezone as compatible_datetime
+    from django.utils.timezone import utc
 except ImportError:
     from datetime import datetime as compatible_datetime
 from datetime import datetime
@@ -629,7 +630,11 @@ def get_class_from_string(path, default=None):
 
 
 def parse_like_datetime(dt):
-    return datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S+0000")
+    try:
+        result = datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S+0000")
+        return result.replace(tzinfo=utc)
+    except AttributeError:
+        return result
 
 
 def get_default_mapping():
