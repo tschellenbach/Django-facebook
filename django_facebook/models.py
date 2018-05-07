@@ -359,7 +359,7 @@ class FacebookProfile(FacebookProfileModel):
     Use this by setting
     AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile'
     '''
-    user = models.OneToOneField(get_user_model_setting())
+    user = models.OneToOneField(get_user_model_setting(),on_delete=models.CASCADE)
 
 if getattr(settings, 'AUTH_USER_MODEL', None) == 'django_facebook.FacebookCustomUser':
     try:
@@ -510,7 +510,7 @@ class OpenGraphShare(BaseModel):
     '''
     objects = model_managers.OpenGraphShareManager()
 
-    user = models.ForeignKey(get_user_model_setting())
+    user = models.ForeignKey(get_user_model_setting(),on_delete=models.CASCADE)
 
     # domain stores
     action_domain = models.CharField(max_length=255)
@@ -519,7 +519,7 @@ class OpenGraphShare(BaseModel):
     # what we are sharing, dict and object
     share_dict = models.TextField(blank=True, null=True)
 
-    content_type = models.ForeignKey(ContentType, blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True,on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField(blank=True, null=True)
     content_object = GenericForeignKey('content_type', 'object_id')
 
