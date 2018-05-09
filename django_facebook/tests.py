@@ -85,8 +85,8 @@ class DecoratorTest(BaseDecoratorTest):
     def setUp(self):
         BaseDecoratorTest.setUp(self)
         self.url = reverse('facebook_decorator_example')
-        target_url = r'''https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birt
-            hday%2Cuser_website&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fdecorator_
+        target_url = r'''https://www.facebook.com/dialog/oauth?scope=email%2Cuser_birt
+            hday&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fdecorator_
             example%2F%3Fattempt%3D1&client_id=215464901804004
         '''.replace(' ', '').replace('\n', '')
         self.target_url = target_url
@@ -98,11 +98,7 @@ class DecoratorTest(BaseDecoratorTest):
         We should redirect to Facebook oauth dialog
         '''
         response = self.client.get(self.url, follow=True)
-        if six.PY3:
-            self.assertEqual(response.redirect_chain[0][1], 302)
-        else:
-            self.assertRedirects(
-                response, self.target_url, target_status_code=404)
+        self.assertEqual(response.redirect_chain[0][1], 302)
 
     def test_decorator_authenticated(self):
         '''
@@ -169,8 +165,8 @@ class LazyDecoratorTest(DecoratorTest):
     def setUp(self):
         DecoratorTest.setUp(self)
         self.url = reverse('facebook_lazy_decorator_example')
-        target_url = r'''https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birt
-            hday%2Cuser_website&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Flazy_decorator_
+        target_url = r'''https://www.facebook.com/dialog/oauth?scope=email%2Cuser_birt
+            hday&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Flazy_decorator_
             example%2F%3Fattempt%3D1&client_id=215464901804004
         '''.replace(' ', '').replace('\n', '')
         self.target_url = target_url
@@ -213,7 +209,7 @@ class ConnectViewTest(FacebookTest):
         response = self.client.post(
             self.url, next=self.example_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
-        oauth_url = 'https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birthday%2Cuser_website&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fconnect%2F%3Fattempt%3D1&client_id=215464901804004'
+        oauth_url = 'https://www.facebook.com/dialog/oauth?scope=email%2Cuser_birthday&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fconnect%2F%3Fattempt%3D1&client_id=215464901804004'
         if six.PY3:
             self.assertEqual(response.redirect_chain[0][1], 302)
         else:
@@ -604,7 +600,6 @@ class UserConnectTest(FacebookTest):
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(action, CONNECT_ACTIONS.REGISTER)
 
-        self.request.user.is_authenticated = lambda: False
         with patch('django_facebook.connect.authenticate') as patched:
             return_sequence = [user, None]
 

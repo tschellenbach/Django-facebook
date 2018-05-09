@@ -457,7 +457,7 @@ class FacebookUserConverter(object):
             get_user_model().objects.filter(
                 username__istartswith=base_username
             ).values_list('username', flat=True))
-        usernames_lower = [str(u).lower() for u in usernames]
+        usernames_lower = [u.lower() for u in usernames]
         username = str(base_username)
         i = 1
         while base_username.lower() in usernames_lower:
