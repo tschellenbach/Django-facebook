@@ -688,7 +688,7 @@ def get_migration_data():
         User = get_user_model()
 
     user_orm_label = '%s.%s' % (User._meta.app_label, User._meta.object_name)
-    user_model_label = '%s.%s' % (User._meta.app_label, User._meta.module_name)
+    user_model_label = '%s.%s' % (User._meta.app_label, User._meta.model_name)
     return User, user_orm_label, user_model_label
 
 
