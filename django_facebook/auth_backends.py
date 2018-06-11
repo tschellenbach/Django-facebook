@@ -40,7 +40,7 @@ class FacebookBackend(backends.ModelBackend):
             user = self.profile_authenticate(facebook_id, facebook_email)
         return user
 
-    def user_authenticate(self, facebook_id=None, facebook_email=None):
+    def user_authenticate(self, facebook_id=None, facebook_email=None, **kwargs):
         '''
         Authenticate the facebook user by id OR facebook_email
         We filter using an OR to allow existing members to connect with
