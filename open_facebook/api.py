@@ -485,7 +485,7 @@ class FacebookAuthorization(FacebookConnection):
             expected_sig = hmac.new(smart_str(secret), msg=smart_str(payload),
                                     digestmod=hashlib.sha256).digest()
 
-        if not hmac.compare_digest(sig, expected_sig):
+        if not sig == expected_sig:
             error_format = 'Signature %s didnt match the expected signature %s'
             error_message = error_format % (sig, expected_sig)
             send_warning(error_message)
@@ -734,8 +734,8 @@ class OpenFacebook(FacebookConnection):
 
         **Example**::
 
-            open_facebook.get('me', 'starbucks')
-            open_facebook.get('me', 'starbucks', fields='id,name')
+            open_facebook.get_many('me', 'starbucks')
+            open_facebook.get_many('me', 'starbucks', fields='id,name')
 
         :param path:
             The path to use for making the API call
@@ -848,6 +848,7 @@ class OpenFacebook(FacebookConnection):
         '''
         me = getattr(self, '_me', None)
         if me is None:
+            # self._me = me = self.get('me')
             self._me = me = self.get('me', fields="id,name,email,verified")
 
         return me
@@ -948,6 +949,9 @@ class OpenFacebook(FacebookConnection):
 
         if path and path.startswith('/'):
             path = path[1:]
+            
+        if path == 'me':
+            params['fields'] = 'email,first_name,last_name,name,cover,picture'
 
         url = '/'.join([api_base_url, version, path])
         return '%s?%s' % (url, urlencode(params))

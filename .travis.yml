@@ -7,11 +7,13 @@ notifications:
   email:
     - thierryschellenbach@gmail.com
 env:
-  # test the standalone functionality
+  # test the standalone functionality (skipping django 1.10 to minimize the number of machines used on Travis)
   - DJANGO=">=1.8,<1.9" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
   - DJANGO=">=1.8,<1.9" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
   - DJANGO=">=1.9,<1.10" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
   - DJANGO=">=1.9,<1.10" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=">=1.11,<1.12" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=">=1.11,<1.12" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
 matrix:
   exclude:
     - python: 3.5
@@ -23,18 +25,18 @@ postgres:
   database: django_fb_test
 install:
   # faster than installing PIL manually
-  - pip install pep8 --use-mirrors
-  - pip install coverage --use-mirrors
-  - pip install python-coveralls --use-mirrors
+  - pip install pep8
+  - pip install coverage
+  - pip install python-coveralls
   - pip install https://github.com/dcramer/pyflakes/tarball/master
   - python setup.py install
-  - pip install -r facebook_example/requirements/$REQUIREMENTS.txt --use-mirrors -I --allow-all-external
-  - pip install -q Django$DJANGO --use-mirrors -I
+  - pip install -r facebook_example/requirements/$REQUIREMENTS.txt -I --allow-all-external
+  - pip install Django$DJANGO
 before_script:
   - "pep8 --exclude=south_migrations --ignore=E501,E225,W293,E731 django_facebook open_facebook"
 #  - pyflakes -x W src
 script:
-  - pip install -e .
+  - pip uninstall -y django-facebook && pip install -e .
   - cd facebook_example
   - coverage run manage.py test $TESTS --settings=$SETTINGS -v2
 after_success:
