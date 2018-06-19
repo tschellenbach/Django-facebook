@@ -29,7 +29,7 @@ class UserProfile(FacebookModel):
     '''
     Inherit the properties from django facebook
     '''
-    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, models.CASCADE)
 
 
 @receiver(post_save)
