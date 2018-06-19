@@ -1,8 +1,8 @@
 language: python
 python:
   - 2.7
+  - 3.4
   - 3.5
-  - 3.6
 notifications:
   email:
     - thierryschellenbach@gmail.com
@@ -12,16 +12,22 @@ env:
   - DJANGO=">=1.11,<2" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
   - DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
   - DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
-
+matrix:
+  exclude:
+    - python: 2.7
+      env: DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+    - python: 2.7
+      env: DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
 install:
   - pip install coverage python-coveralls
   - python setup.py install
   - pip install -r facebook_example/requirements/$REQUIREMENTS.txt -I --allow-all-external
   - pip install Django$DJANGO
-# before_script:
-#   - "pep8 --exclude=south_migrations --ignore=E501,E225,W293,E731 django_facebook open_facebook"
-# #  - pyflakes -x W src
+before_script:
+  - "pep8 --exclude=south_migrations --ignore=E501,E225,W293,E731 django_facebook open_facebook"
+#  - pyflakes -x W src
 script:
+  - pip uninstall -y django-facebook && pip install -e .
   - cd facebook_example
   - coverage run manage.py test $TESTS --settings=$SETTINGS -v2
 after_success:
