@@ -23,11 +23,9 @@ install:
   - python setup.py install
   - pip install -r facebook_example/requirements/$REQUIREMENTS.txt -I --allow-all-external
   - pip install Django$DJANGO
-before_script:
-  - "pep8 --exclude=south_migrations --ignore=E501,E225,W293,E731 django_facebook open_facebook"
-#  - pyflakes -x W src
+
 script:
-  - pip uninstall -y django-facebook && pip install -e .
+  - pip install -e .
   - cd facebook_example
   - coverage run manage.py test $TESTS --settings=$SETTINGS -v2
 after_success:
