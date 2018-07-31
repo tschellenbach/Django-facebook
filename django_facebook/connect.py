@@ -229,7 +229,7 @@ def _register_user(request, facebook, profile_callback=None,
         data['email'] = data['email'].replace(
             '@', '+test%s@' % randint(0, 1000000000))
         
-    if not data['email']:
+    if not data.get('email'):
         data['email'] = '%s@facebook.com' % data['username'] 
 
     form = form_class(data=data, files=request.FILES,
