@@ -250,7 +250,7 @@ def _add_current_user_id(graph, user):
     if graph:
         graph.current_user_id = None
 
-        if user.is_authenticated():
+        if user.is_authenticated:
             profile = try_get_profile(user)
             facebook_id = get_user_attribute(user, profile, 'facebook_id')
             if facebook_id:
@@ -275,7 +275,7 @@ class FacebookUserConverter(object):
         self._profile = None
 
     def is_authenticated(self):
-        return self.open_facebook.is_authenticated()
+        return self.open_facebook.is_authenticated
 
     def facebook_registration_data(self, username=True):
         '''
