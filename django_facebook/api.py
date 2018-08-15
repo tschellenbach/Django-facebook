@@ -216,7 +216,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                             raise
                         else:
                             return None
-            elif request.user.is_authenticated():
+            elif request.user.is_authenticated:
                 # support for offline access tokens stored in the users profile
                 profile = try_get_profile(request.user)
                 access_token = get_user_attribute(
