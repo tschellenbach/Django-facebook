@@ -19,8 +19,8 @@ matrix:
     - python: 2.7
       env: DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS="django_facebook open_facebook"
 install:
-  - pip install coverage python-coveralls
-  - pip install Django$DJANGO
+  - pip install coverage python-coveralls pipenv
+  - pipenv run pip install Django$DJANGO
   - pipenv sync -d
 
 script:
