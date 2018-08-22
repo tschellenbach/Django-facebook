@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-Django = ">=1.8"
 Unidecode = "*"
 
 [dev-packages]
