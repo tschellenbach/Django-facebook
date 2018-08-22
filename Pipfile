@@ -11,6 +11,7 @@ pytest = "==3.5.0"
 "e1839a8" = {path = ".", editable = true}
 pillow = "*"
 pycodestyle = "*"
+mock = "*"
 
 [requires]
 python_version = "3.6"
