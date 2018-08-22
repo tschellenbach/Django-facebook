@@ -8,25 +8,23 @@ notifications:
     - thierryschellenbach@gmail.com
 env:
   # test the standalone functionality (skipping django 1.10 to minimize the number of machines used on Travis)
-  - DJANGO=">=1.11,<2" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
-  - DJANGO=">=1.11,<2" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
-  - DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
-  - DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=">=1.11,<2" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS="django_facebook open_facebook"
+  - DJANGO=">=1.11,<2" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS="django_facebook open_facebook"
+  - DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS="django_facebook open_facebook"
+  - DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS="django_facebook open_facebook"
 matrix:
   exclude:
     - python: 2.7
-      env: DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+      env: DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS="django_facebook open_facebook"
     - python: 2.7
-      env: DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+      env: DJANGO=">=2.0.0,<2.1" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS="django_facebook open_facebook"
 install:
   - pip install coverage python-coveralls
-  - python setup.py install
-  - pip install -r facebook_example/requirements/$REQUIREMENTS.txt -I --allow-all-external
   - pip install Django$DJANGO
+  - pipenv sync -d
 
 script:
-  - pip install -e .
   - cd facebook_example
-  - coverage run manage.py test $TESTS --settings=$SETTINGS -v2
+  - pipenv run coverage run manage.py test $TESTS --settings=$SETTINGS -v2
 after_success:
   - coveralls
