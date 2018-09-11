@@ -478,7 +478,7 @@ class FacebookUserConverter(object):
         # start by checking the public profile link (your facebook username)
         link = facebook_data.get('link')
         if link:
-            username = link.split('/')[-1]
+            username = link.rstrip('/').split('/')[-1]
             username = cls._make_username(username)
             if username and 'profilephp' in username:
                 username = None
