@@ -1,6 +1,7 @@
+{% load static from staticfiles %}
 <div id="fb-root"></div>
 <!--Some facebook code requires the fb-root div -->
-<script src="{{ STATIC_URL }}django_facebook/js/facebook.js" type="text/javascript"></script>
+<script src="{% static "django_facebook/js/facebook.js"%}" type="text/javascript"></script>
 <script>
     facebookAppId = '{{ FACEBOOK_APP_ID }}';
     facebookDefaultScope = {{ FACEBOOK_DEFAULT_SCOPE_JS }};

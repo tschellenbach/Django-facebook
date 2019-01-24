@@ -1,5 +1,4 @@
-from django.template.context import RequestContext
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django_facebook.utils import get_registration_backend
 from django_facebook.connect import CONNECT_ACTIONS
 
@@ -25,8 +24,7 @@ def register(request):
     else:
         form = form_class()
 
-    context = RequestContext(request)
-    context['form'] = form
-    response = render_to_response(template_name, context_instance=context)
+    context = {'form': form}
+    response = render(request, template_name, context)
 
     return response

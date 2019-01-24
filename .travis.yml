@@ -1,40 +1,42 @@
 language: python
 python:
   - 2.7
-  - 3.3
+  - 3.4
+  - 3.5
 notifications:
   email:
     - thierryschellenbach@gmail.com
 env:
-  # test the standalone functionality
-  - DJANGO=1.5.8 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
-  - DJANGO=1.5.8 CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
-  - DJANGO=1.6.5 CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
-  - DJANGO=1.6.5 CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
-  # test django registration integration
-  # Django registration doesn't support 1.5.4
-  #- DJANGO=1.5.4 CUSTOM_USER_MODEL=0 MODE=django_registration REQUIREMENTS=django_registration SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
-  # userena currently doesn't support testing :(
-  # django-userena isn't python 3 compatible nor is userena a requirement for django.  It was simply used for integration
-  # testing purposes.
-  #- DJANGO=1.5.8 CUSTOM_USER_MODEL=0 MODE=userena REQUIREMENTS=userena SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  # test the standalone functionality (skipping django 1.10 to minimize the number of machines used on Travis)
+  - DJANGO=">=1.8,<1.9" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=">=1.8,<1.9" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=">=1.9,<1.10" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=">=1.9,<1.10" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=">=1.11,<1.12" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+  - DJANGO=">=1.11,<1.12" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+matrix:
+  exclude:
+    - python: 3.5
+      env: DJANGO=">=1.8,<1.9" CUSTOM_USER_MODEL=0 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
+    - python: 3.5
+      env: DJANGO=">=1.8,<1.9" CUSTOM_USER_MODEL=1 MODE=standalone REQUIREMENTS=development7 SETTINGS=facebook_example.settings TESTS=django_facebook open_facebook
 postgres:
   adapter: sqlite3
   database: django_fb_test
 install:
   # faster than installing PIL manually
-  - pip install pep8 --use-mirrors
-  - pip install coverage --use-mirrors
-  - pip install python-coveralls --use-mirrors
+  - pip install pep8
+  - pip install coverage
+  - pip install python-coveralls
   - pip install https://github.com/dcramer/pyflakes/tarball/master
   - python setup.py install
-  - pip install -r facebook_example/requirements/$REQUIREMENTS.txt --use-mirrors -I --allow-all-external
-  - pip install -q Django==$DJANGO --use-mirrors -I
+  - pip install -r facebook_example/requirements/$REQUIREMENTS.txt -I --allow-all-external
+  - pip install Django$DJANGO
 before_script:
-  - "pep8 --exclude=migrations --ignore=E501,E225,W293 django_facebook open_facebook"
+  - "pep8 --exclude=south_migrations --ignore=E501,E225,W293,E731 django_facebook open_facebook"
 #  - pyflakes -x W src
 script:
-  - pip install -e .
+  - pip uninstall -y django-facebook && pip install -e .
   - cd facebook_example
   - coverage run manage.py test $TESTS --settings=$SETTINGS -v2
 after_success:

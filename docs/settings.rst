@@ -22,7 +22,7 @@ Your facebook app secret
 
 The default scope we should use, note that registration will break without email
 Defaults to
-['email', 'user_about_me', 'user_birthday', 'user_website']
+['email', 'user_birthday']
 
 Customizing registration
 ************************

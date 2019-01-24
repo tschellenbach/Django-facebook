@@ -1,4 +1,5 @@
-from django.forms.util import ValidationError
+from django.core.exceptions import ValidationError
+
 from django_facebook import settings as facebook_settings, signals
 from django_facebook.exceptions import FacebookException
 from django_facebook.utils import get_user_model, mass_get_or_create, \
@@ -10,6 +11,7 @@ from open_facebook.utils import send_warning, validate_is_instance
 import datetime
 import json
 import logging
+
 try:
     from dateutil.parser import parse as parse_date
 except ImportError:
@@ -61,7 +63,7 @@ def get_persistent_graph(request, *args, **kwargs):
     # some situations like an expired access token require us to refresh our
     # graph
     require_refresh = False
-    code = request.REQUEST.get('code')
+    code = request.POST.get('code', request.GET.get('code'))
     if code:
         require_refresh = True
 
@@ -111,8 +113,11 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
     on the same page
     '''
     # this is not a production flow, but very handy for testing
-    if not access_token and request.REQUEST.get('access_token'):
-        access_token = request.REQUEST['access_token']
+    query_access_token = request.POST.get(
+        'access_token',
+        request.GET.get('access_token'))
+    if not access_token and query_access_token:
+        access_token = query_access_token
     # should drop query params be included in the open facebook api,
     # maybe, weird this...
     from open_facebook import OpenFacebook, FacebookAuthorization
@@ -126,7 +131,9 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
     # parse the signed request if we have it
     signed_data = None
     if request:
-        signed_request_string = request.REQUEST.get('signed_data')
+        signed_request_string = request.POST.get(
+            'signed_data',
+            request.GET.get('signed_data'))
         if signed_request_string:
             logger.info('Got signed data from facebook')
             signed_data = parse_signed_request(signed_request_string)
@@ -139,7 +146,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
 
     if not access_token:
         # easy case, code is in the get
-        code = request.REQUEST.get('code')
+        code = request.POST.get('code', request.GET.get('code'))
         if code:
             logger.info('Got code from the request data')
 
@@ -204,7 +211,7 @@ def get_facebook_graph(request=None, access_token=None, redirect_uri=None, raise
                         # it happens when users remove your
                         # permissions and then try to reauthenticate
                         logger.warn('Error when trying to convert code %s',
-                                    unicode(e))
+                                    str(e))
                         if raise_:
                             raise
                         else:
@@ -450,7 +457,7 @@ class FacebookUserConverter(object):
             get_user_model().objects.filter(
                 username__istartswith=base_username
             ).values_list('username', flat=True))
-        usernames_lower = [str(u).lower() for u in usernames]
+        usernames_lower = [u.lower() for u in usernames]
         username = str(base_username)
         i = 1
         while base_username.lower() in usernames_lower:
@@ -606,15 +613,11 @@ class FacebookUserConverter(object):
         '''
         friends = getattr(self, '_friends', None)
         if friends is None:
-            friends_response = self.open_facebook.fql(
-                "SELECT uid, name, sex FROM user WHERE uid IN (SELECT uid2 "
-                "FROM friend WHERE uid1 = me()) LIMIT %s" % limit)
-            # friends_response = self.open_facebook.get('me/friends',
-            #                                           limit=limit)
-            # friends = friends_response and friends_response.get('data')
+            friends_response = self.open_facebook.get('me/friends', limit=limit, fields='gender,name')
+
             friends = []
-            for response_dict in friends_response:
-                response_dict['id'] = response_dict['uid']
+            for response_dict in friends_response.get('data'):
+                response_dict['id'] = response_dict['id']
                 friends.append(response_dict)
 
         logger.info('found %s friends', len(friends))

@@ -85,8 +85,8 @@ class DecoratorTest(BaseDecoratorTest):
     def setUp(self):
         BaseDecoratorTest.setUp(self)
         self.url = reverse('facebook_decorator_example')
-        target_url = r'''https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birt
-            hday%2Cuser_website&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fdecorator_
+        target_url = r'''https://www.facebook.com/dialog/oauth?scope=email%2Cuser_birt
+            hday&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fdecorator_
             example%2F%3Fattempt%3D1&client_id=215464901804004
         '''.replace(' ', '').replace('\n', '')
         self.target_url = target_url
@@ -98,11 +98,7 @@ class DecoratorTest(BaseDecoratorTest):
         We should redirect to Facebook oauth dialog
         '''
         response = self.client.get(self.url, follow=True)
-        if six.PY3:
-            self.assertEqual(response.redirect_chain[0][1], 302)
-        else:
-            self.assertRedirects(
-                response, self.target_url, target_status_code=404)
+        self.assertEqual(response.redirect_chain[0][1], 302)
 
     def test_decorator_authenticated(self):
         '''
@@ -169,8 +165,8 @@ class LazyDecoratorTest(DecoratorTest):
     def setUp(self):
         DecoratorTest.setUp(self)
         self.url = reverse('facebook_lazy_decorator_example')
-        target_url = r'''https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birt
-            hday%2Cuser_website&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Flazy_decorator_
+        target_url = r'''https://www.facebook.com/dialog/oauth?scope=email%2Cuser_birt
+            hday&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Flazy_decorator_
             example%2F%3Fattempt%3D1&client_id=215464901804004
         '''.replace(' ', '').replace('\n', '')
         self.target_url = target_url
@@ -194,13 +190,12 @@ class ConnectViewTest(FacebookTest):
     def setUp(self):
         FacebookTest.setUp(self)
 
-        self.base_url = base_url = 'http://testserver'
-        self.absolute_default_url = base_url + \
+        # According to django/test/testcase.py, the scheme and
+        # domain are not included on redirect_chain on django 1.9
+        self.default_url = \
             facebook_settings.FACEBOOK_LOGIN_DEFAULT_REDIRECT
         self.url = reverse('facebook_connect')
-        self.absolute_url = base_url + reverse('facebook_connect')
         self.example_url = reverse('facebook_example')
-        self.absolute_example_url = base_url + reverse('facebook_example')
 
     def test_connect_redirect(self):
         '''
@@ -214,7 +209,7 @@ class ConnectViewTest(FacebookTest):
         response = self.client.post(
             self.url, next=self.example_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
-        oauth_url = 'https://www.facebook.com/dialog/oauth?scope=email%2Cuser_about_me%2Cuser_birthday%2Cuser_website&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fconnect%2F%3Fattempt%3D1&client_id=215464901804004'
+        oauth_url = 'https://www.facebook.com/dialog/oauth?scope=email%2Cuser_birthday&redirect_uri=http%3A%2F%2Ftestserver%2Ffacebook%2Fconnect%2F%3Fattempt%3D1&client_id=215464901804004'
         if six.PY3:
             self.assertEqual(response.redirect_chain[0][1], 302)
         else:
@@ -229,14 +224,14 @@ class ConnectViewTest(FacebookTest):
             '?attempt=1&client_id=215464901804004&next=bla&register_next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
-        self.assertEqual(redirect_url, self.absolute_example_url)
+        self.assertIn(self.example_url, redirect_url)
 
         # Verify that login_next works
         accepted_url = self.url + \
             '?attempt=1&client_id=215464901804004&next=bla&login_next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
-        self.assertEqual(redirect_url, self.absolute_example_url)
+        self.assertIn(self.example_url, redirect_url)
 
     def test_connect_redirect_default(self):
         # Now try without next
@@ -244,7 +239,7 @@ class ConnectViewTest(FacebookTest):
         accepted_url = self.url + '?attempt=1&client_id=215464901804004'
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
-        self.assertEqual(redirect_url, self.absolute_default_url)
+        self.assertIn(self.default_url, redirect_url)
 
     def test_connect_redirect_not_authenticated(self):
         # Meanwhile at Facebook they redirect the request
@@ -254,16 +249,16 @@ class ConnectViewTest(FacebookTest):
             '?attempt=1&client_id=215464901804004&next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
-        error_url = self.absolute_example_url + '?fb_error_or_cancel=1'
-        self.assertEqual(redirect_url, error_url)
+        error_url = self.example_url + '?fb_error_or_cancel=1'
+        self.assertIn(error_url, redirect_url)
 
         # Verify that error next also works
         accepted_url = self.url + \
             '?attempt=1&client_id=215464901804004&next=bla&error_next=%s' % self.example_url
         response = self.client.get(accepted_url, follow=True)
         redirect_url = response.redirect_chain[0][0]
-        error_url = self.absolute_example_url + '?fb_error_or_cancel=1'
-        self.assertEqual(redirect_url, error_url)
+        error_url = self.example_url + '?fb_error_or_cancel=1'
+        self.assertIn(error_url, redirect_url)
 
     def test_connect(self):
         '''
@@ -505,7 +500,7 @@ class UserConnectTest(FacebookTest):
         request.session = {}
         request.user = AnonymousUser()
 
-        graph = get_facebook_graph(access_token='short_username')
+        graph = get_facebook_graph(request=self.request, access_token='short_username')
         FacebookUserConverter(graph)
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(action, CONNECT_ACTIONS.REGISTER)
@@ -578,7 +573,7 @@ class UserConnectTest(FacebookTest):
 
     def test_full_connect(self):
         # going for a register, connect and login
-        graph = get_facebook_graph(access_token='short_username')
+        graph = get_facebook_graph(request=self.request, access_token='short_username')
         FacebookUserConverter(graph)
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(action, CONNECT_ACTIONS.REGISTER)
@@ -600,12 +595,11 @@ class UserConnectTest(FacebookTest):
         Adding some testing for the case when one person tries to register
         multiple times in the same second
         '''
-        graph = get_facebook_graph(access_token='short_username')
+        graph = get_facebook_graph(request=self.request, access_token='short_username')
         FacebookUserConverter(graph)
         action, user = connect_user(self.request, facebook_graph=graph)
         self.assertEqual(action, CONNECT_ACTIONS.REGISTER)
 
-        self.request.user.is_authenticated = lambda: False
         with patch('django_facebook.connect.authenticate') as patched:
             return_sequence = [user, None]
 
@@ -621,7 +615,7 @@ class UserConnectTest(FacebookTest):
                 self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
 
     def test_utf8(self):
-        graph = get_facebook_graph(access_token='unicode_string')
+        graph = get_facebook_graph(request=self.request, access_token='unicode_string')
         facebook = FacebookUserConverter(graph)
         action, user = connect_user(self.request, facebook_graph=graph)
 
@@ -635,7 +629,7 @@ class UserConnectTest(FacebookTest):
                           connect_user, self.request, access_token='no_email')
 
     def test_current_user(self):
-        facebook = get_facebook_graph(access_token='tschellenbach')
+        facebook = get_facebook_graph(request=self.request, access_token='tschellenbach')
         action, user = connect_user(self.request, facebook_graph=facebook)
         self.assertEqual(action, CONNECT_ACTIONS.LOGIN)
 
@@ -646,7 +640,7 @@ class UserConnectTest(FacebookTest):
         Profile = get_profile_model()
         user_model = get_user_model()
         signals.facebook_pre_update.connect(pre_update, sender=user_model)
-        facebook = get_facebook_graph(access_token='tschellenbach')
+        facebook = get_facebook_graph(request=self.request, access_token='tschellenbach')
 
         facebook_settings.FACEBOOK_FORCE_PROFILE_UPDATE_ON_LOGIN = True
         action, user = connect_user(self.request, facebook_graph=facebook)
@@ -659,17 +653,17 @@ class UserConnectTest(FacebookTest):
         self.assertFalse(hasattr(user, 'pre_update_signal'))
 
     def test_new_user(self):
-        facebook = get_facebook_graph(access_token='new_user')
+        facebook = get_facebook_graph(request=self.request, access_token='new_user')
         action, user = connect_user(self.request, facebook_graph=facebook)
 
     def test_short_username(self):
-        facebook = get_facebook_graph(access_token='short_username')
+        facebook = get_facebook_graph(request=self.request, access_token='short_username')
         action, user = connect_user(self.request, facebook_graph=facebook)
         self.assertTrue(len(user.username) > 4)
         self.assertEqual(action, CONNECT_ACTIONS.REGISTER)
 
     def test_gender(self):
-        graph = get_facebook_graph(access_token='new_user')
+        graph = get_facebook_graph(request=self.request, access_token='new_user')
         facebook = FacebookUserConverter(graph)
         data = facebook.facebook_registration_data()
         self.assertEqual(data['gender'], 'm')
@@ -679,12 +673,12 @@ class UserConnectTest(FacebookTest):
         This used to give an error with duplicate usernames
         with different capitalization
         '''
-        facebook = get_facebook_graph(access_token='short_username')
+        facebook = get_facebook_graph(request=self.request, access_token='short_username')
         action, user = connect_user(self.request, facebook_graph=facebook)
         user.username = 'Thierry_schellenbach'
         user.save()
         self.request.user = AnonymousUser()
-        facebook = get_facebook_graph(access_token='same_username')
+        facebook = get_facebook_graph(request=self.request, access_token='same_username')
         action, new_user = connect_user(self.request, facebook_graph=facebook)
         self.assertNotEqual(user.username, new_user.username)
         self.assertNotEqual(user.id, new_user.id)
@@ -701,7 +695,7 @@ class UserConnectTest(FacebookTest):
         old_setting = facebook_settings.FACEBOOK_REGISTRATION_FORM
         facebook_settings.FACEBOOK_REGISTRATION_FORM = test_form
         try:
-            facebook = get_facebook_graph(access_token='short_username')
+            facebook = get_facebook_graph(request=self.request, access_token='short_username')
             action, user = connect_user(self.request, facebook_graph=facebook)
             # The test form always sets username to test form
             self.assertEqual(user.username, 'Test form')
@@ -735,7 +729,7 @@ class AuthBackend(FacebookTest):
     def test_auth_backend(self):
         # the auth backend
         backend = FacebookBackend()
-        facebook = get_facebook_graph(access_token='new_user')
+        facebook = get_facebook_graph(request=self.request, access_token='new_user')
         action, user = connect_user(self.request, facebook_graph=facebook)
         facebook_email = user.email
         profile = try_get_profile(user)
@@ -813,7 +807,7 @@ class SignalTest(FacebookTest):
         signals.facebook_pre_update.connect(pre_update, sender=user_model)
         signals.facebook_post_update.connect(post_update, sender=user_model)
 
-        graph = get_facebook_graph(access_token='short_username')
+        graph = get_facebook_graph(request=self.request, access_token='short_username')
         facebook = FacebookUserConverter(graph)
         user = _register_user(self.request, facebook)
         self.assertEqual(hasattr(user, 'registered_signal'), True)

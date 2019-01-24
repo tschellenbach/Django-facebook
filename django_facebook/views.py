@@ -1,8 +1,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.http import Http404
-from django.shortcuts import render_to_response
-from django.template.context import RequestContext
+from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -11,7 +10,7 @@ from django_facebook import exceptions as facebook_exceptions, \
 from django_facebook.connect import CONNECT_ACTIONS, connect_user
 from django_facebook.decorators import facebook_required_lazy
 from django_facebook.utils import next_redirect, get_registration_backend, \
-    to_bool, error_next_redirect, get_instance_for
+    to_bool, error_next_redirect, get_instance_for, get_profile
 from open_facebook import exceptions as open_facebook_exceptions
 from open_facebook.utils import send_warning
 import logging
@@ -33,12 +32,6 @@ def connect(request, graph):
     Don't bother reading this code, skip to _connect for the bit you're interested in :)
     '''
     backend = get_registration_backend()
-    context = RequestContext(request)
-
-    # validation to ensure the context processor is enabled
-    if not context.get('FACEBOOK_APP_ID'):
-        message = 'Please specify a Facebook app id and ensure the context processor is enabled'
-        raise ValueError(message)
 
     try:
         response = _connect(request, graph)
@@ -65,8 +58,11 @@ def _connect(request, graph):
     the oAuth dialog
     '''
     backend = get_registration_backend()
-    context = RequestContext(request)
-    connect_facebook = to_bool(request.REQUEST.get('connect_facebook'))
+    connect_facebook = to_bool(
+        request.POST.get(
+            'connect_facebook',
+            request.GET.get('connect_facebook'))
+    )
 
     logger.info('trying to connect using Facebook')
     if graph:
@@ -91,12 +87,8 @@ def _connect(request, graph):
             send_warning(warn_message, e=e,
                          facebook_data=facebook_data)
 
-            context['facebook_mode'] = True
-            context['form'] = e.form
-            return render_to_response(
-                backend.get_registration_template(),
-                context_instance=context,
-            )
+            context = {'facebook_mode': True, 'form': e.form}
+            return render(request, backend.get_registration_template(), context)
         except facebook_exceptions.AlreadyConnectedError as e:
             user_ids = [u.get_user_id() for u in e.users]
             ids_string = ','.join(map(str, user_ids))
@@ -130,7 +122,7 @@ def disconnect(request):
     if request.method == 'POST':
         messages.info(
             request, _("You have disconnected your Facebook profile."))
-        profile = request.user.get_profile()
+        profile = get_profile(request.user)
         profile.disconnect_facebook()
         profile.save()
     response = next_redirect(request)
@@ -138,5 +130,5 @@ def disconnect(request):
 
 
 def example(request):
-    context = RequestContext(request)
-    return render_to_response('django_facebook/example.html', context)
+    context = {}
+    return render(request, 'django_facebook/example.html', context)

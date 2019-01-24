@@ -2,6 +2,7 @@ import logging
 import re
 import sys
 import functools
+import json
 
 from django.utils import six
 try:
@@ -99,11 +100,6 @@ def smart_str(s, encoding='utf-8', strings_only=False, errors='strict'):
         return s.decode('utf-8', errors).encode(encoding, errors)
     else:
         return s
-
-
-# we are no longer supporting python 2.5
-# so we can simply assume import json works
-import json
 
 
 def send_warning(message, request=None, e=None, **extra_data):

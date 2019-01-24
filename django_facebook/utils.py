@@ -7,17 +7,20 @@ try:
 except ImportError:
     from datetime import datetime as compatible_datetime
 from datetime import datetime
+from django.apps import apps
 from django.http import QueryDict, HttpResponse, HttpResponseRedirect
 from django.conf import settings
 import django.contrib.auth
 from django.db import models, transaction
 import logging
+import django
 import re
 from django_facebook import settings as facebook_settings
 from django.utils.encoding import iri_to_uri
 from django.template.loader import render_to_string
 import gc
 
+django_version = django.VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +41,7 @@ def get_profile_model():
     profile_string = getattr(settings, 'AUTH_PROFILE_MODULE', None)
     if profile_string:
         app_label, model_label = profile_string.split('.')
-        model = models.get_model(app_label, model_label)
+        model = apps.get_model(app_label, model_label)
     return model
 
 
@@ -142,7 +145,7 @@ def update_user_attributes(user, profile, attributes_dict, save=False):
 
 def try_get_profile(user):
     try:
-        p = user.get_profile()
+        p = get_profile(user)
     except:
         p = None
     return p
@@ -150,8 +153,8 @@ def try_get_profile(user):
 
 def hash_key(key):
     import hashlib
-    hashed = hashlib.md5(key).hexdigest()
-    return hashed
+    key = key.encode('utf-8')
+    return hashlib.md5(key).hexdigest()
 
 
 def parse_signed_request(signed_request_string):
@@ -186,7 +189,7 @@ def clear_persistent_graph_cache(request):
     request.facebook = None
     request.session.delete('graph')
     if request.user.is_authenticated():
-        profile = request.user.get_profile()
+        profile = get_profile(request.user)
         profile.clear_access_token()
 
 
@@ -295,7 +298,7 @@ def next_redirect(request, default='/', additional_params=None,
     # get the redirect url
     if not redirect_url:
         for key in next_key:
-            redirect_url = request.REQUEST.get(key)
+            redirect_url = request.POST.get(key, request.GET.get(key))
             if redirect_url:
                 break
         if not redirect_url:
@@ -313,7 +316,7 @@ def next_redirect(request, default='/', additional_params=None,
     return HttpResponseRedirect(redirect_url)
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def mass_get_or_create(model_class, base_queryset, id_field, default_dict,
                        global_defaults):
     '''
@@ -687,3 +690,32 @@ def get_migration_data():
     user_orm_label = '%s.%s' % (User._meta.app_label, User._meta.object_name)
     user_model_label = '%s.%s' % (User._meta.app_label, User._meta.module_name)
     return User, user_orm_label, user_model_label
+
+
+def get_profile(user):
+    '''
+    Get profile
+    '''
+    if django_version >= (1, 7, 0):
+        profile = get_profile_from_user(user)
+    else:
+        profile = user.get_profile()
+    return profile
+
+
+def get_profile_from_user(user):
+    '''
+    Tries to get the profile according to the
+    class configured on AUTH_PROFILE_MODULE
+    '''
+    for field in user._meta.get_fields():
+        try:
+            if hasattr(user, field.name):
+                attribute = getattr(user, field.name)
+                if get_profile_model() == type(attribute):
+                    return attribute
+        except Exception:
+            logger.exception("Error getting profile attribute from user.")
+
+    logger.info("Could not find profile attribute.")
+    return None

@@ -1,7 +1,10 @@
 from __future__ import unicode_literals
 from django.utils.encoding import python_2_unicode_compatible
 from django.conf import settings
-from django.contrib.contenttypes import generic
+try:
+    from django.contrib.contenttypes.fields import GenericForeignKey
+except ImportError:
+    from django.contrib.contenttypes.generic import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.base import ModelBase
@@ -11,11 +14,10 @@ from datetime import timedelta
 from django_facebook.utils import compatible_datetime as datetime, \
     get_model_for_attribute, get_user_attribute, get_instance_for_attribute, \
     try_get_profile, update_user_attributes
-from django_facebook.utils import get_user_model
+from django_facebook.utils import get_user_model, get_profile
 from open_facebook.exceptions import OAuthException
 import logging
 import os
-logger = logging.getLogger(__name__)
 
 
 def get_user_model_setting():
@@ -37,30 +39,42 @@ def validate_settings():
 
     # check for required settings
     if not facebook_settings.FACEBOOK_APP_ID:
-        logger.warn('Warning FACEBOOK_APP_ID isnt specified')
+        logging.warn('Warning FACEBOOK_APP_ID isnt specified')
     if not facebook_settings.FACEBOOK_APP_SECRET:
-        logger.warn('Warning FACEBOOK_APP_SECRET isnt specified')
+        logging.warn('Warning FACEBOOK_APP_SECRET isnt specified')
 
     # warn on things which will cause bad performance
     if facebook_settings.FACEBOOK_STORE_LIKES or facebook_settings.FACEBOOK_STORE_FRIENDS:
         if not facebook_settings.FACEBOOK_CELERY_STORE:
             msg = '''Storing friends or likes without using Celery will significantly slow down your login
 Its recommended to enable FACEBOOK_CELERY_STORE or disable FACEBOOK_STORE_FRIENDS and FACEBOOK_STORE_LIKES'''
-            logger.warn(msg)
+            logging.warn(msg)
 
     # make sure the context processors are present
-    required = ['django_facebook.context_processors.facebook',
-                'django.core.context_processors.request']
-    context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
-    for context_processor in required:
-        if context_processor not in context_processors:
-            logger.warn(
-                'Required context processor %s wasnt found', context_processor)
+    if hasattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS'):
+        # Backwards-compatible for Django < 1.8
+        required = ['django_facebook.context_processors.facebook',
+                    'django.core.context_processors.request']
+        context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
+        for context_processor in required:
+            if context_processor not in context_processors:
+                logging.warn(
+                    'Required context processor %s wasnt found', context_processor)
+    else:
+        required = ['django_facebook.context_processors.facebook',
+                    'django.template.context_processors.request']
+        for index, template in enumerate(settings.TEMPLATES):
+            context_processors = template['OPTIONS']['context_processors']
+            for context_processor in required:
+                if context_processor not in context_processors:
+                    logging.warn(
+                        'Required context processor %s wasnt found in template %d',
+                        context_processor, index)
 
     backends = settings.AUTHENTICATION_BACKENDS
     required = 'django_facebook.auth_backends.FacebookBackend'
     if required not in backends:
-        logger.warn('Required auth backend %s wasnt found', required)
+        logging.warn('Required auth backend %s wasnt found', required)
 
 validate_settings()
 
@@ -223,7 +237,7 @@ class BaseFacebookModel(models.Model):
 
         The token can be extended multiple times, supposedly on every visit
         '''
-        logger.info('extending access token for user %s', self.get_user())
+        logging.info('extending access token for user %s', self.get_user())
         results = None
         if facebook_settings.FACEBOOK_CELERY_TOKEN_EXTEND:
             from django_facebook import tasks
@@ -241,9 +255,9 @@ class BaseFacebookModel(models.Model):
         message = 'a new' if token_changed else 'the same'
         log_format = 'Facebook provided %s token, which expires at %s'
         expires_delta = timedelta(days=60)
-        logger.info(log_format, message, expires_delta)
+        logging.info(log_format, message, expires_delta)
         if token_changed:
-            logger.info('Saving the new access token')
+            logging.info('Saving the new access token')
             self.update_access_token(access_token)
             self.save()
 
@@ -288,7 +302,7 @@ class FacebookModel(BaseFacebookModel):
         if user_or_profile_model == user_model:
             return self
         else:
-            return self.get_profile()
+            return get_profile(self)
 
     class Meta:
         abstract = True
@@ -360,7 +374,7 @@ if getattr(settings, 'AUTH_USER_MODEL', None) == 'django_facebook.FacebookCustom
             # add any customizations you like
             state = models.CharField(max_length=255, blank=True, null=True)
     except ImportError as e:
-        logger.info('Couldnt setup FacebookUser, got error %s', e)
+        logging.info('Couldnt setup FacebookUser, got error %s', e)
 
 
 class BaseModelMetaclass(ModelBase):
@@ -504,9 +518,10 @@ class OpenGraphShare(BaseModel):
 
     # what we are sharing, dict and object
     share_dict = models.TextField(blank=True, null=True)
+
     content_type = models.ForeignKey(ContentType, blank=True, null=True)
     object_id = models.PositiveIntegerField(blank=True, null=True)
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     # completion data
     error_message = models.TextField(blank=True, null=True)
@@ -528,7 +543,7 @@ class OpenGraphShare(BaseModel):
 
     def save(self, *args, **kwargs):
         if self.user and not self.facebook_user_id:
-            profile = self.user.get_profile()
+            profile = get_profile(self.user)
             self.facebook_user_id = get_user_attribute(
                 self.user, profile, 'facebook_id')
         return BaseModel.save(self, *args, **kwargs)
@@ -545,8 +560,7 @@ class OpenGraphShare(BaseModel):
             self.user, profile, 'access_token')
         graph = graph or user_or_profile.get_offline_graph()
         user_enabled = shared_explicitly or \
-            (user_or_profile.facebook_open_graph
-             and self.facebook_user_id)
+            (user_or_profile.facebook_open_graph and self.facebook_user_id)
         # start sharing
         if graph and user_enabled:
             graph_location = '%s/%s' % (
@@ -559,14 +573,14 @@ class OpenGraphShare(BaseModel):
                 if not share_id:
                     error_message = 'No id in Facebook response, found %s for url %s with data %s' % (
                         result, graph_location, share_dict)
-                    logger.error(error_message)
+                    logging.error(error_message)
                     raise OpenFacebookException(error_message)
                 self.share_id = share_id
                 self.error_message = None
                 self.completed_at = datetime.now()
                 self.save()
             except OpenFacebookException as e:
-                logger.warn(
+                logging.warn(
                     'Open graph share failed, writing message %s' % str(e))
                 self.error_message = repr(e)
                 self.save()
@@ -577,10 +591,10 @@ class OpenGraphShare(BaseModel):
                 user_or_profile = user_or_profile.__class__.objects.get(
                     id=user_or_profile.id)
                 token_changed = graph.access_token != user_or_profile.access_token
-                logger.info('new token required is %s and token_changed is %s',
-                            new_token_required, token_changed)
+                logging.info('new token required is %s and token_changed is %s',
+                             new_token_required, token_changed)
                 if new_token_required and not token_changed:
-                    logger.info(
+                    logging.info(
                         'a new token is required, setting the flag on the user or profile')
                     # time to ask the user for a new token
                     update_user_attributes(self.user, profile, dict(
@@ -623,7 +637,7 @@ class OpenGraphShare(BaseModel):
         Update the share with the given data
         '''
         result = None
-        profile = self.user.get_profile()
+        profile = get_profile(self.user)
         graph = graph or profile.get_offline_graph()
 
         # update the share dict so a retry will do the right thing
@@ -641,7 +655,7 @@ class OpenGraphShare(BaseModel):
         if not self.share_id:
             raise ValueError('Can only delete shares which have an id')
         # see if the graph is enabled
-        profile = self.user.get_profile()
+        profile = get_profile(self.user)
         graph = graph or profile.get_offline_graph()
         response = None
         if graph:

@@ -1,12 +1,11 @@
-django>=1.5
+django>=1.8
 django_facebook
-south
-pillow
+pillow>=2.6.1
 mock
 pep8
 git+http://github.com/dcramer/pyflakes.git#egg=pyflakes
 autopep8
-unidecode
+unidecode==0.04.16
 
 # The items below are for local development only.  In order for tests to run
 # successfully for both py2 and py3, these need to be commented out because

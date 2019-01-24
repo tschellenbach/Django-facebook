@@ -8,12 +8,17 @@ Django Facebook by Thierry Schellenbach (`mellowmorning.com <http://www.mellowmo
 .. image:: https://pypip.in/d/django-facebook/badge.png
         :target: https://pypi.python.org/pypi/django-facebook
 
+
+Status
+-------
+Django and Facebook are both rapidly changing at the moment. Meanwhile, I'm caught up in a startup and don't have much spare time.
+The library needs a good round of testing against the latest python, django and facebook graph API.
 Contributions are strongly appreciated. Seriously, give github a try, fork and get started :)
 
 News
 ----
-* django-facebook is now python 3 compatible!  With this change, django-facebook will be dropping support for django 1.4 and the mininum required django version will be 1.5.
-
+* django-facebook will be dropping support for django < 1.8 since `django only supports <https://www.djangoproject.com/download/#supported-versions>`_ versions 1.8 and above.
+  
 
 Demo & About
 ------------
@@ -21,9 +26,6 @@ Demo & About
 Django Facebook enables your users to easily register using the Facebook API.
 It converts the Facebook user data and creates regular User and Profile objects.
 This makes it easy to integrate with your existing Django application.
-
-I've built it for my startup Fashiolista.com and it's currently used in production with thousands of signups per day.
-For a demo of the signup flow have a look at Fashiolista's landing page (`fashiolista.com <http://www.fashiolista.com/intro_wide_minimal/>`_)
 
 After registration Django Facebook gives you access to user's graph. Allowing for applications such as:
 
@@ -56,22 +58,22 @@ Documentation
 
 **Basics**
 
-* `Installation <http://django-facebook.readthedocs.org/en/latest/installation.html>`_
-* `Customizing <http://django-facebook.readthedocs.org/en/latest/customizing.html>`_
-* `Settings <http://django-facebook.readthedocs.org/en/latest/settings.html>`_
-* `Registration backends & Redirects <http://django-facebook.readthedocs.org/en/latest/registration_backend.html>`_
+* `Installation <https://django-facebook.readthedocs.io/en/latest/installation.html>`_
+* `Customizing <https://django-facebook.readthedocs.io/en/latest/customizing.html>`_
+* `Settings <https://django-facebook.readthedocs.io/en/latest/settings.html>`_
+* `Registration backends & Redirects <https://django-facebook.readthedocs.io/en/latest/registration_backend.html>`_
 
 **Open Facebook API**
 
-* `Getting an OpenFacebook object <http://django-facebook.readthedocs.org/en/latest/graph.html>`_
-* `Making calls <http://django-facebook.readthedocs.org/en/latest/open_facebook/api.html>`_
+* `Getting an OpenFacebook object <https://django-facebook.readthedocs.io/en/latest/graph.html>`_
+* `Making calls <https://django-facebook.readthedocs.io/en/latest/open_facebook/api.html>`_
 
 **Advanced**
 
-* `Mobile <http://django-facebook.readthedocs.org/en/latest/mobile.html>`_
-* `Celery <http://django-facebook.readthedocs.org/en/latest/celery.html>`_
-* `Signals <http://django-facebook.readthedocs.org/en/latest/signals.html>`_
-* `Canvas <http://django-facebook.readthedocs.org/en/latest/canvas.html>`_
+* `Mobile <https://django-facebook.readthedocs.io/en/latest/mobile.html>`_
+* `Celery <https://django-facebook.readthedocs.io/en/latest/celery.html>`_
+* `Signals <https://django-facebook.readthedocs.io/en/latest/signals.html>`_
+* `Canvas <https://django-facebook.readthedocs.io/en/latest/canvas.html>`_
 
 
 Contributing and Running tests
@@ -113,14 +115,6 @@ You can run the test suite by typing:
 ::
 
   python manage.py test django_facebook
-
-
-
-Django Jobs
------------
-Do you also see the beauty in clean code? Are you experienced with high scalability web apps?
-Currently we're looking for additional talent over at our Amsterdam office.
-Feel free to drop me a line at my personal email for more information: thierryschellenbach[at]gmail.com
 
 
 

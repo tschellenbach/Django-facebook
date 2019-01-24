@@ -209,7 +209,7 @@ class FacebookConnection(object):
                 # These are often temporary errors, so we will retry before
                 # failing
                 error_format = 'Facebook encountered a timeout (%ss) or error %s'
-                logger.warn(error_format, extended_timeout, unicode(e))
+                logger.warn(error_format, extended_timeout, str(e))
                 attempts -= 1
                 if not attempts:
                     # if we have no more attempts actually raise the error
@@ -467,7 +467,7 @@ class FacebookAuthorization(FacebookConnection):
         and
         http://sunilarora.org/parsing-signedrequest-parameter-in-python-bas
         '''
-        from open_facebook.utils import base64_url_decode_php_style
+        from open_facebook.utils import base64_url_decode_php_style, smart_str
         l = signed_request.split('.', 2)
         encoded_sig = l[0]
         payload = l[1]
@@ -475,7 +475,7 @@ class FacebookAuthorization(FacebookConnection):
         sig = base64_url_decode_php_style(encoded_sig)
         import hmac
         import hashlib
-        data = json.loads(base64_url_decode_php_style(payload))
+        data = json.loads(base64_url_decode_php_style(payload).decode('utf-8'))
 
         algo = data.get('algorithm').upper()
         if algo != 'HMAC-SHA256':
@@ -485,10 +485,10 @@ class FacebookAuthorization(FacebookConnection):
             logger.error('Unknown algorithm')
             return None
         else:
-            expected_sig = hmac.new(secret, msg=payload,
+            expected_sig = hmac.new(smart_str(secret), msg=smart_str(payload),
                                     digestmod=hashlib.sha256).digest()
 
-        if sig != expected_sig:
+        if not sig == expected_sig:
             error_format = 'Signature %s didnt match the expected signature %s'
             error_message = error_format % (sig, expected_sig)
             send_warning(error_message)
@@ -652,12 +652,12 @@ class OpenFacebook(FacebookConnection):
     **Example**::
 
         graph = OpenFacebook(access_token)
-        print graph.get('me')
+        print(graph.get('me'))
 
     '''
 
     def __init__(self, access_token=None, prefetched_data=None,
-                 expires=None, current_user_id=None):
+                 expires=None, current_user_id=None, version=None):
         '''
             :param access_token:
                 The facebook Access token
@@ -672,6 +672,10 @@ class OpenFacebook(FacebookConnection):
         # hook to store the current user id if representing the
         # facebook connection to a logged in user :)
         self.current_user_id = current_user_id
+
+        if version is None:
+            version = 'v1.0'
+        self.version = version
 
     def __getstate__(self):
         '''
@@ -707,7 +711,7 @@ class OpenFacebook(FacebookConnection):
         authenticated = bool(me)
         return authenticated
 
-    def get(self, path, **kwargs):
+    def get(self, path, version=None, **kwargs):
         '''
         Make a Facebook API call
 
@@ -721,6 +725,8 @@ class OpenFacebook(FacebookConnection):
 
         :returns:  dict
         '''
+        version = version or self.version
+        kwargs['version'] = version
         response = self.request(path, **kwargs)
         return response
 
@@ -731,8 +737,8 @@ class OpenFacebook(FacebookConnection):
 
         **Example**::
 
-            open_facebook.get('me', 'starbucks')
-            open_facebook.get('me', 'starbucks', fields='id,name')
+            open_facebook.get_many('me', 'starbucks')
+            open_facebook.get_many('me', 'starbucks', fields='id,name')
 
         :param path:
             The path to use for making the API call
@@ -742,7 +748,7 @@ class OpenFacebook(FacebookConnection):
         kwargs['ids'] = ','.join(ids)
         return self.request(**kwargs)
 
-    def set(self, path, params=None, **post_data):
+    def set(self, path, params=None, version=None, **post_data):
         '''
         Write data to facebook
 
@@ -761,11 +767,13 @@ class OpenFacebook(FacebookConnection):
 
         :returns:  dict
         '''
+        version = version or self.version
         assert self.access_token, 'Write operations require an access token'
         if not params:
             params = {}
         params['method'] = 'post'
 
+        params['version'] = version
         response = self.request(path, post_data=post_data, **params)
         return response
 
@@ -843,7 +851,8 @@ class OpenFacebook(FacebookConnection):
         '''
         me = getattr(self, '_me', None)
         if me is None:
-            self._me = me = self.get('me')
+            # self._me = me = self.get('me')
+            self._me = me = self.get('me', fields="id,name,email,verified")
 
         return me
 
@@ -854,16 +863,32 @@ class OpenFacebook(FacebookConnection):
 
         :returns: dict
         '''
+        permissions_dict = {}
         try:
             permissions = {}
             permissions_response = self.get('me/permissions')
-            if permissions_response.get('data'):
-                permissions = permissions_response['data'][0]
+
+            # determine whether we're dealing with 1.0 or 2.0+
+            for permission in permissions_response.get('data', []):
+                # graph api 2.0+, returns multiple dicts with keys 'status' and
+                # 'permission'
+                if any(value in ['granted', 'declined'] for value in permission.values()):
+                    for perm in permissions_response['data']:
+                        grant = perm.get('status') == 'granted'
+                        name = perm.get('permission')
+                        # just in case something goes sideways
+                        if grant and name:
+                            permissions_dict[name] = grant
+                # graph api 1.0, returns single dict as {permission: intval}
+                elif any(value in [0, 1, '0', '1'] for value in permission.values()):
+                    permissions = permissions_response['data'][0]
+                    permissions_dict = dict([(k, bool(int(v)))
+                                             for k, v in permissions.items()
+                                             if v == '1' or v == 1])
+                break
         except facebook_exceptions.OAuthException:
-            permissions = {}
-        permissions_dict = dict([(k, bool(int(v)))
-                                 for k, v in permissions.items()
-                                 if v == '1' or v == 1])
+            pass
+
         return permissions_dict
 
     def has_permissions(self, required_permissions):
@@ -905,16 +930,34 @@ class OpenFacebook(FacebookConnection):
         url = '%sme/picture?%s' % (self.api_url, query_dict.urlencode())
         return url
 
-    def request(self, path='', version=None, post_data=None, old_api=False, **params):
-        api_base_url = self.old_api_url if old_api else self.api_url
-        if version and not old_api:
-            api_base_url = ''.join((api_base_url, 'v', str(version), '/'))
-        if getattr(self, 'access_token', None):
-            params['access_token'] = self.access_token
-        url = '%s%s?%s' % (api_base_url, path, urlencode(params))
+    def request(self, path='', post_data=None, old_api=False, version=None, **params):
+        url = self.get_request_url(path=path, old_api=old_api, version=version,
+                                   **params)
         logger.info('requesting url %s', url)
         response = self._request(url, post_data)
         return response
+
+    def get_request_url(self, path='', old_api=False, version=None, **params):
+        '''
+        Gets the url for the request.
+        '''
+        api_base_url = self.old_api_url if old_api else self.api_url
+        version = version or self.version
+
+        if getattr(self, 'access_token', None):
+            params['access_token'] = self.access_token
+
+        if api_base_url.endswith('/'):
+            api_base_url = api_base_url[:-1]
+
+        if path and path.startswith('/'):
+            path = path[1:]
+            
+        if path == 'me':
+            params['fields'] = 'email,first_name,last_name,name,cover,picture'
+
+        url = '/'.join([api_base_url, version, path])
+        return '%s?%s' % (url, urlencode(params))
 
 
 class TestUser(object):
