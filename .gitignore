@@ -23,6 +23,7 @@ bulkloader-*
 
 #app specific
 facebook_example/django_fb_test
+facebook_example/facebook_example_db
 facebook_example/media/*
 
 # ignore uploaded test images

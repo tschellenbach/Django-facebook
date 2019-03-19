@@ -51,6 +51,20 @@ Its recommended to enable FACEBOOK_CELERY_STORE or disable FACEBOOK_STORE_FRIEND
             logging.warn(msg)
 
     # make sure the context processors are present
+    required = ['django_facebook.context_processors.facebook',
+                'django.core.context_processors.request']
+    try:
+        if settings.TEMPLATES:
+            # I don't know if this check makes sense with complex TEMPLATES settings.
+            pass
+    except AttributeError as e:
+        # we are on django <1.10 and user is using deprecated settings.
+        context_processors = settings.TEMPLATE_CONTEXT_PROCESSORS
+        for context_processor in required:
+            if context_processor not in context_processors:
+                logger.warn(
+                    'Required context processor %s wasnt found', context_processor)
+
     if hasattr(settings, 'TEMPLATE_CONTEXT_PROCESSORS'):
         # Backwards-compatible for Django < 1.8
         required = ['django_facebook.context_processors.facebook',
@@ -359,7 +373,7 @@ class FacebookProfile(FacebookProfileModel):
     Use this by setting
     AUTH_PROFILE_MODULE = 'django_facebook.FacebookProfile'
     '''
-    user = models.OneToOneField(get_user_model_setting())
+    user = models.OneToOneField(get_user_model_setting(), models.CASCADE)
 
 if getattr(settings, 'AUTH_USER_MODEL', None) == 'django_facebook.FacebookCustomUser':
     try:
@@ -377,36 +391,12 @@ if getattr(settings, 'AUTH_USER_MODEL', None) == 'django_facebook.FacebookCustom
         logging.info('Couldnt setup FacebookUser, got error %s', e)
 
 
-class BaseModelMetaclass(ModelBase):
-
-    '''
-    Cleaning up the table naming conventions
-    '''
-
-    def __new__(cls, name, bases, attrs):
-        super_new = ModelBase.__new__(cls, name, bases, attrs)
-        module_name = camel_to_underscore(name)
-
-        app_label = super_new.__module__.split('.')[-2]
-        db_table = '%s_%s' % (app_label, module_name)
-
-        django_default = '%s_%s' % (app_label, name.lower())
-        if not getattr(super_new._meta, 'proxy', False):
-            db_table_is_default = django_default == super_new._meta.db_table
-            # Don't overwrite when people customize the db_table
-            if db_table_is_default:
-                super_new._meta.db_table = db_table
-
-        return super_new
-
-
 @python_2_unicode_compatible
 class BaseModel(models.Model):
 
     '''
     Stores the fields common to all incentive models
     '''
-    __metaclass__ = BaseModelMetaclass
 
     def __str__(self):
         '''
@@ -510,7 +500,7 @@ class OpenGraphShare(BaseModel):
     '''
     objects = model_managers.OpenGraphShareManager()
 
-    user = models.ForeignKey(get_user_model_setting())
+    user = models.ForeignKey(get_user_model_setting(), models.CASCADE)
 
     # domain stores
     action_domain = models.CharField(max_length=255)
@@ -519,7 +509,7 @@ class OpenGraphShare(BaseModel):
     # what we are sharing, dict and object
     share_dict = models.TextField(blank=True, null=True)
 
-    content_type = models.ForeignKey(ContentType, blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, models.CASCADE, blank=True, null=True)
     object_id = models.PositiveIntegerField(blank=True, null=True)
     content_object = GenericForeignKey('content_type', 'object_id')
 
@@ -538,8 +528,6 @@ class OpenGraphShare(BaseModel):
     updated_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
-    class Meta:
-        db_table = facebook_settings.FACEBOOK_OG_SHARE_DB_TABLE
 
     def save(self, *args, **kwargs):
         if self.user and not self.facebook_user_id:

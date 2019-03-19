@@ -4,48 +4,31 @@ import django
 import sys
 django_version = django.VERSION
 # some complications related to our travis testing setup
-DJANGO = os.environ.get('DJANGO', '1.5.1')
 MODE = os.environ.get('MODE', 'standalone')
 CUSTOM_USER_MODEL = bool(int(os.environ.get('CUSTOM_USER_MODEL', '1')))
 
-if DJANGO != '1.5.1':
-    CUSTOM_USER_MODEL = False
 
 TESTING = 'test' in sys.argv
 
 FACEBOOK_APP_ID = '215464901804004'
 FACEBOOK_APP_SECRET = '0aceba27823a9dfefa955f76949fa4b4'
-if django_version < (1, 10, 0):
-    TEMPLATE_CONTEXT_PROCESSORS = [
-        'django.contrib.auth.context_processors.auth',
-        'django.core.context_processors.debug',
-        'django.core.context_processors.i18n',
-        'django.core.context_processors.media',
-        'django.core.context_processors.static',
-        'django.core.context_processors.request',
-        'django.contrib.messages.context_processors.messages',
-        'django_facebook.context_processors.facebook',
-    ]
 
-    if django_version >= (1, 4, 0):
-        TEMPLATE_CONTEXT_PROCESSORS.append('django.core.context_processors.tz')
-else:
-    TEMPLATES = [
-        {
-            'BACKEND': 'django.template.backends.django.DjangoTemplates',
-            'DIRS': [],
-            'APP_DIRS': True,
-            'OPTIONS': {
-                'context_processors': [
-                    'django.template.context_processors.debug',
-                    'django.template.context_processors.request',
-                    'django.contrib.auth.context_processors.auth',
-                    'django.contrib.messages.context_processors.messages',
-                    'django_facebook.context_processors.facebook',
-                ],
-            },
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'django_facebook.context_processors.facebook',
+            ],
         },
-    ]
+    },
+]
 
 AUTHENTICATION_BACKENDS = (
     'django_facebook.auth_backends.FacebookBackend',
@@ -146,15 +129,15 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.Loader',
 )
 
-MIDDLEWARE_CLASSES = (
-    'django.middleware.common.CommonMiddleware',
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    # Uncomment the next line for simple clickjacking protection:
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-)
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
 
 ROOT_URLCONF = 'facebook_example.urls'
 
@@ -174,21 +157,12 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Uncomment the next line to enable the admin:
-    # 'django.contrib.admin',
-    # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
     'django_facebook',
     'member',
     'open_facebook',
     'django.contrib.admin',
 )
 
-if django_version < (1, 7, 0):
-    # south isn't needed by django >= 1.7 since migrations were added.  See:
-    # - https://docs.djangoproject.com/en/dev/topics/migrations/#libraries-third-party-apps
-    # - https://south.readthedocs.io/en/latest/releasenotes/1.0.html#library-migration-path
-    INSTALLED_APPS += ('south',)
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

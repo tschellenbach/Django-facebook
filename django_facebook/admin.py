@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django_facebook import admin_actions
 from django_facebook import models
 from django_facebook import settings as facebook_settings
