@@ -521,7 +521,7 @@ class FacebookAuthorization(FacebookConnection):
         return app_access_token
 
     @classmethod
-    def create_test_user(cls, app_access_token, permissions=None, name=None):
+    def create_test_user(cls, app_access_token, permissions=None, name=None, installed=True):
         '''
         Creates a test user with the given permissions and name
 
@@ -533,6 +533,9 @@ class FacebookAuthorization(FacebookConnection):
 
         :param name:
             Optionally specify the name
+            
+        :param installed:
+            Optionally create the user without the app installed
         '''
         if not permissions:
             permissions = ['read_stream', 'publish_stream',
@@ -546,7 +549,7 @@ class FacebookAuthorization(FacebookConnection):
 
         kwargs = {
             'access_token': app_access_token,
-            'installed': True,
+            'installed': installed,
             'name': name,
             'method': 'post',
             'permissions': permissions,
@@ -560,7 +563,7 @@ class FacebookAuthorization(FacebookConnection):
         return test_user
 
     @classmethod
-    def get_or_create_test_user(cls, app_access_token, name=None, permissions=None, force_create=False):
+    def get_or_create_test_user(cls, app_access_token, name=None, permissions=None, force_create=False, installed=True):
         '''
         There is no supported way of get or creating a test user
         However
@@ -610,7 +613,7 @@ class FacebookAuthorization(FacebookConnection):
         else:
             # create the user
             test_user = cls.create_test_user(
-                app_access_token, permissions, name)
+                app_access_token, permissions, name, installed)
 
         return test_user
 
