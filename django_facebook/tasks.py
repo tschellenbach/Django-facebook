@@ -30,8 +30,8 @@ def store_likes(user, likes):
     :param user: The user for which we are storing
     :type user: User object
 
-    :param friends: List of your likes
-    :type friends: list
+    :param likes: List of your likes
+    :type likes: list
     '''
     converter_class = get_class_for('user_conversion')
     logger.info('celery is storing %s likes' % len(likes))
