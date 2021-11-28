@@ -121,10 +121,7 @@ CLASSIFIERS = [
     'Environment :: Web Environment',
 ]
 
-DESCRIPTION = """Facebook open graph API client in python. Enables django applications to register users using facebook.
-Fixes issues with the official but unsupported Facebook python-sdk. Enables mobile facebook authentication.
-Canvas page authentication for facebook applications. FQL access via the server side api.
-"""
+DESCRIPTION = "Facebook open graph API client in Python"
 
 download_url = 'https://github.com/tschellenbach/Django-facebook/archive/v%s.tar.gz' % __version__
 
